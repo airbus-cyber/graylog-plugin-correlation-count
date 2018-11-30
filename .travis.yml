@@ -28,4 +28,4 @@ deploy:
   on:
     repo: airbus-cyber/graylog-plugin-correlation-count
     jdk: openjdk8
-    branch: develop
+    tags: true
