@@ -1,0 +1,30 @@
+dist: trusty
+sudo: required
+language: java
+jdk:
+- openjdk8
+addons:
+  apt:
+    packages:
+    - rpm
+script:
+- mvn package -B
+before_deploy:
+- mvn jdeb:jdeb && export RELEASE_DEB_FILE=$(ls target/*.deb)
+- mvn rpm:rpm && export RELEASE_RPM_FILE=$(find target/ -name '*.rpm' | tail -1)
+- rm -f target/original-*.jar
+- export RELEASE_PKG_FILE=$(ls target/*.jar)
+- echo "Deploying release to GitHub releases"
+deploy:
+  provider: releases
+  api_key:
+    secure: aeFzD3aVzXSdTPZniQCD1q46dDOzF5BZizRjiCOJAYK//EVrAJNxJqKSeC0PDoUHI+YBkIkXk8ejnnHz214IJVbdysUEAab6kEv4ECf5u8abxdyImZb1zD/aen4IMcLAaaVSRflF+zCJmEXISULHOUigvD3jYgYFmYx3rp4iB9tXB9j087uhDw9ww1YA5UVjVTZGAXlRYv/J/bqM32yryfKiyGIpf7Wqf8/Dnz7N4PoCBBfHxa20gvm9dwTVjSYy0719r8d501J0F0N1ZbODp8RmlR36S8Wz+0oO0+kqbNMcK/eiB2RScrdjZDStF+6FMzxwJDOoYejAAVHAJAgF4cpxXY7EmimHYpbJmdtDAmO2GLZgI8Uh9krqHAe92R2ZD7boyHi91zU7ybjJ67tQN/adc8Qw5aRvb80FZEIs22sOD/cKo0lYvkXlkW/eCiAPkTMiKOyT3YjapTkJj6BzcHXds3DeD75J2M3RldcKGpwzkcPtEOfkt1YXud0ThiE7HCZRJ5wU2W4l/PCC1XQQh8pV09Ixtwp+TYnska1KC7nELj+ZmRE2jhH2KURBNS5ELwlbe8XsBBwRPj4B3ZVTKkjxRw/B+AdpCNXvST/2d4Al9qpeTmH3oE27p+X+WY+2zpYkP//+blAPQaYKcgPSHUYQvmMhRbk+UgQOBayBIwM=
+  file: 
+  - "${RELEASE_PKG_FILE}"
+  - "${RELEASE_DEB_FILE}"
+  - "${RELEASE_RPM_FILE}"
+  skip_cleanup: true
+  on:
+    repo: airbus-cyber/graylog-plugin-correlation-count
+    jdk: openjdk8
+    tags: true
