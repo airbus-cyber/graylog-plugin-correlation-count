@@ -1,8 +1,8 @@
 # Correlation Count Plugin for Graylog
 
-[![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count.svg?branch=develop)](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count)
+[![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count.svg?branch=master)](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
-[![GitHub Release](https://img.shields.io/badge/release-v0.3.1-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
+[![GitHub Release](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
 
 #### Alert condition plugin for Graylog to perform correlation
 
@@ -18,7 +18,7 @@ Please also take note that only a single alert is raised for this condition duri
 
 Example of raised alert:
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/develop/images/alert.png)
+![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/alert.png)
 
 ## Installation
 
@@ -33,7 +33,7 @@ Restart `graylog-server` and you are done.
 
 First you have to select the **Main Stream** and the alert type **Correlation Count Alert Condition**
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/develop/images/select_condition.png)
+![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/select_condition.png)
 
 Then, in the popup that occurs, you can configure the **Additional Stream** to correlate messages of different kind from the main stream.
 
@@ -47,7 +47,7 @@ You can optionally configure the **Grouping Fields** to only count messages with
 
 You can also set all the common parameters : **Title**, **Time Range**, **Grace Period**, **Message Backlog** and **Repeat notifications**.
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/develop/images/edit_condition.png)
+![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/edit_condition.png)
 
 Click on **Manage conditions** in the **Alerts** section to see the conditions details.
 
