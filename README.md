@@ -22,7 +22,7 @@ Example of raised alert:
 
 ## Installation
 
-[Download the plugin](https://.../graylog2-plugin-correlation-count/tree/master/releases)
+[Download the plugin](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
 and place the `.jar` file in your Graylog plugin directory. The plugin directory
 is the `plugins/` folder relative from your `graylog-server` directory by default
 and can be configured in your `graylog.conf` file.
