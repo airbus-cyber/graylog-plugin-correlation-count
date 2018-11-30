@@ -24,7 +24,6 @@ deploy:
   - "${RELEASE_DEB_FILE}"
   - "${RELEASE_RPM_FILE}"
   skip_cleanup: true
-  draft: true
   on:
     repo: airbus-cyber/graylog-plugin-correlation-count
     jdk: openjdk8
