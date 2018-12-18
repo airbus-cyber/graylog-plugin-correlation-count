@@ -82,8 +82,8 @@ public class CorrelationCount extends AbstractAlertCondition {
     enum OrderType {
 
         ANY("any order"),
-        BEFORE("before"),
-    	AFTER("after");
+        BEFORE("additional messages before main messages"),
+    	AFTER("additional messages after main messages");
     	
         private final String description;
 
