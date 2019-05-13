@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.0.1...1.1.0) (2019-05-13)
+
+### Features
+* Add the Search Query functionality for compatibility with Graylog 2.5
+
 ## [1.0.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.0.0...1.0.1) (2018-12-18)
 
 ### Bug Fixes

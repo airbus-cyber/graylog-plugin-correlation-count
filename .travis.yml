@@ -7,11 +7,24 @@ addons:
   apt:
     packages:
     - rpm
+    - expect
+env:
+  global:
+  - LC_ALL=C
+  - secure: H8MKojeWPSLo+RoUZjHnKOJE/ykdQ53goLXagGerZWl/Ef7uuJZnHzWeC1jjKPQ77oBnXZdnk0CpupiRYJjYszawRaKy5zN4gt6wIsknck9TGR6B1p4/RkrIVn0CiZUNvMakqxn3sHiGgAhdrEWzxZ8/RZLHG2KR/0eOwOcsENQz93FoRp3q70v676gRNJdNUx5Wng+DioQBmK+d0ZGNqhjCFASGg060152FaUHtiTA07slcUAqbfDE+8sxrRUl9KkIoY+KntoKRZAWnTHQ/vxgi16LE+vGfSBITZIGfTWm3ICl8r7VgtImL1GIKk1RXAaBUTNT/BtA3rPd7oUB445bKdOEuolPmXkCRHnB2B1tWMqNO4KSkQ3afZ1c2TKVkp6OmYyiv8Y8sh8zeWRFIkJpaZDaL/gTNuu37FyKPjRCFmYsECodtRmPGW/ADwZW9eHGvnT0ObmD3tWIg8qj7EJMgS4u3jhyL25oq2pGLnsCWrigvch1JVqM7ihvfiqhVTRlr4FJ24azZ4M6HMYzxyS48vlSRkDlP+xJ2h9ymslQ3rV781lQS38QihV+YuvqpFWKV2BWZ5WBPiP+pCBP+0lmrCwSn+Q1PPdRoFJM5R+R3XyxbiyQEkhRgIZsdZj9bvpbe9QUSXlx/fhjxDRrVxS+DfYIMxS8qyPhfFJZJYvE=
+  - secure: DVqhEAUw9HWRfHgBLIlBrZtTlvz1lCrqig3Q3prsdDzOjczQ4OfiUCWsKKFtOVVSeHFxuHwVVLi+1wx6JGr0tJ845KcMn1X1sQZX+E5NNR0qQgMBq+ul8mBauLCz0/KflEEhEVpmOHRGTlzmjRlJz8w6pmkLSoh0S/GqOiFhL8MrAXfMdvyGIKqI2NFUdMDkK4qwMk9quxmlxt66eujYYOGqIklnGuF83DvxTiVAufwubf2ShKPsFu5SegW71BhXDpx+L7oiuIRtkYOdPzmQ/5XZ2RSbsQz8aBmrXl+Q6qCrlglh9LRvCTdNpv0s3l37vBDyIwXtvghOPslxkQuZYOqCIEv3Y8m3egiiN5PAoyqCGYHmFXEAdFTCEMPDJGApd3BolFaVp0gKXdMScVB7kudI2zJYuEdl8wRJjoC9XwnveB9VJQ6zBsSZE0yRi2xIL7l57gY6x+Q1sy1cvnOZ89vYhucpOuhR553hzwuo0ivu3yWWEBFrnepjD9D/mi4q8r6wx8CEhuqRk3/EhSOeazEPOksGtStpjZRQDB9UBVvB7LxBypSyqx0/+yCMzrvypKTzwpoF8C40Ghqfz1myTCsY846QzoQih7GpAnofWMrhhK7hddM4iBWqGe+zm0Jzxhn//Gxj8n9a7qznxwH4nrY1XAACFJ87b1Wyic7BC2s=
+  - secure: OoPaI9OYBo5983CA7xlMUlGbg9wA8s5vXwhMC/U+dQLk0/EHbRGPxVRl1lQmAuUuqQiylpw3wkDeBgG0gfillyzKvwpIiZI0rzn3xqZ4zvKpbb44yjju7TKiNAYaEm4v82dsfqtErkvXliD7FYlcU/nTLUEjQwBTsrNgg84XoNSONsbflGBQ772XUHz5yY3b2VKI9gFS/k0kcNNkO3+c0MPuW6pyn7G2ilQqxP5Jwo49N1rmG5Q8HctyM+wnnQzyHicWUYgAq+wbfi+LQ5JGqbLnSroIirFkfsxiJlZkrSE7fcsdgj3i9iGQ2/0r0H4YOP9viP7qv0mzw/EivWKaRmTtTH8knYOLtxRNz1/s9fRvQv/GeuSul05HLRPP454410FmBZgGFyC5/qIxpDvco+UJdXcae3VvSJP5anNYhhnvzUOjPGxlBpiJWoGNEDePU98rubbfCgxM9hWl9lW5Wbs4SiQbIyYUvjwOnyaI4oPJWqBrrHBrPFYfMRdJoHfKuoiAKCOJv0y+FrT9Dfda1VJP7q3kMluRCVT9eLek2mChFblV1aGHimDFJWO1z4BNsEx8vWzHG2J2m1EJekG5BpPOFgppmLEzRZ8a5GUXEsW4UWdVDdhq/EGmvv3twcQizxIp0gN7GA5ITkt8elABeCCPKOHNx4FR3m2zpFF9T0E=
+install:
+- mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dskip.web.build=true -Dsource.skip=true -Dgpg.skip -B -V
 script:
-- mvn package -B
+- mvn package -Dmaven.javadoc.skip=true -Dsource.skip=true -Dgpg.skip -B
+after_success:
+- openssl aes-256-cbc -K $encrypted_2eb549732242_key -iv $encrypted_2eb549732242_iv -in deployment/signingkey.asc.enc -out deployment/signingkey.asc -d
+- gpg2 --import deployment/signingkey.asc
+- gpg2 --allow-secret-key-import --import deployment/signingkey.asc
 before_deploy:
-- mvn jdeb:jdeb && export RELEASE_DEB_FILE=$(ls target/*.deb)
-- mvn rpm:rpm && export RELEASE_RPM_FILE=$(find target/ -name '*.rpm' | tail -1)
+- mvn jdeb:jdeb --settings deployment/settings.xml && export RELEASE_DEB_FILE=$(ls target/*.deb)
+- mvn rpm:rpm --settings deployment/settings.xml && export RELEASE_RPM_FILE=$(find target/ -name '*.rpm' | tail -1)
 - rm -f target/original-*.jar
 - export RELEASE_PKG_FILE=$(ls target/*.jar)
 - echo "Deploying release to GitHub releases"
@@ -28,3 +41,6 @@ deploy:
     repo: airbus-cyber/graylog-plugin-correlation-count
     jdk: openjdk8
     tags: true
+after_deploy:
+- echo "Deploying release to Maven Central"
+- mvn clean deploy --settings deployment/settings.xml
