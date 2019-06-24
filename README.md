@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count.svg?branch=master)](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
-[![GitHub Release](https://img.shields.io/badge/release-v1.0.1-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
+[![GitHub Release](https://img.shields.io/badge/release-v1.1.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
 
 #### Alert condition plugin for Graylog to perform correlation
 
@@ -14,7 +14,7 @@ Perfect for example to be alerted when there is a successful authentication afte
 
 Please also take note that only a single alert is raised for this condition during the alerting interval, although multiple messages containing different values for the message fields may have been received since the last alert.
 
-**Required Graylog version:** 2.4.3 and later
+**Required Graylog version:** 2.5.0 and later
 
 Example of raised alert:
 
@@ -45,7 +45,7 @@ You can configure the **Messages Order** between the additional stream and the m
 
 You can optionally configure the **Grouping Fields** to only count messages with the same values in both streams.
 
-You can also set all the common parameters : **Title**, **Time Range**, **Grace Period**, **Message Backlog** and **Repeat notifications**.
+You can also set all the common parameters : **Title**, **Time Range**, **Grace Period**, **Message Backlog**, **Search Query** and **Repeat notifications**.
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/edit_condition.png)
 

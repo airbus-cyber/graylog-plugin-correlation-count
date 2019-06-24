@@ -61,7 +61,6 @@ public class CorrelationCount extends AbstractAlertCondition {
     private static final String FIELD_COMMENT = "comment";
  
     private static final String HEADER_STREAM = "streams:";
-    private static final String QUERY = "*";
     
     enum ThresholdType {
 
@@ -105,6 +104,7 @@ public class CorrelationCount extends AbstractAlertCondition {
     private final int additionalStreamThreshold;
     private final List<String> fields;
     private final OrderType messagesOrder;
+    private final String query;
     
     public interface Factory extends AlertCondition.Factory {
         @Override
@@ -230,6 +230,7 @@ public class CorrelationCount extends AbstractAlertCondition {
         this.additionalStreamThreshold = Tools.getNumber(parameters.get(FIELD_ADDITIONAL_THRESHOLD), 0).intValue();  
         this.fields = (List<String>) parameters.getOrDefault(FIELD_GROUPING_FIELDS,Collections.emptyList());
         this.messagesOrder = OrderType.valueOf((String) parameters.getOrDefault(FIELD_ORDER, OrderType.ANY.toString()));
+        this.query = (String) parameters.getOrDefault(CK_QUERY, CK_QUERY_DEFAULT_VALUE);
     }
 
     @Override
@@ -258,7 +259,7 @@ public class CorrelationCount extends AbstractAlertCondition {
 		for (String field : nextFields) {
 			matchedFieldValue = matchedFieldValue.replaceFirst(" - ", " AND " + field + ": ");
 		}
-		return (QUERY + " AND " + firstField + ": " + matchedFieldValue);
+		return (query + " AND " + firstField + ": " + matchedFieldValue);
     }
     
     private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries){
@@ -334,9 +335,9 @@ public class CorrelationCount extends AbstractAlertCondition {
     		final RelativeRange relativeRange = RelativeRange.create(time * 60);
     		final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
     		final String filterMainStream = HEADER_STREAM + stream.getId();
-    		final CountResult resultMainStream = searches.count(QUERY, range, filterMainStream);
+    		final CountResult resultMainStream = searches.count(query, range, filterMainStream);
     		final String filterAdditionalStream = HEADER_STREAM + additionalStreamID;
-    		final CountResult resultAdditionalStream = searches.count(QUERY, range, filterAdditionalStream);
+    		final CountResult resultAdditionalStream = searches.count(query, range, filterAdditionalStream);
 
     		LOG.debug("Alert check <{}> result: [{}]", id, resultAdditionalStream.count());
 
@@ -346,8 +347,8 @@ public class CorrelationCount extends AbstractAlertCondition {
 				final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 				
     			if (getBacklog() > 0 || !messagesOrder.equals(OrderType.ANY)) {
-    				addSearchMessages(summariesMainStream, QUERY, filterMainStream, range);
-    				addSearchMessages(summariesAdditionalStream, QUERY, filterAdditionalStream, range);
+    				addSearchMessages(summariesMainStream, query, filterMainStream, range);
+    				addSearchMessages(summariesAdditionalStream, query, filterAdditionalStream, range);
     			}
     			
     			if(isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
@@ -401,8 +402,8 @@ public class CorrelationCount extends AbstractAlertCondition {
     		String firstField = fields.get(0);
     		nextFields.remove(0);
 
-    		TermsResult termResult = searches.terms(firstField, nextFields, searchLimit, QUERY, filterMainStream, range, Sorting.Direction.DESC);
-    		TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, searchLimit, QUERY, filterAdditionalStream, range, Sorting.Direction.DESC);
+    		TermsResult termResult = searches.terms(firstField, nextFields, searchLimit, query, filterMainStream, range, Sorting.Direction.DESC);
+    		TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, searchLimit, query, filterAdditionalStream, range, Sorting.Direction.DESC);
     		Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStrem);
     		
     		long countFirstMainStream = 0;
