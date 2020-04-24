@@ -21,6 +21,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     public static final String TYPE_NAME = "correlation-count";
 
     private static final String FIELD_TITLE = "title";
+    private static final String FIELD_STREAM = "stream";
     private static final String FIELD_ADDITIONAL_STREAM = "additional_stream";
     private static final String FIELD_ADDITIONAL_THRESHOLD_TYPE = "additional_threshold_type";
     private static final String FIELD_ADDITIONAL_THRESHOLD = "additional_threshold";
@@ -35,6 +36,9 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
 
     @JsonProperty(FIELD_TITLE)
     public abstract ValueReference title();
+
+    @JsonProperty(FIELD_STREAM)
+    public abstract ValueReference stream();
 
     @JsonProperty(FIELD_ADDITIONAL_STREAM)
     public abstract ValueReference additionalStream();
@@ -86,6 +90,9 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_TITLE)
         public abstract Builder title(ValueReference title);
 
+        @JsonProperty(FIELD_STREAM)
+        public abstract Builder stream(ValueReference stream);
+
         @JsonProperty(FIELD_ADDITIONAL_STREAM)
         public abstract Builder additionalStream(ValueReference additionalStream);
 
@@ -126,6 +133,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     public EventProcessorConfig toNativeEntity(Map<String, ValueReference> parameters, Map<EntityDescriptor, Object> nativeEntities) {
         return CorrelationCountProcessorConfig.builder()
                 .title(title().asString(parameters))
+                .stream(stream().asString(parameters))
                 .additionalStream(additionalStream().asString(parameters))
                 .additionalThresholdType(additionalThresholdType().asString(parameters))
                 .additionalThreshold(additionalThreshold())

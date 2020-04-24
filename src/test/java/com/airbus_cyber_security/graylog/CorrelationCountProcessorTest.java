@@ -20,10 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.*;
@@ -89,21 +86,7 @@ public class CorrelationCountProcessorTest {
                 .id("dto-id")
                 .title("Test Correlation")
                 .description("A test correlation event processors")
-                .config(CorrelationCountProcessorConfig.builder()
-                    .title("Test correlation config")
-                    .additionalStream("additional stream")
-                    .additionalThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
-                    .additionalThreshold(threshold)
-                    .mainThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
-                    .mainThreshold(threshold)
-                    .timeRange(2)
-                    .messagesOrder("any order")
-                    .gracePeriod(2)
-                    .messageBacklog(1)
-                    .groupingFields(new HashSet<>())
-                    .searchQuery("*")
-                    .build()
-                )
+                .config(getCorrelationCountProcessorConfig())
                 .alert(false)
                 .keySpec(ImmutableList.of())
                 .notificationSettings(EventNotificationSettings.withGracePeriod(60000))
@@ -128,5 +111,58 @@ public class CorrelationCountProcessorTest {
                 .hasMessageContaining(timeRange.from().toString())
                 .hasMessageContaining(timeRange.to().toString())
                 .isInstanceOf(EventProcessorPreconditionException.class);
+    }
+
+    @Test
+    public void testGetCorrelationCountCheckResult() {
+        final EventDefinitionDto eventDefinition = EventDefinitionDto.builder()
+                .id("dto-id-without-fields")
+                .title("Test Correlation without fields")
+                .description("A test correlation event processors without fields")
+                .config(getCorrelationCountProcessorConfig())
+                .alert(false)
+                .keySpec(ImmutableList.of())
+                .notificationSettings(EventNotificationSettings.withGracePeriod(60000))
+                .priority(1)
+                .build();
+
+        CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinition, eventProcessorDependencyCheck, stateService, searches);
+        //CorrelationCountCheckResult result = eventProcessor.getCorrelationCountCheckResult();
+    }
+
+    private CorrelationCountProcessorConfig getCorrelationCountProcessorConfig() {
+        return CorrelationCountProcessorConfig.builder()
+                .title("Test correlation config")
+                .stream("main stream")
+                .additionalStream("additional stream")
+                .additionalThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
+                .additionalThreshold(threshold)
+                .mainThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
+                .mainThreshold(threshold)
+                .timeRange(2)
+                .messagesOrder("any order")
+                .gracePeriod(2)
+                .messageBacklog(1)
+                .groupingFields(new HashSet<>())
+                .searchQuery("*")
+                .build();
+    }
+
+    private CorrelationCountProcessorConfig getCorrelationCountProcessorConfigWithFields() {
+        return CorrelationCountProcessorConfig.builder()
+                .title("Test correlation config")
+                .stream("main stream")
+                .additionalStream("additional stream")
+                .additionalThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
+                .additionalThreshold(threshold)
+                .mainThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
+                .mainThreshold(threshold)
+                .timeRange(2)
+                .messagesOrder("any order")
+                .gracePeriod(2)
+                .messageBacklog(1)
+                .groupingFields(new HashSet<>(Arrays.asList("field1", "field2")))
+                .searchQuery("*")
+                .build();
     }
 }
