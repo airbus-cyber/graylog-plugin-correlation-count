@@ -20,6 +20,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     public static final String TYPE_NAME = "correlation-count";
 
     private static final String FIELD_TITLE = "title";
+    private static final String FIELD_STREAM = "stream";
     private static final String FIELD_ADDITIONAL_STREAM = "additional_stream";
     private static final String FIELD_ADDITIONAL_THRESHOLD_TYPE = "additional_threshold_type";
     private static final String FIELD_ADDITIONAL_THRESHOLD = "additional_threshold";
@@ -34,6 +35,9 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_TITLE)
     public abstract String title();
+
+    @JsonProperty(FIELD_STREAM)
+    public abstract String stream();
 
     @JsonProperty(FIELD_ADDITIONAL_STREAM)
     public abstract String additionalStream();
@@ -85,6 +89,9 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_TITLE)
         public abstract Builder title(String title);
 
+        @JsonProperty(FIELD_STREAM)
+        public abstract Builder stream(String stream);
+
         @JsonProperty(FIELD_ADDITIONAL_STREAM)
         public abstract Builder additionalStream(String additionalStream);
 
@@ -127,6 +134,9 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         if(title() == null || title().isEmpty()) {
             validationResult.addError(FIELD_TITLE, "Title is mandatory");
         }
+        if(stream() == null || stream().isEmpty()) {
+            validationResult.addError(FIELD_STREAM, "Stream is mandatory");
+        }
         if(additionalStream() == null || additionalStream().isEmpty()) {
             validationResult.addError(FIELD_ADDITIONAL_STREAM, "Additional stream is mandatory");
         }
@@ -161,6 +171,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     public EventProcessorConfigEntity toContentPackEntity(EntityDescriptorIds entityDescriptorIds) {
         return CorrelationCountProcessorConfigEntity.builder()
                 .title(ValueReference.of(title()))
+                .stream(ValueReference.of(stream()))
                 .additionalStream(ValueReference.of(additionalStream()))
                 .additionalThresholdType(ValueReference.of(additionalThresholdType()))
                 .additionalThreshold(additionalThreshold())

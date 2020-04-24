@@ -41,6 +41,10 @@ const CorrelationCountForm = createReactClass({
         this.propagateChange(name, FormsUtils.getValueFromInput(event.target));
     },
 
+    handleStreamChange(nextValue) {
+        this.propagateChange('stream', nextValue);
+    },
+
     handleAdditionalStreamChange(nextValue) {
         this.propagateChange('additional_stream', nextValue);
     },
@@ -63,7 +67,7 @@ const CorrelationCountForm = createReactClass({
         }
     },
 
-    availableAdditionalStreams() {
+    availableStreams() {
         return [
             {value: 'ALL_MESSAGES', label: 'All messages'},
         ];
@@ -106,13 +110,28 @@ const CorrelationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.title)}
                     onChange={this.handleChange}
                 />
+                <FormGroup controlId="stream"
+                           validationState={validation.errors.stream ? 'error' : null}>
+                    <ControlLabel>Stream</ControlLabel>
+                    <Select id="stream"
+                            placeholder="Select Stream"
+                            required
+                            options={this.availableStreams()}
+                            matchProp="value"
+                            value={lodash.defaultTo(eventDefinition.stream)}
+                            onChange={this.handleStreamChange}
+                    />
+                    <HelpBlock>
+                        Select streams the search should include. Searches in all streams if empty.
+                    </HelpBlock>
+                </FormGroup>
                 <FormGroup controlId="additional_stream"
                            validationState={validation.errors.additional_stream ? 'error' : null}>
                     <ControlLabel>Additional Stream</ControlLabel>
                     <Select id="additional_stream"
                             placeholder="Select Additional Stream"
                             required
-                            options={this.availableAdditionalStreams()}
+                            options={this.availableStreams()}
                             matchProp="value"
                             value={lodash.defaultTo(eventDefinition.additional_stream)}
                             onChange={this.handleAdditionalStreamChange}
@@ -128,7 +147,7 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={this.availableThresholdTypes()}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.additional_threshold_type)}
+                            value={lodash.defaultTo(eventDefinition.additional_threshold_type, 'more than')}
                             onChange={this.handleAdditionalThresholdTypeChange}
                     />
                     <HelpBlock>
@@ -141,7 +160,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="additional_threshold"
                     help="Value which triggers an alert if crossed"
-                    value={lodash.defaultTo(eventDefinition.additional_threshold)}
+                    value={lodash.defaultTo(eventDefinition.additional_threshold, 0)}
                     onChange={this.handleChange}
                 />
                 <FormGroup controlId="main_threshold_type"
@@ -151,7 +170,7 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={this.availableThresholdTypes()}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.main_threshold_type)}
+                            value={lodash.defaultTo(eventDefinition.main_threshold_type, 'more than')}
                             onChange={this.handleMainThresholdTypeChange}
                     />
                     <HelpBlock>
@@ -164,7 +183,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="main_threshold"
                     help="Value which triggers an alert if crossed"
-                    value={lodash.defaultTo(eventDefinition.main_threshold)}
+                    value={lodash.defaultTo(eventDefinition.main_threshold, 0)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Time Range</ControlLabel>
@@ -173,7 +192,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="time_range"
                     help="Evaluate the condition for all messages received in the given number of minutes"
-                    value={lodash.defaultTo(eventDefinition.time_range)}
+                    value={lodash.defaultTo(eventDefinition.time_range, 5)}
                     onChange={this.handleChange}
                 />
                 <FormGroup controlId="messages_order"
@@ -183,7 +202,7 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={this.availableMessagesOrder()}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.messages_order)}
+                            value={lodash.defaultTo(eventDefinition.messages_order, 'any order')}
                             onChange={this.handleMessagesOrderChange}
                     />
                     <HelpBlock>
@@ -196,7 +215,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="grace_period"
                     help="Number of minutes to wait after an alert is resolved, to trigger another alert"
-                    value={lodash.defaultTo(eventDefinition.grace_period)}
+                    value={lodash.defaultTo(eventDefinition.grace_period, 0)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Message Backlog</ControlLabel>
@@ -205,7 +224,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="message_backlog"
                     help="The number of message to be included in alert notifications"
-                    value={lodash.defaultTo(eventDefinition.message_backlog)}
+                    value={lodash.defaultTo(eventDefinition.message_backlog, 0)}
                     onChange={this.handleChange}
                 />
                 <FormGroup controlId="grouping_fields">
@@ -237,7 +256,7 @@ const CorrelationCountForm = createReactClass({
                     type="text"
                     name="search_query"
                     help="Query string that should be used to filter messages in the stream"
-                    value={lodash.defaultTo(eventDefinition.search_query)}
+                    value={lodash.defaultTo(eventDefinition.search_query, '*')}
                     onChange={this.handleChange}
                 />
                 <div>

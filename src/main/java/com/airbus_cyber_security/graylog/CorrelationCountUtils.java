@@ -3,6 +3,7 @@ package com.airbus_cyber_security.graylog;
 import com.airbus_cyber_security.graylog.config.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import org.apache.logging.log4j.core.config.Order;
 import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
@@ -64,6 +65,15 @@ public class CorrelationCountUtils {
 
         public String getDescription() {
             return description;
+        }
+
+        public static OrderType fromString(String type) {
+            for (OrderType orderType : OrderType.values()) {
+                if (orderType.description.equals(type)) {
+                    return orderType;
+                }
+            }
+            return null;
         }
     }
 
@@ -144,7 +154,7 @@ public class CorrelationCountUtils {
     @VisibleForTesting
     protected static boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream, CorrelationCountProcessorConfig config) {
         int countFirstStream = summariesFirstStream.size();
-        CorrelationCountUtils.OrderType messagesOrder = CorrelationCountUtils.OrderType.valueOf(config.messagesOrder());
+        CorrelationCountUtils.OrderType messagesOrder = CorrelationCountUtils.OrderType.fromString(config.messagesOrder());
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
@@ -170,7 +180,7 @@ public class CorrelationCountUtils {
     private static String getResultDescription(long countMainStream, long countAdditionalStream, CorrelationCountProcessorConfig config) {
 
         String msgCondition;
-        if(CorrelationCountUtils.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.ANY)) {
+        if(CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.ANY)) {
             msgCondition = "and";
         } else {
             msgCondition = config.messagesOrder();//messagesOrder.getDescription();
@@ -190,8 +200,8 @@ public class CorrelationCountUtils {
 
     private static boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
         boolean ruleTriggered = true;
-        if(CorrelationCountUtils.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.BEFORE)
-                || CorrelationCountUtils.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.AFTER)) {
+        if(CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.BEFORE)
+                || CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.AFTER)) {
             ruleTriggered = checkOrderSecondStream(summariesMainStream, summariesAdditionalStream, config);
         }
         return ruleTriggered;

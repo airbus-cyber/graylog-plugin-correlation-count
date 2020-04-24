@@ -1,6 +1,7 @@
 package com.airbus_cyber_security.graylog;
 
 import com.airbus_cyber_security.graylog.config.CorrelationCountProcessorConfig;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
 import org.graylog.events.event.EventFactory;
@@ -48,13 +49,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        CorrelationCountCheckResult correlationCountCheckResult;
-        if (config.groupingFields().isEmpty()){
-            correlationCountCheckResult = CorrelationCountUtils.runCheckCorrelationCount(searches, config);
-        }
-        else {
-            correlationCountCheckResult = CorrelationCountUtils.runCheckCorrelationWithFields(searches, config);
-        }
+        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(searches, config);
 
         if (correlationCountCheckResult != null) {
             final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), correlationCountCheckResult.getResultDescription());
@@ -71,16 +66,24 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> consumer, long limit) throws EventProcessorException {
-        CorrelationCountCheckResult correlationCountCheckResult;
-        if (config.groupingFields().isEmpty()){
-            correlationCountCheckResult = CorrelationCountUtils.runCheckCorrelationCount(searches, config);
+        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(searches, config);
+
+        List<MessageSummary> messageSummaries = correlationCountCheckResult.getMessageSummaries();
+        if (correlationCountCheckResult != null) {
+            if(correlationCountCheckResult.getMessageSummaries().size() > limit) {
+                messageSummaries = correlationCountCheckResult.getMessageSummaries().subList(0, Math.toIntExact(limit));
+            }
+            consumer.accept(messageSummaries);
+        }
+    }
+
+    @VisibleForTesting
+    CorrelationCountCheckResult getCorrelationCountCheckResult(Searches searches, CorrelationCountProcessorConfig config) {
+        if(config.groupingFields().isEmpty()) {
+            return CorrelationCountUtils.runCheckCorrelationCount(searches, config);
         }
         else {
-            correlationCountCheckResult = CorrelationCountUtils.runCheckCorrelationWithFields(searches, config);
-        }
-
-        if (correlationCountCheckResult != null) {
-            consumer.accept(correlationCountCheckResult.getMessageSummaries());
+            return CorrelationCountUtils.runCheckCorrelationWithFields(searches, config);
         }
     }
 }
