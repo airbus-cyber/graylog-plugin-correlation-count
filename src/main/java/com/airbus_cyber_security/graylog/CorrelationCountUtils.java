@@ -211,7 +211,7 @@ public class CorrelationCountUtils {
         try {
             final RelativeRange relativeRange = RelativeRange.create(config.timeRange() * 60);
             final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
-            final String filterMainStream = HEADER_STREAM + "stream_test"; //HEADER_STREAM + stream.getId();//TODO
+            final String filterMainStream = HEADER_STREAM + config.stream();
             final CountResult resultMainStream = searches.count(config.searchQuery(), range, filterMainStream);
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
             final CountResult resultAdditionalStream = searches.count(config.searchQuery(), range, filterAdditionalStream);
@@ -268,7 +268,7 @@ public class CorrelationCountUtils {
         try {
             final RelativeRange relativeRange = RelativeRange.create(config.timeRange() * 60);
             final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
-            final String filterMainStream = HEADER_STREAM + "stream_test"; //HEADER_STREAM + stream.getId();//TODO
+            final String filterMainStream = HEADER_STREAM + config.stream();
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
             boolean ruleTriggered=false;
             Integer backlogSize = config.messageBacklog();
