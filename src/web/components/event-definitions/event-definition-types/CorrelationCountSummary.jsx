@@ -22,6 +22,10 @@ class CorrelationCountSummary extends React.Component {
                     <td>{eventDefinition.title || 'No additional stream for this notification.'}</td>
                 </tr>
                 <tr>
+                    <td>Stream:</td>
+                    <td>{eventDefinition.stream || 'No stream for this notification.'}</td>
+                </tr>
+                <tr>
                     <td>Additional Stream:</td>
                     <td>{eventDefinition.additional_stream || 'No additional stream for this notification.'}</td>
                 </tr>
