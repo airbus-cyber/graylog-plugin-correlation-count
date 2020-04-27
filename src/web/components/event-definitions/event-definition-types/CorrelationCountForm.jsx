@@ -4,10 +4,15 @@ import PropTypes from 'prop-types';
 import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
 import naturalSort from 'javascript-natural-sort';
+import { naturalSortIgnoreCase } from 'util/SortUtils';
 
 import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
 import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
+
+import CombinedProvider from 'injection/CombinedProvider';
+
+const { StreamsStore } = CombinedProvider.get('Streams');
 
 const CorrelationCountForm = createReactClass({
 
@@ -15,21 +20,24 @@ const CorrelationCountForm = createReactClass({
         eventDefinition: PropTypes.object.isRequired,
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
+        streams: PropTypes.array.isRequired,
         fields: PropTypes.array.isRequired,
     },
 
-    /*propagateChange(key, value) {
-        const { config, onChange } = this.props;
-        const nextConfig = lodash.cloneDeep(config);
-        nextConfig[key] = value;
-        onChange(nextConfig);
+    formatStreamIds() {
+        const { streams } = this.props;
+
+        return streams.map(s => s.id)
+            .map(streamId => streams.find(s => s.id === streamId) || streamId)
+            .map((streamOrId) => {
+                const stream = (typeof streamOrId === 'object' ? streamOrId : { title: streamOrId, id: streamOrId });
+                return {
+                    label: stream.title,
+                    value: stream.id,
+                };
+            })
+            .sort((s1, s2) => naturalSortIgnoreCase(s1.label, s2.label));
     },
-    propagateChange(key, value) {
-        const { eventDefinition, onChange } = this.props;
-        const config = lodash.cloneDeep(eventDefinition.config);
-        config[key] = value;
-        onChange('config', config);
-    },*/
 
     propagateChange(key, value) {
         const { onChange } = this.props;
@@ -67,12 +75,6 @@ const CorrelationCountForm = createReactClass({
         }
     },
 
-    availableStreams() {
-        return [
-            {value: 'ALL_MESSAGES', label: 'All messages'},
-        ];
-    },
-
     availableThresholdTypes() {
         return [
             {value: 'MORE_THAN', label: 'more than'},
@@ -94,6 +96,9 @@ const CorrelationCountForm = createReactClass({
 
     render() {
         const { eventDefinition, validation, fields } = this.props;
+
+        const formattedStreams = this.formatStreamIds();
+
         let formattedOptions = null;
         if(fields) {
             formattedOptions = Object.keys(fields).map(key => this._formatOption(fields[key], fields[key]))
@@ -116,7 +121,7 @@ const CorrelationCountForm = createReactClass({
                     <Select id="stream"
                             placeholder="Select Stream"
                             required
-                            options={this.availableStreams()}
+                            options={formattedStreams}
                             matchProp="value"
                             value={lodash.defaultTo(eventDefinition.stream)}
                             onChange={this.handleStreamChange}
@@ -131,7 +136,7 @@ const CorrelationCountForm = createReactClass({
                     <Select id="additional_stream"
                             placeholder="Select Additional Stream"
                             required
-                            options={this.availableStreams()}
+                            options={formattedStreams}
                             matchProp="value"
                             value={lodash.defaultTo(eventDefinition.additional_stream)}
                             onChange={this.handleAdditionalStreamChange}
