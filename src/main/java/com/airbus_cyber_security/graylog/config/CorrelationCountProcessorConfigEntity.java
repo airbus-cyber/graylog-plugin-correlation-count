@@ -20,22 +20,20 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
 
     public static final String TYPE_NAME = "correlation-count";
 
-    private static final String FIELD_TITLE = "title";
     private static final String FIELD_STREAM = "stream";
     private static final String FIELD_ADDITIONAL_STREAM = "additional_stream";
     private static final String FIELD_ADDITIONAL_THRESHOLD_TYPE = "additional_threshold_type";
     private static final String FIELD_ADDITIONAL_THRESHOLD = "additional_threshold";
-    private static final String FIELD_MAIN_THRESHOLD_TYPE = "main_threshold_type";
-    private static final String FIELD_MAIN_THRESHOLD = "main_threshold";
+    private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
+    private static final String FIELD_THRESHOLD = "threshold";
     private static final String FIELD_TIME_RANGE = "time_range";
     private static final String FIELD_MESSAGES_ORDER = "messages_order";
     private static final String FIELD_GRACE_PERIOD = "grace_period";
     private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
+    private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
-
-    @JsonProperty(FIELD_TITLE)
-    public abstract ValueReference title();
+    private static final String FIELD_REPEAT_NOTIFICATIONS = "repeat_notifications";
 
     @JsonProperty(FIELD_STREAM)
     public abstract ValueReference stream();
@@ -49,11 +47,11 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     @JsonProperty(FIELD_ADDITIONAL_THRESHOLD)
     public abstract int additionalThreshold();
 
-    @JsonProperty(FIELD_MAIN_THRESHOLD_TYPE)
-    public abstract ValueReference mainThresholdType();
+    @JsonProperty(FIELD_THRESHOLD_TYPE)
+    public abstract ValueReference thresholdType();
 
-    @JsonProperty(FIELD_MAIN_THRESHOLD)
-    public abstract int mainThreshold();
+    @JsonProperty(FIELD_THRESHOLD)
+    public abstract int threshold();
 
     @JsonProperty(FIELD_TIME_RANGE)
     public abstract int timeRange();
@@ -70,8 +68,14 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     @JsonProperty(FIELD_GROUPING_FIELDS)
     public abstract Set<String> groupingFields();
 
+    @JsonProperty(FIELD_COMMENT)
+    public abstract ValueReference comment();
+
     @JsonProperty(FIELD_SEARCH_QUERY)
     public abstract ValueReference searchQuery();
+
+    @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
+    public abstract boolean repeatNotifications();
 
     public static Builder builder() {
         return Builder.create();
@@ -87,9 +91,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
                     .type(TYPE_NAME);
         }
 
-        @JsonProperty(FIELD_TITLE)
-        public abstract Builder title(ValueReference title);
-
         @JsonProperty(FIELD_STREAM)
         public abstract Builder stream(ValueReference stream);
 
@@ -102,11 +103,11 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_ADDITIONAL_THRESHOLD)
         public abstract Builder additionalThreshold(int additionalThreshold);
 
-        @JsonProperty(FIELD_MAIN_THRESHOLD_TYPE)
-        public abstract Builder mainThresholdType(ValueReference mainThresholdType);
+        @JsonProperty(FIELD_THRESHOLD_TYPE)
+        public abstract Builder thresholdType(ValueReference thresholdType);
 
-        @JsonProperty(FIELD_MAIN_THRESHOLD)
-        public abstract Builder mainThreshold(int mainThreshold);
+        @JsonProperty(FIELD_THRESHOLD)
+        public abstract Builder threshold(int threshold);
 
         @JsonProperty(FIELD_TIME_RANGE)
         public abstract Builder timeRange(int timeRange);
@@ -123,8 +124,14 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_GROUPING_FIELDS)
         public abstract Builder groupingFields(Set<String> groupingFields);
 
+        @JsonProperty(FIELD_COMMENT)
+        public abstract Builder comment(ValueReference comment);
+
         @JsonProperty(FIELD_SEARCH_QUERY)
         public abstract Builder searchQuery(ValueReference searchQuery);
+
+        @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
+        public abstract Builder repeatNotifications(boolean repeatNotifications);
 
         public abstract CorrelationCountProcessorConfigEntity build();
     }
@@ -132,19 +139,20 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     @Override
     public EventProcessorConfig toNativeEntity(Map<String, ValueReference> parameters, Map<EntityDescriptor, Object> nativeEntities) {
         return CorrelationCountProcessorConfig.builder()
-                .title(title().asString(parameters))
                 .stream(stream().asString(parameters))
                 .additionalStream(additionalStream().asString(parameters))
                 .additionalThresholdType(additionalThresholdType().asString(parameters))
                 .additionalThreshold(additionalThreshold())
-                .mainThresholdType(mainThresholdType().asString(parameters))
-                .mainThreshold(mainThreshold())
+                .thresholdType(thresholdType().asString(parameters))
+                .threshold(threshold())
                 .timeRange(timeRange())
                 .messagesOrder(messagesOrder().asString(parameters))
                 .gracePeriod(gracePeriod())
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
+                .comment(comment().asString(parameters))
                 .searchQuery(searchQuery().asString(parameters))
+                .repeatNotifications(repeatNotifications())
                 .build();
     }
 }
