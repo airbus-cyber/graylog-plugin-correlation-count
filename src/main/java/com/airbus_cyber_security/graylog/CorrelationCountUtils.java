@@ -3,7 +3,6 @@ package com.airbus_cyber_security.graylog;
 import com.airbus_cyber_security.graylog.config.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import org.apache.logging.log4j.core.config.Order;
 import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
@@ -77,45 +76,6 @@ public class CorrelationCountUtils {
         }
     }
 
-    /*public interface Factory extends AlertCondition.Factory {
-        @Override
-        CorrelationCountUtils create(Stream stream,
-                                @Assisted("id") String id,
-                                DateTime createdAt,
-                                @Assisted("userid") String creatorUserId,
-                                Map<String, Object> parameters,
-                                @Assisted("title") @Nullable String title);
-
-        @Override
-        CorrelationCountConfig config();
-
-        @Override
-        CorrelationCount.Descriptor descriptor();
-    }*/
-
-
-
-/*
-    @AssistedInject
-    public CorrelationCountUtils(Searches searches,
-                            @Assisted Stream stream,
-                            @Nullable @Assisted("id") String id,
-                            @Assisted DateTime createdAt,
-                            @Assisted("userid") String creatorUserId,
-                            @Assisted Map<String, Object> parameters,
-                            @Assisted("title") @Nullable String title) {
-        super(stream, id, CorrelationCountUtils.class.getCanonicalName(), createdAt, creatorUserId, parameters, title);
-    }*/
-
-    /*@Override
-    public String getDescription() {
-        return "time: " + time
-                + ", main_threshold_type: " + thresholdType.toString().toLowerCase(Locale.ENGLISH)
-                + ", main_threshold: " + threshold
-                + ", grace: " + grace
-                + ", repeat notifications: " + repeatNotifications;
-    }*/
-
     private static boolean isTriggered(CorrelationCountUtils.ThresholdType thresholdType, int threshold, long count) {
         return (((thresholdType == CorrelationCountUtils.ThresholdType.MORE) && (count > threshold)) ||
                 ((thresholdType == CorrelationCountUtils.ThresholdType.LESS) && (count < threshold)));
@@ -168,7 +128,7 @@ public class CorrelationCountUtils {
                     break;
                 }
             }
-            if(isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.mainThresholdType()),config.mainThreshold(),countFirstStream)
+            if(isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.thresholdType()),config.threshold(),countFirstStream)
                     && isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.additionalThresholdType()),config.additionalThreshold(),countSecondStream)) {
                 return true;
             }
@@ -183,13 +143,13 @@ public class CorrelationCountUtils {
         if(CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.ANY)) {
             msgCondition = "and";
         } else {
-            msgCondition = config.messagesOrder();//messagesOrder.getDescription();
+            msgCondition = config.messagesOrder();
         }
 
         String resultDescription = "The additional stream had " + countAdditionalStream + " messages with trigger condition "
                 + config.additionalThresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.additionalThreshold()
                 + " messages " + msgCondition + " the main stream had " + countMainStream + " messages with trigger condition "
-                + config.mainThresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.mainThreshold() + " messages in the last " + config.timeRange() + " minutes";
+                + config.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.threshold() + " messages in the last " + config.timeRange() + " minutes";
 
         if(!config.groupingFields().isEmpty()) {
             resultDescription = resultDescription+" with the same value of the fields " + String.join(", ",config.groupingFields());
@@ -216,10 +176,7 @@ public class CorrelationCountUtils {
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
             final CountResult resultAdditionalStream = searches.count(config.searchQuery(), range, filterAdditionalStream);
 
-            //LOG.debug("Alert check <{}> result: [{}]", id, resultAdditionalStream.count());
-            LOG.debug("Alert check <{}> result: [{}]", "id_test", resultAdditionalStream.count());
-
-            if(isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.mainThresholdType()), config.mainThreshold(), resultMainStream.count()) &&
+            if(isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
                     isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
                 final List<MessageSummary> summaries = Lists.newArrayList();
                 final List<MessageSummary> summariesMainStream = Lists.newArrayList();
@@ -237,11 +194,9 @@ public class CorrelationCountUtils {
                     }
                     String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count(), config);
                     return new CorrelationCountCheckResult(resultDescription, summaries);
-                    //return new AbstractAlertCondition.CheckResult(true, this, resultDescription, Tools.nowUTC(), summaries);
                 }
             }
             return new CorrelationCountCheckResult("", new ArrayList<>());
-            //return new AbstractAlertCondition.NegativeCheckResult();
         } catch (InvalidRangeParametersException e) {
             LOG.error("Invalid timerange.", e);
             return null;
@@ -295,7 +250,7 @@ public class CorrelationCountUtils {
                 String matchedFieldValue = matchedTerm.getKey();
                 Long[] counts = matchedTerm.getValue();
 
-                if(isTriggered(CorrelationCountUtils.ThresholdType.valueOf(config.mainThresholdType()),config.mainThreshold(),counts[0])
+                if(isTriggered(CorrelationCountUtils.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
                         && isTriggered(CorrelationCountUtils.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
                     final List<MessageSummary> summariesMainStream = Lists.newArrayList();
                     final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
@@ -325,10 +280,8 @@ public class CorrelationCountUtils {
             if(ruleTriggered) {
                 String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream, config);
                 return new CorrelationCountCheckResult(resultDescription, summaries);
-                //return new AbstractAlertCondition.CheckResult(true, this, resultDescription, Tools.nowUTC(), summaries);
             }
             return new CorrelationCountCheckResult("", new ArrayList<>());
-            //return new AbstractAlertCondition.NegativeCheckResult();
         } catch (InvalidRangeParametersException e) {
             LOG.error("Invalid timerange.", e);
             return null;

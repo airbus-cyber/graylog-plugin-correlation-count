@@ -10,10 +10,6 @@ import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
 import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
 
-import CombinedProvider from 'injection/CombinedProvider';
-
-const { StreamsStore } = CombinedProvider.get('Streams');
-
 const CorrelationCountForm = createReactClass({
 
     propTypes: {
@@ -40,8 +36,10 @@ const CorrelationCountForm = createReactClass({
     },
 
     propagateChange(key, value) {
-        const { onChange } = this.props;
-        onChange(key, value);
+        const { eventDefinition, onChange } = this.props;
+        const config = lodash.cloneDeep(eventDefinition.config);
+        config[key] = value;
+        onChange('config', config);
     },
 
     handleChange(event) {
@@ -61,8 +59,8 @@ const CorrelationCountForm = createReactClass({
         this.propagateChange('additional_threshold_type', nextValue);
     },
 
-    handleMainThresholdTypeChange(nextValue) {
-        this.propagateChange('main_threshold_type', nextValue);
+    handleThresholdTypeChange(nextValue) {
+        this.propagateChange('threshold_type', nextValue);
     },
 
     handleMessagesOrderChange(nextValue) {
@@ -77,16 +75,16 @@ const CorrelationCountForm = createReactClass({
 
     availableThresholdTypes() {
         return [
-            {value: 'MORE_THAN', label: 'more than'},
-            {value: 'LESS_THAN', label: 'less than'},
+            {value: 'MORE', label: 'more than'},
+            {value: 'LESS', label: 'less than'},
         ];
     },
 
     availableMessagesOrder() {
         return [
-            {value: 'ADDITIONAL_BEFORE_MAIN', label: 'additional messages before main messages'},
-            {value: 'ADDITIONAL_AFTER_MAIN', label: 'additional messages after main messages'},
-            {value: 'ANY_ORDER', label: 'any order'},
+            {value: 'BEFORE', label: 'additional messages before main messages'},
+            {value: 'AFTER', label: 'additional messages after main messages'},
+            {value: 'ANY', label: 'any order'},
         ]
     },
 
@@ -106,15 +104,6 @@ const CorrelationCountForm = createReactClass({
         }
         return (
             <React.Fragment>
-                <ControlLabel>Title</ControlLabel>
-                <Input
-                    id="title"
-                    type="text"
-                    name="title"
-                    help="The alert condition title"
-                    value={lodash.defaultTo(eventDefinition.title)}
-                    onChange={this.handleChange}
-                />
                 <FormGroup controlId="stream"
                            validationState={validation.errors.stream ? 'error' : null}>
                     <ControlLabel>Stream</ControlLabel>
@@ -123,13 +112,36 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={formattedStreams}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.stream)}
+                            value={lodash.defaultTo(eventDefinition.stream, eventDefinition.config.stream)}
                             onChange={this.handleStreamChange}
                     />
                     <HelpBlock>
                         Select streams the search should include. Searches in all streams if empty.
                     </HelpBlock>
                 </FormGroup>
+                <FormGroup controlId="threshold_type"
+                           validationState={validation.errors.threshold_type ? 'error' : null}>
+                    <ControlLabel>Threshold Type</ControlLabel>
+                    <Select id="threshold_type"
+                            required
+                            options={this.availableThresholdTypes()}
+                            matchProp="value"
+                            value={lodash.defaultTo(eventDefinition.threshold_type, eventDefinition.config.threshold_type)}
+                            onChange={this.handleThresholdTypeChange}
+                    />
+                    <HelpBlock>
+                        Select condition to trigger alert: when there are more or less messages in the main stream than the threshold
+                    </HelpBlock>
+                </FormGroup>
+                <ControlLabel>Threshold</ControlLabel>
+                <Input
+                    id="threshold"
+                    type="number"
+                    name="threshold"
+                    help="Value which triggers an alert if crossed"
+                    value={lodash.defaultTo(eventDefinition.threshold, eventDefinition.config.threshold)}
+                    onChange={this.handleChange}
+                />
                 <FormGroup controlId="additional_stream"
                            validationState={validation.errors.additional_stream ? 'error' : null}>
                     <ControlLabel>Additional Stream</ControlLabel>
@@ -138,7 +150,7 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={formattedStreams}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.additional_stream)}
+                            value={lodash.defaultTo(eventDefinition.additional_stream, eventDefinition.config.additional_stream)}
                             onChange={this.handleAdditionalStreamChange}
                     />
                     <HelpBlock>
@@ -152,7 +164,7 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={this.availableThresholdTypes()}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.additional_threshold_type, 'more than')}
+                            value={lodash.defaultTo(eventDefinition.additional_threshold_type, eventDefinition.config.additional_threshold_type)}
                             onChange={this.handleAdditionalThresholdTypeChange}
                     />
                     <HelpBlock>
@@ -165,30 +177,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="additional_threshold"
                     help="Value which triggers an alert if crossed"
-                    value={lodash.defaultTo(eventDefinition.additional_threshold, 0)}
-                    onChange={this.handleChange}
-                />
-                <FormGroup controlId="main_threshold_type"
-                           validationState={validation.errors.main_threshold_type ? 'error' : null}>
-                    <ControlLabel>Main Threshold Type</ControlLabel>
-                    <Select id="main_threshold_type"
-                            required
-                            options={this.availableThresholdTypes()}
-                            matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.main_threshold_type, 'more than')}
-                            onChange={this.handleMainThresholdTypeChange}
-                    />
-                    <HelpBlock>
-                        Select condition to trigger alert: when there are more or less messages in the main stream than the threshold
-                    </HelpBlock>
-                </FormGroup>
-                <ControlLabel>Main Threshold</ControlLabel>
-                <Input
-                    id="main_threshold"
-                    type="number"
-                    name="main_threshold"
-                    help="Value which triggers an alert if crossed"
-                    value={lodash.defaultTo(eventDefinition.main_threshold, 0)}
+                    value={lodash.defaultTo(eventDefinition.additional_threshold, eventDefinition.config.additional_threshold)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Time Range</ControlLabel>
@@ -197,7 +186,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="time_range"
                     help="Evaluate the condition for all messages received in the given number of minutes"
-                    value={lodash.defaultTo(eventDefinition.time_range, 5)}
+                    value={lodash.defaultTo(eventDefinition.time_range, eventDefinition.config.time_range)}
                     onChange={this.handleChange}
                 />
                 <FormGroup controlId="messages_order"
@@ -207,7 +196,7 @@ const CorrelationCountForm = createReactClass({
                             required
                             options={this.availableMessagesOrder()}
                             matchProp="value"
-                            value={lodash.defaultTo(eventDefinition.messages_order, 'any order')}
+                            value={lodash.defaultTo(eventDefinition.messages_order, eventDefinition.config.messages_order)}
                             onChange={this.handleMessagesOrderChange}
                     />
                     <HelpBlock>
@@ -220,7 +209,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="grace_period"
                     help="Number of minutes to wait after an alert is resolved, to trigger another alert"
-                    value={lodash.defaultTo(eventDefinition.grace_period, 0)}
+                    value={lodash.defaultTo(eventDefinition.grace_period, eventDefinition.config.grace_period)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Message Backlog</ControlLabel>
@@ -229,7 +218,7 @@ const CorrelationCountForm = createReactClass({
                     type="number"
                     name="message_backlog"
                     help="The number of message to be included in alert notifications"
-                    value={lodash.defaultTo(eventDefinition.message_backlog, 0)}
+                    value={lodash.defaultTo(eventDefinition.message_backlog, eventDefinition.config.message_backlog)}
                     onChange={this.handleChange}
                 />
                 <FormGroup controlId="grouping_fields">
@@ -252,7 +241,7 @@ const CorrelationCountForm = createReactClass({
                     type="text"
                     name="comment"
                     help="Comment about the configuration"
-                    value={lodash.defaultTo(eventDefinition.comment)}
+                    value={lodash.defaultTo(eventDefinition.comment, eventDefinition.config.comment)}
                     onChange={this.handleChange}
                 />
                 <ControlLabel>Search Query <small className="text-muted">(Optional)</small></ControlLabel>
@@ -261,15 +250,15 @@ const CorrelationCountForm = createReactClass({
                     type="text"
                     name="search_query"
                     help="Query string that should be used to filter messages in the stream"
-                    value={lodash.defaultTo(eventDefinition.search_query, '*')}
+                    value={lodash.defaultTo(eventDefinition.search_query, eventDefinition.config.search_query)}
                     onChange={this.handleChange}
                 />
                 <div>
                     <Input
-                        id="repeat_notification"
+                        id="repeat_notifications"
                         type="checkbox"
-                        name="repeat_notification"
-                        value={lodash.defaultTo(eventDefinition.repeat_notification)}
+                        name="repeat_notifications"
+                        checked={eventDefinition.config.repeat_notifications}
                         onChange={this.handleChange}
                         style={{position: 'absolute'}}
                     />
