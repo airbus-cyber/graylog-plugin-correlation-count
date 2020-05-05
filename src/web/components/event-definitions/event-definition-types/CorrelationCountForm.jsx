@@ -228,7 +228,7 @@ const CorrelationCountForm = createReactClass({
                                  required
                                  options={formattedOptions}
                                  matchProp="value"
-                                 value={Array.isArray(lodash.defaultTo(eventDefinition.grouping_fields)) ? lodash.defaultTo(eventDefinition.grouping_fields).join(',') : ''}
+                                 value={Array.isArray(lodash.defaultTo(eventDefinition.grouping_fields)) ? lodash.defaultTo(eventDefinition.grouping_fields).join(',') : eventDefinition.config.grouping_fields.join(',')}
                                  onChange={this.handleFieldsChange('grouping_fields')}
                     />
                     <HelpBlock>
