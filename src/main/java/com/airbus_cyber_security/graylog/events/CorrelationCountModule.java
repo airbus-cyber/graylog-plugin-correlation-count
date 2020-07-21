@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.airbus_cyber_security.graylog.CorrelationCountProcessor;
 import com.airbus_cyber_security.graylog.CorrelationCountProcessorParameters;
-import com.airbus_cyber_security.graylog.config.CorrelationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import org.graylog.events.processor.EventProcessorEngine;
 import org.graylog.events.processor.EventProcessorExecutionMetrics;
 import org.graylog2.plugin.PluginConfigBean;
