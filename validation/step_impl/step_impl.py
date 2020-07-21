@@ -3,10 +3,8 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from step_impl.graylog_server import GraylogServer
-
-def focus_is_on_username_input(driver):
-    return driver.switch_to.active_element.get_attribute('id') == 'username'
 
 @before_suite
 def init():
@@ -27,11 +25,20 @@ def start_graylog_server():
 
 @step("Login as <login>/<password>")
 def login(login, password):
-    driver.get('http://127.0.0.1:9000/')
-    WebDriverWait(driver, 10).until(focus_is_on_username_input)
-    driver.switch_to.active_element.send_keys(login + Keys.TAB)
-    driver.switch_to.active_element.send_keys(password + Keys.TAB)
-    driver.switch_to.active_element.send_keys(Keys.ENTER)
+    driver.get(server.URL)
+    fill_input('username', login)
+    fill_input('password', password)
+    # note: could alternatively by send_keys(Keys.ENTER)
+    driver.find_element_by_css_selector('button[type=submit]').click()
+
+@step("Go to page <page_name>")
+def go_to_page(page_name):
+    driver.get(server.URL + page_name)
+
+@step("Fill <identifier> input with <value>")
+def fill_input(identifier, value):
+    WebDriverWait(driver, 10).until(presence_of_element_located([By.ID, identifier]))
+    driver.find_element_by_id(identifier).send_keys(value)
 
 @step("Stop Graylog server")
 def stop_graylog_server():
