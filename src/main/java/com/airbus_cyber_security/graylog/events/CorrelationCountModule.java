@@ -3,11 +3,10 @@ package com.airbus_cyber_security.graylog.events;
 import java.util.Collections;
 import java.util.Set;
 
+import com.airbus_cyber_security.graylog.events.contentpack.entities.CorrelationCountProcessorConfigEntity;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessor;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorParameters;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
-import org.graylog.events.processor.EventProcessorEngine;
-import org.graylog.events.processor.EventProcessorExecutionMetrics;
 import org.graylog2.plugin.PluginConfigBean;
 import org.graylog2.plugin.PluginModule;
 
@@ -24,11 +23,9 @@ public class CorrelationCountModule extends PluginModule {
 
     @Override
     protected void configure() {
-        /*addAlertCondition(CorrelationCount.class.getCanonicalName(),
-        		CorrelationCount.class,
-        		CorrelationCount.Factory.class);*/
-        bind(EventProcessorEngine.class).asEagerSingleton();
-        bind(EventProcessorExecutionMetrics.class).asEagerSingleton();
+        registerJacksonSubtype(CorrelationCountProcessorConfigEntity.class,
+                CorrelationCountProcessorConfigEntity.TYPE_NAME);
+
         addEventProcessor(CorrelationCountProcessorConfig.TYPE_NAME,
                 CorrelationCountProcessor.class,
                 CorrelationCountProcessor.Factory.class,
