@@ -13,7 +13,9 @@ class GraylogServer:
             if (line == ''): 
                 break
             queue.put(line)
-
+    
+    URL = 'http://127.0.0.1:9000'
+    
     def start(self):
         subprocess.run(['docker-compose', 'up', '--detach'], cwd=DOCKER_COMPOSE_PATH)
         

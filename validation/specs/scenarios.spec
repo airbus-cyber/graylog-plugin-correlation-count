@@ -9,5 +9,7 @@ To execute this specification, build the plugin jar and copy it to execution_env
 
 * Start Graylog server
 * Login as "admin"/"admin"
+* Go to page "/alerts/definitions/new"
+* Fill "event-definition-title" input with "Test correlation"
 * Stop Graylog server
 
