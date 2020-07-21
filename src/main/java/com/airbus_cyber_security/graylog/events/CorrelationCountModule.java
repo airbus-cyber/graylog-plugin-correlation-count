@@ -3,7 +3,7 @@ package com.airbus_cyber_security.graylog.events;
 import java.util.Collections;
 import java.util.Set;
 
-import com.airbus_cyber_security.graylog.CorrelationCountProcessor;
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessor;
 import com.airbus_cyber_security.graylog.CorrelationCountProcessorParameters;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import org.graylog.events.processor.EventProcessorEngine;
