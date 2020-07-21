@@ -1,6 +1,5 @@
-package com.airbus_cyber_security.graylog;
+package com.airbus_cyber_security.graylog.events.processor.correlation;
 
-import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.graylog2.indexer.results.CountResult;
