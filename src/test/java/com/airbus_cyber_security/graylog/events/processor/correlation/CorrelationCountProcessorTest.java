@@ -1,9 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
-import com.airbus_cyber_security.graylog.CorrelationCountProcessorParameters;
-import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessor;
-import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
-import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountUtils;
 import com.google.common.collect.ImmutableList;
 import org.graylog.events.event.EventFactory;
 import org.graylog.events.notifications.EventNotificationSettings;
