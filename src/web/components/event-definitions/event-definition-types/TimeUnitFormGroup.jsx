@@ -35,8 +35,9 @@ class TimeUnitFormGroup extends React.Component {
         const { duration, unit } = this.state;
 
         return (
-            // TODO controlId should be a props
-            <FormGroup controlId="search-within" validationState={errors ? 'error' : null}>
+            // note: there is no controlId set because it just doesn't seem to work for this widget
+            //       the controlId is suppose to set the "for" attribute on the label and the "id" attribute on the input
+            <FormGroup validationState={errors ? 'error' : null}>
                 <TimeUnitInput label="Search within the last"
                                update={this.handleTimeRangeChange}
                                value={duration}
