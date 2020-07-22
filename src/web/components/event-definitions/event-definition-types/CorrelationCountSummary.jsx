@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { extractDurationAndUnit } from 'components/common/TimeUnitInput';
+import { TIME_UNITS } from 'components/event-definitions/event-definition-types/FilterForm';
 
 class CorrelationCountSummary extends React.Component {
     static propTypes = {
@@ -8,6 +10,8 @@ class CorrelationCountSummary extends React.Component {
 
     render() {
         const { config } = this.props;
+        const searchWithin = extractDurationAndUnit(config.search_within_ms, TIME_UNITS);
+
         return (
             <React.Fragment>
                 <tr>
@@ -35,12 +39,16 @@ class CorrelationCountSummary extends React.Component {
                     <td>{config.additional_threshold}</td>
                 </tr>
                 <tr>
-                    <td>Time Range:</td>
-                    <td>{config.time_range}</td>
-                </tr>
-                <tr>
                     <td>Messages Order:</td>
                     <td>{config.messages_order || 'No messages order for this condition.'}</td>
+                </tr>
+                <tr>
+                    <td>Search within:</td>
+                    <td>{searchWithin.duration} {searchWithin.unit.toLowerCase()}</td>
+                </tr>
+                <tr>
+                    <td>Time Range:</td>
+                    <td>{config.time_range}</td>
                 </tr>
                 <tr>
                     <td>Grace Period:</td>
