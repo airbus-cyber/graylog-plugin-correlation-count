@@ -35,6 +35,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_SEARCH_QUERY = "search_query";
     private static final String FIELD_REPEAT_NOTIFICATIONS = "repeat_notifications";
     private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
+    private static final String FIELD_EXECUTE_EVERY_MS = "execute_every_ms";
 
     @JsonProperty(FIELD_STREAM)
     public abstract String stream();
@@ -59,6 +60,9 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_SEARCH_WITHIN_MS)
     public abstract long searchWithinMs();
+
+    @JsonProperty(FIELD_EXECUTE_EVERY_MS)
+    public abstract long executeEveryMs();
 
     @JsonProperty(FIELD_TIME_RANGE)
     public abstract int timeRange();
@@ -119,6 +123,9 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_SEARCH_WITHIN_MS)
         public abstract Builder searchWithinMs(long searchWithinMs);
 
+        @JsonProperty(FIELD_EXECUTE_EVERY_MS)
+        public abstract Builder executeEveryMs(long executeEveryMs);
+
         @JsonProperty(FIELD_TIME_RANGE)
         public abstract Builder timeRange(int timeRange);
 
@@ -150,6 +157,10 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         if (searchWithinMs() <= 0) {
             validationResult.addError(FIELD_SEARCH_WITHIN_MS,
                     "Correlation Count Alert Condition search_within_ms must be greater than 0.");
+        }
+        if (executeEveryMs() <= 0) {
+            validationResult.addError(FIELD_EXECUTE_EVERY_MS,
+                    "Filter & Aggregation execute_every_ms must be greater than 0.");
         }
         if(stream() == null || stream().isEmpty()) {
             validationResult.addError(FIELD_STREAM, "Stream is mandatory");
