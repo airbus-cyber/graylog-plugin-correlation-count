@@ -17,37 +17,30 @@ class TimeUnitFormGroup extends React.Component {
     constructor(props) {
         super(props);
 
-        const searchWithin = extractDurationAndUnit(props.value, TIME_UNITS);
-
-        // TODO maybe, could simply do this.state = searchWithin?
-        this.state = {
-          searchWithinMsDuration: searchWithin.duration,
-          searchWithinMsUnit: searchWithin.unit,
-        };
+        this.state = extractDurationAndUnit(props.value, TIME_UNITS);
     }
 
     handleTimeRangeChange = (nextValue, nextUnit) => {
         const durationInMs = moment.duration(lodash.max([nextValue, 1]), nextUnit).asMilliseconds();
 
         this.setState({
-            // TODO should use generic names here duration and unit
-            searchWithinMsDuration: nextValue,
-            searchWithinMsUnit: nextUnit
+            duration: nextValue,
+            unit: nextUnit
         });
         this.props.update(durationInMs);
     };
 
     render() {
         const { errors } = this.props;
-        const { searchWithinMsDuration, searchWithinMsUnit } = this.state;
+        const { duration, unit } = this.state;
 
         return (
             // TODO controlId should be a props
             <FormGroup controlId="search-within" validationState={errors ? 'error' : null}>
                 <TimeUnitInput label="Search within the last"
                                update={this.handleTimeRangeChange}
-                               value={searchWithinMsDuration}
-                               unit={searchWithinMsUnit}
+                               value={duration}
+                               unit={unit}
                                units={TIME_UNITS}
                                clearable
                                required />
