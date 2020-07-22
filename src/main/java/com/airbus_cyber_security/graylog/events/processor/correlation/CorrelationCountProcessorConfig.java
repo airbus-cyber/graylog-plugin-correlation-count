@@ -34,6 +34,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
     private static final String FIELD_REPEAT_NOTIFICATIONS = "repeat_notifications";
+    private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
 
     @JsonProperty(FIELD_STREAM)
     public abstract String stream();
@@ -53,11 +54,14 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     @JsonProperty(FIELD_THRESHOLD)
     public abstract int threshold();
 
-    @JsonProperty(FIELD_TIME_RANGE)
-    public abstract int timeRange();
-
     @JsonProperty(FIELD_MESSAGES_ORDER)
     public abstract String messagesOrder();
+
+    @JsonProperty(FIELD_SEARCH_WITHIN_MS)
+    public abstract long searchWithinMs();
+
+    @JsonProperty(FIELD_TIME_RANGE)
+    public abstract int timeRange();
 
     @JsonProperty(FIELD_GRACE_PERIOD)
     public abstract int gracePeriod();
@@ -109,11 +113,14 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_THRESHOLD)
         public abstract Builder threshold(int threshold);
 
-        @JsonProperty(FIELD_TIME_RANGE)
-        public abstract Builder timeRange(int timeRange);
-
         @JsonProperty(FIELD_MESSAGES_ORDER)
         public abstract Builder messagesOrder(String messagesOrder);
+
+        @JsonProperty(FIELD_SEARCH_WITHIN_MS)
+        public abstract Builder searchWithinMs(long searchWithinMs);
+
+        @JsonProperty(FIELD_TIME_RANGE)
+        public abstract Builder timeRange(int timeRange);
 
         @JsonProperty(FIELD_GRACE_PERIOD)
         public abstract Builder gracePeriod(int gracePeriod);
@@ -139,6 +146,11 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     @Override
     public ValidationResult validate() {
         ValidationResult validationResult = new ValidationResult();
+
+        if (searchWithinMs() <= 0) {
+            validationResult.addError(FIELD_SEARCH_WITHIN_MS,
+                    "Correlation Count Alert Condition search_within_ms must be greater than 0.");
+        }
         if(stream() == null || stream().isEmpty()) {
             validationResult.addError(FIELD_STREAM, "Stream is mandatory");
         }
