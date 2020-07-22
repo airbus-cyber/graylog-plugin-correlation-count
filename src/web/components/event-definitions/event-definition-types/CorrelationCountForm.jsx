@@ -9,6 +9,8 @@ import { naturalSortIgnoreCase } from 'util/SortUtils';
 import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
 import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
+import TimeUnitFormGroup from './TimeUnitFormGroup';
+
 
 const CorrelationCountForm = createReactClass({
 
@@ -45,6 +47,10 @@ const CorrelationCountForm = createReactClass({
     handleChange(event) {
         const { name } = event.target;
         this.propagateChange(name, FormsUtils.getValueFromInput(event.target));
+    },
+
+    handleSearchWithinMsChange(nextValue) {
+        this.propagateChange('search_within_ms', nextValue);
     },
 
     handleStreamChange(nextValue) {
@@ -180,15 +186,6 @@ const CorrelationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.additional_threshold, eventDefinition.config.additional_threshold)}
                     onChange={this.handleChange}
                 />
-                <ControlLabel>Time Range</ControlLabel>
-                <Input
-                    id="time_range"
-                    type="number"
-                    name="time_range"
-                    help="Evaluate the condition for all messages received in the given number of minutes"
-                    value={lodash.defaultTo(eventDefinition.time_range, eventDefinition.config.time_range)}
-                    onChange={this.handleChange}
-                />
                 <FormGroup controlId="messages_order"
                            validationState={validation.errors.messages_order ? 'error' : null}>
                     <ControlLabel>Messages Order</ControlLabel>
@@ -203,6 +200,20 @@ const CorrelationCountForm = createReactClass({
                         Select condition to trigger alert: when the messages of the additional stream come in any order relative to/before/after the messages of the main stream
                     </HelpBlock>
                 </FormGroup>
+                <TimeUnitFormGroup
+                    value={lodash.defaultTo(eventDefinition.search_within_ms, eventDefinition.config.search_within_ms)}
+                    update={this.handleSearchWithinMsChange}
+                    errors={validation.errors.search_within_ms}
+                />
+                <ControlLabel>Time Range</ControlLabel>
+                <Input
+                    id="time_range"
+                    type="number"
+                    name="time_range"
+                    help="Evaluate the condition for all messages received in the given number of minutes"
+                    value={lodash.defaultTo(eventDefinition.time_range, eventDefinition.config.time_range)}
+                    onChange={this.handleChange}
+                />
                 <ControlLabel>Grace Period</ControlLabel>
                 <Input
                     id="grace_period"
