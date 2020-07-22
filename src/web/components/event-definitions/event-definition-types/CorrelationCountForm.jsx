@@ -53,6 +53,10 @@ const CorrelationCountForm = createReactClass({
         this.propagateChange('search_within_ms', nextValue);
     },
 
+    handleExecuteEveryMsChange(nextValue) {
+        this.propagateChange('execute_every_ms', nextValue);
+    },
+
     handleStreamChange(nextValue) {
         this.propagateChange('stream', nextValue);
     },
@@ -204,6 +208,11 @@ const CorrelationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.search_within_ms, eventDefinition.config.search_within_ms)}
                     update={this.handleSearchWithinMsChange}
                     errors={validation.errors.search_within_ms}
+                />
+                <TimeUnitFormGroup
+                    value={lodash.defaultTo(eventDefinition.execute_every_ms, eventDefinition.config.execute_every_ms)}
+                    update={this.handleExecuteEveryMsChange}
+                    errors={validation.errors.execute_every_ms}
                 />
                 <ControlLabel>Time Range</ControlLabel>
                 <Input

@@ -11,6 +11,7 @@ class CorrelationCountSummary extends React.Component {
     render() {
         const { config } = this.props;
         const searchWithin = extractDurationAndUnit(config.search_within_ms, TIME_UNITS);
+        const executeEvery = extractDurationAndUnit(config.execute_every_ms, TIME_UNITS);
 
         return (
             <React.Fragment>
@@ -45,6 +46,10 @@ class CorrelationCountSummary extends React.Component {
                 <tr>
                     <td>Search within:</td>
                     <td>{searchWithin.duration} {searchWithin.unit.toLowerCase()}</td>
+                </tr>
+                <tr>
+                    <td>Execute search every:</td>
+                    <td>{executeEvery.duration} {executeEvery.unit.toLowerCase()}</td>
                 </tr>
                 <tr>
                     <td>Time Range:</td>
