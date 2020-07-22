@@ -23,24 +23,28 @@ def start_graylog_server():
     server.start()
     server.wait_until_log('Graylog server did not start correctly')
 
+@step("Stop Graylog server")
+def stop_graylog_server():
+    server.stop()
+
 @step("Login as <login>/<password>")
 def login(login, password):
     driver.get(server.URL)
     fill_input('username', login)
     fill_input('password', password)
-    # note: could alternatively by send_keys(Keys.ENTER)
+    # note: could alternatively do send_keys(Keys.ENTER)
     driver.find_element_by_css_selector('button[type=submit]').click()
 
 @step("Go to page <page_name>")
 def go_to_page(page_name):
     driver.get(server.URL + page_name)
 
+@step("Click button <>")
+def click_button(text):
+    driver.find_element_by_xpath('//button[text()="' + text + '"]').click()
+
 @step("Fill <identifier> input with <value>")
 def fill_input(identifier, value):
     WebDriverWait(driver, 10).until(presence_of_element_located([By.ID, identifier]))
     driver.find_element_by_id(identifier).send_keys(value)
-
-@step("Stop Graylog server")
-def stop_graylog_server():
-    server.stop()
 
