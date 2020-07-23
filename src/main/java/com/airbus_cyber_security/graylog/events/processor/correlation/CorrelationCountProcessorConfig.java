@@ -7,12 +7,21 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import org.graylog.events.contentpack.entities.EventProcessorConfigEntity;
+import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorConfig;
+import org.graylog.events.processor.EventProcessorExecutionJob;
+import org.graylog.events.processor.EventProcessorSchedulerConfig;
+import org.graylog.scheduler.clock.JobSchedulerClock;
+import org.graylog.scheduler.schedule.IntervalJobSchedule;
 import org.graylog2.contentpacks.EntityDescriptorIds;
 import org.graylog2.contentpacks.model.entities.references.ValueReference;
+import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.rest.ValidationResult;
+import org.joda.time.DateTime;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @AutoValue
 @JsonTypeName(CorrelationCountProcessorConfig.TYPE_NAME)
@@ -90,6 +99,30 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     }
 
     public abstract Builder toBuilder();
+
+    @Override
+    public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
+
+        final DateTime now = clock.nowUTC();
+
+        // We need an initial timerange for the first execution of the event processor
+        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs()), now);
+
+        final EventProcessorExecutionJob.Config jobDefinitionConfig = EventProcessorExecutionJob.Config.builder()
+                .eventDefinitionId(eventDefinition.id())
+                .processingWindowSize(searchWithinMs())
+                .processingHopSize(executeEveryMs())
+                .parameters(CorrelationCountProcessorParameters.builder()
+                        .timerange(timerange)
+                        .build())
+                .build();
+        final IntervalJobSchedule schedule = IntervalJobSchedule.builder()
+                .interval(executeEveryMs())
+                .unit(TimeUnit.MILLISECONDS)
+                .build();
+
+        return Optional.of(EventProcessorSchedulerConfig.create(jobDefinitionConfig, schedule));
+    }
 
     @AutoValue.Builder
     public static abstract class Builder implements EventProcessorConfig.Builder<Builder> {
