@@ -183,7 +183,7 @@ public class CorrelationCountUtils {
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
             final CountResult resultAdditionalStream = searches.count(config.searchQuery(), range, filterAdditionalStream);
 
-            if(isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
+            if (isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
                     isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
                 final List<MessageSummary> summaries = Lists.newArrayList();
                 final List<MessageSummary> summariesMainStream = Lists.newArrayList();
@@ -194,8 +194,8 @@ public class CorrelationCountUtils {
                     addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, range, config.messageBacklog());
                 }
 
-                if(isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
-                    if(config.messageBacklog() > 0) {
+                if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
+                    if (config.messageBacklog() > 0) {
                         summaries.addAll(summariesMainStream);
                         summaries.addAll(summariesAdditionalStream);
                     }
