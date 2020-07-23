@@ -52,10 +52,6 @@ class CorrelationCountSummary extends React.Component {
                     <td>{executeEvery.duration} {executeEvery.unit.toLowerCase()}</td>
                 </tr>
                 <tr>
-                    <td>Time Range:</td>
-                    <td>{config.time_range}</td>
-                </tr>
-                <tr>
                     <td>Grace Period:</td>
                     <td>{config.grace_period}</td>
                 </tr>
