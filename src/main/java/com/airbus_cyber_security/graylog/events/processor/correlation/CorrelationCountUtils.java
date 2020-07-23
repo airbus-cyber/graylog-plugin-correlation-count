@@ -148,7 +148,7 @@ public class CorrelationCountUtils {
         String resultDescription = "The additional stream had " + countAdditionalStream + " messages with trigger condition "
                 + config.additionalThresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.additionalThreshold()
                 + " messages " + msgCondition + " the main stream had " + countMainStream + " messages with trigger condition "
-                + config.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.threshold() + " messages in the last " + config.timeRange() + " minutes";
+                + config.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.threshold() + " messages in the last " + config.searchWithinMs() + " milliseconds";
 
         if(!config.groupingFields().isEmpty()) {
             resultDescription = resultDescription+" with the same value of the fields " + String.join(", ",config.groupingFields());
@@ -166,10 +166,18 @@ public class CorrelationCountUtils {
         return ruleTriggered;
     }
 
+    private static final int NUMBER_OF_MILLISECONDS_IN_SECOND = 1000;
+
+    private static AbsoluteRange createSearchRange(CorrelationCountProcessorConfig configuration) throws InvalidRangeParametersException {
+        int timeRange = (int) (configuration.searchWithinMs() / NUMBER_OF_MILLISECONDS_IN_SECOND);
+        /* Create an absolute range from the relative range */
+        final RelativeRange relativeRange = RelativeRange.create(timeRange);
+        return AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
+    }
+
     public static CorrelationCountCheckResult runCheckCorrelationCount(Searches searches, CorrelationCountProcessorConfig config) {
         try {
-            final RelativeRange relativeRange = RelativeRange.create(config.timeRange() * 60);
-            final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
+            final AbsoluteRange range = createSearchRange(config);
             final String filterMainStream = HEADER_STREAM + config.stream();
             final CountResult resultMainStream = searches.count(config.searchQuery(), range, filterMainStream);
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
@@ -220,8 +228,7 @@ public class CorrelationCountUtils {
 
     public static CorrelationCountCheckResult runCheckCorrelationWithFields(Searches searches, CorrelationCountProcessorConfig config) {
         try {
-            final RelativeRange relativeRange = RelativeRange.create(config.timeRange() * 60);
-            final AbsoluteRange range = AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
+            final AbsoluteRange range = createSearchRange(config);
             final String filterMainStream = HEADER_STREAM + config.stream();
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
             boolean ruleTriggered=false;

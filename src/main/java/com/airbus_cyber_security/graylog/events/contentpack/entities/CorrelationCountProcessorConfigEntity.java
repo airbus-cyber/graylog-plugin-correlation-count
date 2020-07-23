@@ -29,7 +29,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     private static final String FIELD_THRESHOLD = "threshold";
     private static final String FIELD_MESSAGES_ORDER = "messages_order";
     private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
-    private static final String FIELD_TIME_RANGE = "time_range";
     private static final String FIELD_GRACE_PERIOD = "grace_period";
     private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
@@ -60,9 +59,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
 
     @JsonProperty(FIELD_SEARCH_WITHIN_MS)
     public abstract long searchWithinMs();
-
-    @JsonProperty(FIELD_TIME_RANGE)
-    public abstract int timeRange();
 
     @JsonProperty(FIELD_GRACE_PERIOD)
     public abstract int gracePeriod();
@@ -120,9 +116,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_SEARCH_WITHIN_MS)
         public abstract Builder searchWithinMs(long searchWithinMs);
 
-        @JsonProperty(FIELD_TIME_RANGE)
-        public abstract Builder timeRange(int timeRange);
-
         @JsonProperty(FIELD_GRACE_PERIOD)
         public abstract Builder gracePeriod(int gracePeriod);
 
@@ -155,7 +148,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
                 .threshold(threshold())
                 .messagesOrder(messagesOrder().asString(parameters))
                 .searchWithinMs(searchWithinMs())
-                .timeRange(timeRange())
                 .gracePeriod(gracePeriod())
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
