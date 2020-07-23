@@ -35,7 +35,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_ADDITIONAL_THRESHOLD = "additional_threshold";
     private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
     private static final String FIELD_THRESHOLD = "threshold";
-    private static final String FIELD_TIME_RANGE = "time_range";
     private static final String FIELD_MESSAGES_ORDER = "messages_order";
     private static final String FIELD_GRACE_PERIOD = "grace_period";
     private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
@@ -72,9 +71,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
-
-    @JsonProperty(FIELD_TIME_RANGE)
-    public abstract int timeRange();
 
     @JsonProperty(FIELD_GRACE_PERIOD)
     public abstract int gracePeriod();
@@ -159,9 +155,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_EXECUTE_EVERY_MS)
         public abstract Builder executeEveryMs(long executeEveryMs);
 
-        @JsonProperty(FIELD_TIME_RANGE)
-        public abstract Builder timeRange(int timeRange);
-
         @JsonProperty(FIELD_GRACE_PERIOD)
         public abstract Builder gracePeriod(int gracePeriod);
 
@@ -213,9 +206,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         if(threshold() < 0) {
             validationResult.addError(FIELD_THRESHOLD, "Threshold must be greater than 0.");
         }
-        if(timeRange() < 0) {
-            validationResult.addError(FIELD_TIME_RANGE, "Time range must be greater than 0.");
-        }
         if(messagesOrder() == null || messagesOrder().isEmpty()) {
             validationResult.addError(FIELD_MESSAGES_ORDER, "Messages order is mandatory");
         }
@@ -237,8 +227,8 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
                 .additionalThreshold(additionalThreshold())
                 .thresholdType(ValueReference.of(thresholdType()))
                 .threshold(threshold())
-                .timeRange(timeRange())
                 .messagesOrder(ValueReference.of(messagesOrder()))
+                .searchWithinMs(searchWithinMs())
                 .gracePeriod(gracePeriod())
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
