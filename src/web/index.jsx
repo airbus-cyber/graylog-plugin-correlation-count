@@ -23,7 +23,6 @@ PluginStore.register(new PluginManifest({}, {
               additional_threshold: '0',
               search_within_ms: 60*1000,
               execute_every_ms: 60*1000,
-              time_range: '5',
               messages_order: 'any order',
               grace_period: '0',
               message_backlog: '0',

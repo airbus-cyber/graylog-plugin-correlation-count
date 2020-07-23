@@ -214,15 +214,6 @@ const CorrelationCountForm = createReactClass({
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
                 />
-                <ControlLabel>Time Range</ControlLabel>
-                <Input
-                    id="time_range"
-                    type="number"
-                    name="time_range"
-                    help="Evaluate the condition for all messages received in the given number of minutes"
-                    value={lodash.defaultTo(eventDefinition.time_range, eventDefinition.config.time_range)}
-                    onChange={this.handleChange}
-                />
                 <ControlLabel>Grace Period</ControlLabel>
                 <Input
                     id="grace_period"
