@@ -154,7 +154,7 @@ public class CorrelationCountUtils {
             resultDescription = resultDescription+" with the same value of the fields " + String.join(", ",config.groupingFields());
         }
 
-        return resultDescription+". (Current grace time: " + config.gracePeriod() + " minutes)";
+        return resultDescription + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
     }
 
     private static boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {

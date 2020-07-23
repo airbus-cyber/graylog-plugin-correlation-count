@@ -36,7 +36,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
     private static final String FIELD_THRESHOLD = "threshold";
     private static final String FIELD_MESSAGES_ORDER = "messages_order";
-    private static final String FIELD_GRACE_PERIOD = "grace_period";
     private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_COMMENT = "comment";
@@ -71,9 +70,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
-
-    @JsonProperty(FIELD_GRACE_PERIOD)
-    public abstract int gracePeriod();
 
     @JsonProperty(FIELD_MESSAGE_BACKLOG)
     public abstract int messageBacklog();
@@ -155,9 +151,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_EXECUTE_EVERY_MS)
         public abstract Builder executeEveryMs(long executeEveryMs);
 
-        @JsonProperty(FIELD_GRACE_PERIOD)
-        public abstract Builder gracePeriod(int gracePeriod);
-
         @JsonProperty(FIELD_MESSAGE_BACKLOG)
         public abstract Builder messageBacklog(int messageBacklog);
 
@@ -209,9 +202,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         if(messagesOrder() == null || messagesOrder().isEmpty()) {
             validationResult.addError(FIELD_MESSAGES_ORDER, "Messages order is mandatory");
         }
-        if(gracePeriod() < 0) {
-            validationResult.addError(FIELD_GRACE_PERIOD, "Grace period must be greater than 0.");
-        }
         if(messageBacklog() < 0) {
             validationResult.addError(FIELD_MESSAGE_BACKLOG, "Message backog must be greater than 0.");
         }
@@ -229,7 +219,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
                 .threshold(threshold())
                 .messagesOrder(ValueReference.of(messagesOrder()))
                 .searchWithinMs(searchWithinMs())
-                .gracePeriod(gracePeriod())
+                .executeEveryMs(executeEveryMs())
                 .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
                 .comment(ValueReference.of(comment()))
