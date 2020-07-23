@@ -94,7 +94,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
-
         final DateTime now = clock.nowUTC();
 
         // We need an initial timerange for the first execution of the event processor
