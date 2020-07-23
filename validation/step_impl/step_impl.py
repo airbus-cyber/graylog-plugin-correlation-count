@@ -1,3 +1,4 @@
+import os
 from getgauge.python import before_suite, after_suite, step
 from getgauge.python import custom_screenshot_writer
 from selenium.webdriver import Firefox
