@@ -214,15 +214,6 @@ const CorrelationCountForm = createReactClass({
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
                 />
-                <ControlLabel>Grace Period</ControlLabel>
-                <Input
-                    id="grace_period"
-                    type="number"
-                    name="grace_period"
-                    help="Number of minutes to wait after an alert is resolved, to trigger another alert"
-                    value={lodash.defaultTo(eventDefinition.grace_period, eventDefinition.config.grace_period)}
-                    onChange={this.handleChange}
-                />
                 <ControlLabel>Message Backlog</ControlLabel>
                 <Input
                     id="message_backlog"
