@@ -65,13 +65,13 @@ public class CorrelationCountUtils {
             return description;
         }
 
-        public static OrderType fromString(String type) {
+        public static OrderType fromString(String text) {
             for (OrderType orderType : OrderType.values()) {
-                if (orderType.description.equals(type)) {
+                if (orderType.description.equals(text)) {
                     return orderType;
                 }
             }
-            return null;
+            throw new IllegalArgumentException("Unknown OrderType value: " + text);
         }
     }
 
