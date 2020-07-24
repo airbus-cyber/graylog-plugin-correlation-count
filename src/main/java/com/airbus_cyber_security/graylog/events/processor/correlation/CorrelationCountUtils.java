@@ -51,9 +51,9 @@ public class CorrelationCountUtils {
 
     enum OrderType {
 
-        ANY("any order"),
-        BEFORE("additional messages before main messages"),
-        AFTER("additional messages after main messages");
+        ANY("ANY"),
+        BEFORE("BEFORE"),
+        AFTER("AFTER");
 
         private final String description;
 
