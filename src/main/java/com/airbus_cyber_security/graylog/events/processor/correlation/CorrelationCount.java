@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class CorrelationCountUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCountUtils.class.getSimpleName());
+public class CorrelationCount {
+    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCount.class.getSimpleName());
 
     private static final String HEADER_STREAM = "streams:";
 
@@ -75,9 +75,9 @@ public class CorrelationCountUtils {
         }
     }
 
-    private static boolean isTriggered(CorrelationCountUtils.ThresholdType thresholdType, int threshold, long count) {
-        return (((thresholdType == CorrelationCountUtils.ThresholdType.MORE) && (count > threshold)) ||
-                ((thresholdType == CorrelationCountUtils.ThresholdType.LESS) && (count < threshold)));
+    private static boolean isTriggered(CorrelationCount.ThresholdType thresholdType, int threshold, long count) {
+        return (((thresholdType == CorrelationCount.ThresholdType.MORE) && (count > threshold)) ||
+                ((thresholdType == CorrelationCount.ThresholdType.LESS) && (count < threshold)));
     }
 
     private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, AbsoluteRange range, int messageBacklog) {
@@ -95,13 +95,13 @@ public class CorrelationCountUtils {
         return (searchQuery + " AND " + firstField + ": " + matchedFieldValue);
     }
 
-    private static List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCountUtils.OrderType messagesOrderType){
+    private static List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCount.OrderType messagesOrderType){
         List<DateTime> listDate = new ArrayList<>();
         for (MessageSummary messageSummary : summaries) {
             listDate.add(messageSummary.getTimestamp());
         }
         Collections.sort(listDate);
-        if(messagesOrderType.equals(CorrelationCountUtils.OrderType.AFTER)) {
+        if(messagesOrderType.equals(CorrelationCount.OrderType.AFTER)) {
             Collections.reverse(listDate);
         }
         return listDate;
@@ -113,22 +113,22 @@ public class CorrelationCountUtils {
     @VisibleForTesting
     protected static boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream, CorrelationCountProcessorConfig config) {
         int countFirstStream = summariesFirstStream.size();
-        CorrelationCountUtils.OrderType messagesOrder = CorrelationCountUtils.OrderType.fromString(config.messagesOrder());
+        CorrelationCount.OrderType messagesOrder = CorrelationCount.OrderType.fromString(config.messagesOrder());
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
         for (DateTime dateFirstStream : listDateFirstStream) {
             int countSecondStream = 0;
             for (DateTime dateSecondStream : listDateSecondStream) {
-                if(	(messagesOrder.equals(CorrelationCountUtils.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
-                        (messagesOrder.equals(CorrelationCountUtils.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))){
+                if(	(messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
+                        (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))){
                     countSecondStream++;
                 }else {
                     break;
                 }
             }
-            if(isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.thresholdType()),config.threshold(),countFirstStream)
-                    && isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.additionalThresholdType()),config.additionalThreshold(),countSecondStream)) {
+            if(isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()),config.threshold(),countFirstStream)
+                    && isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()),config.additionalThreshold(),countSecondStream)) {
                 return true;
             }
             countFirstStream--;
@@ -139,7 +139,7 @@ public class CorrelationCountUtils {
     private static String getResultDescription(long countMainStream, long countAdditionalStream, CorrelationCountProcessorConfig config) {
 
         String msgCondition;
-        if(CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.ANY)) {
+        if(CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
             msgCondition = "and";
         } else {
             msgCondition = config.messagesOrder();
@@ -159,8 +159,8 @@ public class CorrelationCountUtils {
 
     private static boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
         boolean ruleTriggered = true;
-        if(CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.BEFORE)
-                || CorrelationCountUtils.OrderType.fromString(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.AFTER)) {
+        if(CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.BEFORE)
+                || CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.AFTER)) {
             ruleTriggered = checkOrderSecondStream(summariesMainStream, summariesAdditionalStream, config);
         }
         return ruleTriggered;
@@ -183,13 +183,13 @@ public class CorrelationCountUtils {
             final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
             final CountResult resultAdditionalStream = searches.count(config.searchQuery(), range, filterAdditionalStream);
 
-            if (isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
-                    isTriggered(CorrelationCountUtils.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
+            if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
+                    isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
                 final List<MessageSummary> summaries = Lists.newArrayList();
                 final List<MessageSummary> summariesMainStream = Lists.newArrayList();
                 final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
-                if (config.messageBacklog() > 0 || !CorrelationCountUtils.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.ANY)) {
+                if (config.messageBacklog() > 0 || !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                     addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, range, config.messageBacklog());
                     addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, range, config.messageBacklog());
                 }
@@ -256,12 +256,12 @@ public class CorrelationCountUtils {
                 String matchedFieldValue = matchedTerm.getKey();
                 Long[] counts = matchedTerm.getValue();
 
-                if(isTriggered(CorrelationCountUtils.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
-                        && isTriggered(CorrelationCountUtils.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
+                if(isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
+                        && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
                     final List<MessageSummary> summariesMainStream = Lists.newArrayList();
                     final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
-                    if (backlogEnabled ||  !CorrelationCountUtils.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCountUtils.OrderType.ANY)) {
+                    if (backlogEnabled ||  !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                         String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
 
                         addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, range, config.messageBacklog());
