@@ -119,10 +119,10 @@ public class CorrelationCountProcessor implements EventProcessor {
     @VisibleForTesting
     CorrelationCountCheckResult getCorrelationCountCheckResult(Searches searches, CorrelationCountProcessorConfig config) {
         if(config.groupingFields().isEmpty()) {
-            return CorrelationCountUtils.runCheckCorrelationCount(searches, config);
+            return CorrelationCount.runCheckCorrelationCount(searches, config);
         }
         else {
-            return CorrelationCountUtils.runCheckCorrelationWithFields(searches, config);
+            return CorrelationCount.runCheckCorrelationWithFields(searches, config);
         }
     }
 }

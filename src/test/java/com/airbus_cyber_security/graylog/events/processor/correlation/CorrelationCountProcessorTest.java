@@ -101,16 +101,16 @@ public class CorrelationCountProcessorTest {
                 .repeatNotifications(false)
                 .build();
 
-        assertEquals(true, CorrelationCountUtils.checkOrderSecondStream(summariesStream2, summariesStream1, config));
+        assertEquals(true, CorrelationCount.checkOrderSecondStream(summariesStream2, summariesStream1, config));
     }
 
     private CorrelationCountProcessorConfig getCorrelationCountProcessorConfig() {
         return CorrelationCountProcessorConfig.builder()
                 .stream("main stream")
                 .additionalStream("additional stream")
-                .additionalThresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
+                .additionalThresholdType(CorrelationCount.ThresholdType.MORE.getDescription())
                 .additionalThreshold(threshold)
-                .thresholdType(CorrelationCountUtils.ThresholdType.MORE.getDescription())
+                .thresholdType(CorrelationCount.ThresholdType.MORE.getDescription())
                 .threshold(threshold)
                 .messagesOrder("any order")
                 .searchWithinMs(2*60*1000)
