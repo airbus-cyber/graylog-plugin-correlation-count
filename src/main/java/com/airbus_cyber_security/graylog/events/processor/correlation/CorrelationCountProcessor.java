@@ -14,6 +14,7 @@ import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,31 +56,29 @@ public class CorrelationCountProcessor implements EventProcessor {
     public void createEvents(EventFactory eventFactory, EventProcessorParameters eventProcessorParameters, EventConsumer<List<EventWithContext>> eventConsumer) throws EventProcessorException {
         final CorrelationCountProcessorParameters parameters = (CorrelationCountProcessorParameters) eventProcessorParameters;
 
+        TimeRange timerange = parameters.timerange();
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
-        if (!dependencyCheck.hasMessagesIndexedUpTo(parameters.timerange().getTo())) {
+        if (!dependencyCheck.hasMessagesIndexedUpTo(timerange.getTo())) {
             final String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
-                    eventDefinition.title(), eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
+                    eventDefinition.title(), eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(searches, config);
+        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(timerange, searches, config);
 
-        if (correlationCountCheckResult != null) {
-            List<EventWithContext> listEvents = new ArrayList<>();
-            for (MessageSummary messageSummary : correlationCountCheckResult.getMessageSummaries()) {
-                final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), correlationCountCheckResult.getResultDescription());
-                event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
-                LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
-                EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
-                LOG.debug("Created event: id ", eventWithContext.event().getId(), eventWithContext.event().getMessage());
-                listEvents.add(eventWithContext);
-            }
-            eventConsumer.accept(listEvents);
+        List<EventWithContext> listEvents = new ArrayList<>();
+        for (MessageSummary messageSummary : correlationCountCheckResult.getMessageSummaries()) {
+            final Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
+            event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
+            LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
+            EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
+            LOG.debug("Created event: id ", eventWithContext.event().getId(), eventWithContext.event().getMessage());
+            listEvents.add(eventWithContext);
         }
-
+        eventConsumer.accept(listEvents);
 
         // Update the state for this processor! This state will be used for dependency checks between event processors.
-        stateService.setState(eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
+        stateService.setState(eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
     }
 
     @Override
@@ -117,13 +116,11 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
     }
 
-    @VisibleForTesting
-    CorrelationCountCheckResult getCorrelationCountCheckResult(Searches searches, CorrelationCountProcessorConfig config) {
-        if(config.groupingFields().isEmpty()) {
-            return CorrelationCount.runCheckCorrelationCount(searches, config);
-        }
-        else {
-            return CorrelationCount.runCheckCorrelationWithFields(searches, config);
+    CorrelationCountCheckResult getCorrelationCountCheckResult(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
+        if (config.groupingFields().isEmpty()) {
+            return CorrelationCount.runCheckCorrelationCount(timerange, searches, config);
+        } else {
+            return CorrelationCount.runCheckCorrelationWithFields(timerange, searches, config);
         }
     }
 }
