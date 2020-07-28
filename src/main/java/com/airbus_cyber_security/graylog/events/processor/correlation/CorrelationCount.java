@@ -13,6 +13,7 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersException;
 import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,7 @@ public class CorrelationCount {
                 ((thresholdType == CorrelationCount.ThresholdType.LESS) && (count < threshold)));
     }
 
-    private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, AbsoluteRange range, int messageBacklog) {
+    private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range, int messageBacklog) {
         final SearchResult backlogResult = searches.search(searchQuery, filter,
                 range, messageBacklog, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         for (ResultMessage resultMessage : backlogResult.getResults()) {
@@ -175,39 +176,33 @@ public class CorrelationCount {
         return AbsoluteRange.create(relativeRange.getFrom(), relativeRange.getTo());
     }
 
-    public static CorrelationCountCheckResult runCheckCorrelationCount(Searches searches, CorrelationCountProcessorConfig config) {
-        try {
-            final AbsoluteRange range = createSearchRange(config);
-            final String filterMainStream = HEADER_STREAM + config.stream();
-            final CountResult resultMainStream = searches.count(config.searchQuery(), range, filterMainStream);
-            final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
-            final CountResult resultAdditionalStream = searches.count(config.searchQuery(), range, filterAdditionalStream);
+    public static CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
+        final String filterMainStream = HEADER_STREAM + config.stream();
+        final CountResult resultMainStream = searches.count(config.searchQuery(), timerange, filterMainStream);
+        final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
+        final CountResult resultAdditionalStream = searches.count(config.searchQuery(), timerange, filterAdditionalStream);
 
-            if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
-                    isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
-                final List<MessageSummary> summaries = Lists.newArrayList();
-                final List<MessageSummary> summariesMainStream = Lists.newArrayList();
-                final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
+        if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
+                isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
+            final List<MessageSummary> summaries = Lists.newArrayList();
+            final List<MessageSummary> summariesMainStream = Lists.newArrayList();
+            final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
-                if (config.messageBacklog() > 0 || !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-                    addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, range, config.messageBacklog());
-                    addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, range, config.messageBacklog());
-                }
-
-                if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
-                    if (config.messageBacklog() > 0) {
-                        summaries.addAll(summariesMainStream);
-                        summaries.addAll(summariesAdditionalStream);
-                    }
-                    String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count(), config);
-                    return new CorrelationCountCheckResult(resultDescription, summaries);
-                }
+            if (config.messageBacklog() > 0 || !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+                addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, timerange, config.messageBacklog());
+                addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, timerange, config.messageBacklog());
             }
-            return new CorrelationCountCheckResult("", new ArrayList<>());
-        } catch (InvalidRangeParametersException e) {
-            LOG.error("Invalid timerange.", e);
-            return null;
+
+            if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
+                if (config.messageBacklog() > 0) {
+                    summaries.addAll(summariesMainStream);
+                    summaries.addAll(summariesAdditionalStream);
+                }
+                String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count(), config);
+                return new CorrelationCountCheckResult(resultDescription, summaries);
+            }
         }
+        return new CorrelationCountCheckResult("", new ArrayList<>());
     }
 
     private static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
@@ -226,71 +221,65 @@ public class CorrelationCount {
         return matchedTerms;
     }
 
-    public static CorrelationCountCheckResult runCheckCorrelationWithFields(Searches searches, CorrelationCountProcessorConfig config) {
-        try {
-            final AbsoluteRange range = createSearchRange(config);
-            final String filterMainStream = HEADER_STREAM + config.stream();
-            final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
-            boolean ruleTriggered=false;
-            Integer backlogSize = config.messageBacklog();
-            boolean backlogEnabled = false;
-            int searchLimit = 100;
-            if(backlogSize != null && backlogSize > 0) {
-                backlogEnabled = true;
-                searchLimit = backlogSize;
-            }
+    public static CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
+        final String filterMainStream = HEADER_STREAM + config.stream();
+        final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
+        boolean ruleTriggered=false;
+        Integer backlogSize = config.messageBacklog();
+        boolean backlogEnabled = false;
+        int searchLimit = 100;
+        if(backlogSize != null && backlogSize > 0) {
+            backlogEnabled = true;
+            searchLimit = backlogSize;
+        }
 
-            List<String> nextFields = new ArrayList<>(config.groupingFields());
-            String firstField = config.groupingFields().iterator().next();
-            nextFields.remove(0);
+        List<String> nextFields = new ArrayList<>(config.groupingFields());
+        String firstField = config.groupingFields().iterator().next();
+        nextFields.remove(0);
 
-            TermsResult termResult = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filterMainStream, range, Sorting.Direction.DESC);
-            TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filterAdditionalStream, range, Sorting.Direction.DESC);
-            Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStrem);
+        TermsResult termResult = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filterMainStream, timerange, Sorting.Direction.DESC);
+        TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
+        Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStrem);
 
-            long countFirstMainStream = 0;
-            long countFirstAdditionalStream = 0;
-            boolean isFirstTriggered = true;
-            final List<MessageSummary> summaries = Lists.newArrayList();
-            for (Map.Entry<String, Long[]> matchedTerm : matchedTerms.entrySet()) {
-                String matchedFieldValue = matchedTerm.getKey();
-                Long[] counts = matchedTerm.getValue();
+        long countFirstMainStream = 0;
+        long countFirstAdditionalStream = 0;
+        boolean isFirstTriggered = true;
+        final List<MessageSummary> summaries = Lists.newArrayList();
+        for (Map.Entry<String, Long[]> matchedTerm : matchedTerms.entrySet()) {
+            String matchedFieldValue = matchedTerm.getKey();
+            Long[] counts = matchedTerm.getValue();
 
-                if(isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
-                        && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
-                    final List<MessageSummary> summariesMainStream = Lists.newArrayList();
-                    final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
+            if(isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
+                    && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
+                final List<MessageSummary> summariesMainStream = Lists.newArrayList();
+                final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
-                    if (backlogEnabled ||  !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-                        String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
+                if (backlogEnabled ||  !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+                    String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
 
-                        addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, range, config.messageBacklog());
-                        addSearchMessages(searches, summariesAdditionalStream, searchQuery, filterAdditionalStream, range, config.messageBacklog());
+                    addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, timerange, config.messageBacklog());
+                    addSearchMessages(searches, summariesAdditionalStream, searchQuery, filterAdditionalStream, timerange, config.messageBacklog());
+                }
+
+                if(isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
+                    ruleTriggered = true;
+                    if(isFirstTriggered) {
+                        countFirstMainStream = counts[0];
+                        countFirstAdditionalStream = counts[1];
+                        isFirstTriggered = false;
                     }
-
-                    if(isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
-                        ruleTriggered = true;
-                        if(isFirstTriggered) {
-                            countFirstMainStream = counts[0];
-                            countFirstAdditionalStream = counts[1];
-                            isFirstTriggered = false;
-                        }
-                        if(backlogSize > 0) {
-                            summaries.addAll(summariesMainStream);
-                            summaries.addAll(summariesAdditionalStream);
-                        }
+                    if(backlogSize > 0) {
+                        summaries.addAll(summariesMainStream);
+                        summaries.addAll(summariesAdditionalStream);
                     }
                 }
             }
-
-            if(ruleTriggered) {
-                String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream, config);
-                return new CorrelationCountCheckResult(resultDescription, summaries);
-            }
-            return new CorrelationCountCheckResult("", new ArrayList<>());
-        } catch (InvalidRangeParametersException e) {
-            LOG.error("Invalid timerange.", e);
-            return null;
         }
+
+        if(ruleTriggered) {
+            String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream, config);
+            return new CorrelationCountCheckResult(resultDescription, summaries);
+        }
+        return new CorrelationCountCheckResult("", new ArrayList<>());
     }
 }
