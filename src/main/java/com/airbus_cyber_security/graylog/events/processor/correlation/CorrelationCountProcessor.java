@@ -65,10 +65,11 @@ public class CorrelationCountProcessor implements EventProcessor {
         CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(searches, config);
 
         if (correlationCountCheckResult != null) {
-            final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), correlationCountCheckResult.getResultDescription());
-            LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
             List<EventWithContext> listEvents = new ArrayList<>();
             for (MessageSummary messageSummary : correlationCountCheckResult.getMessageSummaries()) {
+                final Event event = eventFactory.createEvent(eventDefinition, parameters.timerange().getFrom(), correlationCountCheckResult.getResultDescription());
+                event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
+                LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
                 EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
                 LOG.debug("Created event: id ", eventWithContext.event().getId(), eventWithContext.event().getMessage());
                 listEvents.add(eventWithContext);
