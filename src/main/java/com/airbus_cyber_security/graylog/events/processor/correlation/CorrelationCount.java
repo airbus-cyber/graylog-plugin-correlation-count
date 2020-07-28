@@ -224,20 +224,13 @@ public class CorrelationCount {
         final String filterMainStream = HEADER_STREAM + config.stream();
         final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
         boolean ruleTriggered = false;
-        Integer backlogSize = SEARCH_LIMIT;
-        boolean backlogEnabled = false;
-        int searchLimit = 100;
-        if(backlogSize != null && backlogSize > 0) {
-            backlogEnabled = true;
-            searchLimit = backlogSize;
-        }
 
         List<String> nextFields = new ArrayList<>(config.groupingFields());
         String firstField = config.groupingFields().iterator().next();
         nextFields.remove(0);
 
-        TermsResult termResult = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filterMainStream, timerange, Sorting.Direction.DESC);
-        TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, searchLimit, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
+        TermsResult termResult = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterMainStream, timerange, Sorting.Direction.DESC);
+        TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
         Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStrem);
 
         long countFirstMainStream = 0;
@@ -253,7 +246,7 @@ public class CorrelationCount {
                 final List<MessageSummary> summariesMainStream = Lists.newArrayList();
                 final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
-                if (backlogEnabled ||  !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+                if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                     String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
 
                     addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, timerange);
@@ -267,15 +260,13 @@ public class CorrelationCount {
                         countFirstAdditionalStream = counts[1];
                         isFirstTriggered = false;
                     }
-                    if(backlogSize > 0) {
-                        summaries.addAll(summariesMainStream);
-                        summaries.addAll(summariesAdditionalStream);
-                    }
+                    summaries.addAll(summariesMainStream);
+                    summaries.addAll(summariesAdditionalStream);
                 }
             }
         }
 
-        if(ruleTriggered) {
+        if (ruleTriggered) {
             String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream, config);
             return new CorrelationCountCheckResult(resultDescription, summaries);
         }
