@@ -36,7 +36,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_THRESHOLD_TYPE = "threshold_type";
     private static final String FIELD_THRESHOLD = "threshold";
     private static final String FIELD_MESSAGES_ORDER = "messages_order";
-    private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
@@ -70,9 +69,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
-
-    @JsonProperty(FIELD_MESSAGE_BACKLOG)
-    public abstract int messageBacklog();
 
     @JsonProperty(FIELD_GROUPING_FIELDS)
     public abstract Set<String> groupingFields();
@@ -150,9 +146,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_EXECUTE_EVERY_MS)
         public abstract Builder executeEveryMs(long executeEveryMs);
 
-        @JsonProperty(FIELD_MESSAGE_BACKLOG)
-        public abstract Builder messageBacklog(int messageBacklog);
-
         @JsonProperty(FIELD_GROUPING_FIELDS)
         public abstract Builder groupingFields(Set<String> groupingFields);
 
@@ -201,9 +194,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         if(messagesOrder() == null || messagesOrder().isEmpty()) {
             validationResult.addError(FIELD_MESSAGES_ORDER, "Messages order is mandatory");
         }
-        if(messageBacklog() < 0) {
-            validationResult.addError(FIELD_MESSAGE_BACKLOG, "Message backog must be greater than 0.");
-        }
         return validationResult;
     }
 
@@ -219,7 +209,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
                 .messagesOrder(ValueReference.of(messagesOrder()))
                 .searchWithinMs(searchWithinMs())
                 .executeEveryMs(executeEveryMs())
-                .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
                 .comment(ValueReference.of(comment()))
                 .searchQuery(ValueReference.of(searchQuery()))

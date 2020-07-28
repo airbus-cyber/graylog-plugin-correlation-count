@@ -24,7 +24,6 @@ PluginStore.register(new PluginManifest({}, {
               search_within_ms: 60*1000,
               execute_every_ms: 60*1000,
               messages_order: 'any order',
-              message_backlog: '0',
               grouping_fields: [],
               comment: '',
               search_query: '*',

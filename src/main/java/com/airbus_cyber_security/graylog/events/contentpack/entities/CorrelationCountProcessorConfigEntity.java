@@ -30,7 +30,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     private static final String FIELD_MESSAGES_ORDER = "messages_order";
     private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
     private static final String FIELD_EXECUTE_EVERY_MS = "execute_every_ms";
-    private static final String FIELD_MESSAGE_BACKLOG = "message_backlog";
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
@@ -62,9 +61,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
 
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
-
-    @JsonProperty(FIELD_MESSAGE_BACKLOG)
-    public abstract int messageBacklog();
 
     @JsonProperty(FIELD_GROUPING_FIELDS)
     public abstract Set<String> groupingFields();
@@ -119,9 +115,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_EXECUTE_EVERY_MS)
         public abstract Builder executeEveryMs(long executeEveryMs);
 
-        @JsonProperty(FIELD_MESSAGE_BACKLOG)
-        public abstract Builder messageBacklog(int messageBacklog);
-
         @JsonProperty(FIELD_GROUPING_FIELDS)
         public abstract Builder groupingFields(Set<String> groupingFields);
 
@@ -149,7 +142,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
                 .messagesOrder(messagesOrder().asString(parameters))
                 .searchWithinMs(searchWithinMs())
                 .executeEveryMs(executeEveryMs())
-                .messageBacklog(messageBacklog())
                 .groupingFields(groupingFields())
                 .comment(comment().asString(parameters))
                 .searchQuery(searchQuery().asString(parameters))
