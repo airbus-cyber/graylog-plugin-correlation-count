@@ -214,15 +214,6 @@ const CorrelationCountForm = createReactClass({
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
                 />
-                <ControlLabel>Message Backlog</ControlLabel>
-                <Input
-                    id="message_backlog"
-                    type="number"
-                    name="message_backlog"
-                    help="The number of message to be included in alert notifications"
-                    value={lodash.defaultTo(eventDefinition.message_backlog, eventDefinition.config.message_backlog)}
-                    onChange={this.handleChange}
-                />
                 <FormGroup controlId="grouping_fields">
                     <ControlLabel>Grouping Fields <small className="text-muted">(Optional)</small></ControlLabel>
                     <MultiSelect id="grouping_fields"

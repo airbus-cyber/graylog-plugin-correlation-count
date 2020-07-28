@@ -52,10 +52,6 @@ class CorrelationCountSummary extends React.Component {
                     <td>{executeEvery.duration} {executeEvery.unit.toLowerCase()}</td>
                 </tr>
                 <tr>
-                    <td>Message Backlog:</td>
-                    <td>{config.message_backlog}</td>
-                </tr>
-                <tr>
                     <td>Grouping Fields:</td>
                     <td>{config.grouping_fields.join(', ') || 'No grouping fields for this condition.'}</td>
                 </tr>

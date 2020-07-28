@@ -22,6 +22,7 @@ import java.util.*;
 
 public class CorrelationCount {
     private static final Logger LOG = LoggerFactory.getLogger(CorrelationCount.class.getSimpleName());
+    private static final int SEARCH_LIMIT = 500;
 
     private static final String HEADER_STREAM = "streams:";
 
@@ -81,9 +82,9 @@ public class CorrelationCount {
                 ((thresholdType == CorrelationCount.ThresholdType.LESS) && (count < threshold)));
     }
 
-    private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range, int messageBacklog) {
+    private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range) {
         final SearchResult backlogResult = searches.search(searchQuery, filter,
-                range, messageBacklog, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
+                range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         for (ResultMessage resultMessage : backlogResult.getResults()) {
             summaries.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
@@ -188,16 +189,14 @@ public class CorrelationCount {
             final List<MessageSummary> summariesMainStream = Lists.newArrayList();
             final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
-            if (config.messageBacklog() > 0 || !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-                addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, timerange, config.messageBacklog());
-                addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, timerange, config.messageBacklog());
+            if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+                addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, timerange);
+                addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, timerange);
             }
 
             if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
-                if (config.messageBacklog() > 0) {
-                    summaries.addAll(summariesMainStream);
-                    summaries.addAll(summariesAdditionalStream);
-                }
+                summaries.addAll(summariesMainStream);
+                summaries.addAll(summariesAdditionalStream);
                 String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count(), config);
                 return new CorrelationCountCheckResult(resultDescription, summaries);
             }
@@ -224,8 +223,8 @@ public class CorrelationCount {
     public static CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
         final String filterMainStream = HEADER_STREAM + config.stream();
         final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
-        boolean ruleTriggered=false;
-        Integer backlogSize = config.messageBacklog();
+        boolean ruleTriggered = false;
+        Integer backlogSize = SEARCH_LIMIT;
         boolean backlogEnabled = false;
         int searchLimit = 100;
         if(backlogSize != null && backlogSize > 0) {
@@ -257,8 +256,8 @@ public class CorrelationCount {
                 if (backlogEnabled ||  !CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                     String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
 
-                    addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, timerange, config.messageBacklog());
-                    addSearchMessages(searches, summariesAdditionalStream, searchQuery, filterAdditionalStream, timerange, config.messageBacklog());
+                    addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, timerange);
+                    addSearchMessages(searches, summariesAdditionalStream, searchQuery, filterAdditionalStream, timerange);
                 }
 
                 if(isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
