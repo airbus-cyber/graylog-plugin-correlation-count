@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
@@ -12,7 +11,6 @@ import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.searches.Searches;
-import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
@@ -23,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class CorrelationCountProcessor implements EventProcessor {
@@ -38,17 +35,17 @@ public class CorrelationCountProcessor implements EventProcessor {
     private final CorrelationCountProcessorConfig config;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
-    private final Searches searches;
+    private final MoreSearch moreSearch;
     private final Messages messages;
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
-                                     DBEventProcessorStateService stateService, Searches searches, Messages messages) {
+                                     DBEventProcessorStateService stateService, MoreSearch moreSearch, Messages messages) {
         this.eventDefinition = eventDefinition;
         this.config = (CorrelationCountProcessorConfig) eventDefinition.config();
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
-        this.searches = searches;
+        this.moreSearch = moreSearch;
         this.messages = messages;
     }
 
@@ -64,7 +61,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(timerange, searches, config);
+        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(timerange, moreSearch, config);
 
         List<EventWithContext> listEvents = new ArrayList<>();
         for (MessageSummary messageSummary : correlationCountCheckResult.getMessageSummaries()) {
