@@ -97,7 +97,6 @@ public class CorrelationCountProcessorTest {
                 .groupingFields(new HashSet<>())
                 .comment("test comment")
                 .searchQuery("*")
-                .repeatNotifications(false)
                 .build();
 
         assertEquals(true, CorrelationCount.checkOrderSecondStream(summariesStream2, summariesStream1, config));
@@ -117,7 +116,6 @@ public class CorrelationCountProcessorTest {
                 .groupingFields(new HashSet<>())
                 .comment("test comment")
                 .searchQuery("*")
-                .repeatNotifications(false)
                 .build();
     }
 }

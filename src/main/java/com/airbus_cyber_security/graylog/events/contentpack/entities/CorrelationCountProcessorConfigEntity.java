@@ -33,7 +33,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
-    private static final String FIELD_REPEAT_NOTIFICATIONS = "repeat_notifications";
 
     @JsonProperty(FIELD_STREAM)
     public abstract ValueReference stream();
@@ -70,9 +69,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
 
     @JsonProperty(FIELD_SEARCH_QUERY)
     public abstract ValueReference searchQuery();
-
-    @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
-    public abstract boolean repeatNotifications();
 
     public static Builder builder() {
         return Builder.create();
@@ -124,9 +120,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_SEARCH_QUERY)
         public abstract Builder searchQuery(ValueReference searchQuery);
 
-        @JsonProperty(FIELD_REPEAT_NOTIFICATIONS)
-        public abstract Builder repeatNotifications(boolean repeatNotifications);
-
         public abstract CorrelationCountProcessorConfigEntity build();
     }
 
@@ -145,7 +138,6 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
                 .groupingFields(groupingFields())
                 .comment(comment().asString(parameters))
                 .searchQuery(searchQuery().asString(parameters))
-                .repeatNotifications(repeatNotifications())
                 .build();
     }
 }
