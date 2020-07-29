@@ -10,6 +10,7 @@ import { TIME_UNITS } from 'components/event-definitions/event-definition-types/
 class TimeUnitFormGroup extends React.Component {
     static propTypes = {
         value: PropTypes.number.isRequired,
+        label: PropTypes.string.isRequired,
         update: PropTypes.func.isRequired,
         errors: PropTypes.array.isRequired
     };
@@ -31,14 +32,14 @@ class TimeUnitFormGroup extends React.Component {
     };
 
     render() {
-        const { errors } = this.props;
+        const { label, errors } = this.props;
         const { duration, unit } = this.state;
 
         return (
             // note: there is no controlId set because it just doesn't seem to work for this widget
             //       the controlId is suppose to set the "for" attribute on the label and the "id" attribute on the input
             <FormGroup validationState={errors ? 'error' : null}>
-                <TimeUnitInput label="Search within the last"
+                <TimeUnitInput label={label}
                                update={this.handleTimeRangeChange}
                                value={duration}
                                unit={unit}
