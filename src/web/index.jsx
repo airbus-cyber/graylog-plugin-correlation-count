@@ -27,7 +27,6 @@ PluginStore.register(new PluginManifest({}, {
               grouping_fields: [],
               comment: '',
               search_query: '*',
-              repeat_notifications: false,
             },
         },
     ],

@@ -248,20 +248,6 @@ const CorrelationCountForm = createReactClass({
                     value={lodash.defaultTo(eventDefinition.search_query, eventDefinition.config.search_query)}
                     onChange={this.handleChange}
                 />
-                <div>
-                    <Input
-                        id="repeat_notifications"
-                        type="checkbox"
-                        name="repeat_notifications"
-                        checked={eventDefinition.config.repeat_notifications}
-                        onChange={this.handleChange}
-                        style={{position: 'absolute'}}
-                    />
-                    <label style={{padding: '10px 20px'}}>Repeat notifications <small className='text-muted'>(Optional)</small></label>
-                    <HelpBlock>
-                        Check this box to send notifications every time the alert condition is evaluated and satisfied regardless of its state
-                    </HelpBlock>
-                </div>
             </React.Fragment>
         );
     },
