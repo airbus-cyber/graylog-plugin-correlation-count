@@ -138,7 +138,7 @@ public class CorrelationCount {
     private static String getResultDescription(long countMainStream, long countAdditionalStream, CorrelationCountProcessorConfig config) {
 
         String msgCondition;
-        if(CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+        if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
             msgCondition = "and";
         } else {
             msgCondition = config.messagesOrder();
@@ -229,7 +229,7 @@ public class CorrelationCount {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
-            if(isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
+            if (isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
                     && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
                 final List<MessageSummary> summariesMainStream = Lists.newArrayList();
                 final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
@@ -241,7 +241,7 @@ public class CorrelationCount {
                     addSearchMessages(searches, summariesAdditionalStream, searchQuery, filterAdditionalStream, timerange);
                 }
 
-                if(isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
+                if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
                     ruleTriggered = true;
                     if(isFirstTriggered) {
                         countFirstMainStream = counts[0];
