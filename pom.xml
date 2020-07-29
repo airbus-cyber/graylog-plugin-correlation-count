@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.graylog.plugins</groupId>
 		<artifactId>graylog-plugin-web-parent</artifactId>
-		<version>3.2.3</version>
+		<version>3.2.5</version>
 	</parent>
 
 	<groupId>com.airbus-cyber-security.graylog</groupId>
@@ -55,7 +55,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<graylog.version>3.2.3</graylog.version>
+		<graylog.version>3.2.5</graylog.version>
 		<graylog2.plugin-dir>/usr/share/graylog-server/plugin</graylog2.plugin-dir>
 		<auto-value.version>1.5.1</auto-value.version>
 
