@@ -119,14 +119,14 @@ public class CorrelationCount {
         for (DateTime dateFirstStream : listDateFirstStream) {
             int countSecondStream = 0;
             for (DateTime dateSecondStream : listDateSecondStream) {
-                if(	(messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
+                if ((messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
                         (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))){
                     countSecondStream++;
-                }else {
+                } else {
                     break;
                 }
             }
-            if(isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()),config.threshold(),countFirstStream)
+            if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()),config.threshold(),countFirstStream)
                     && isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()),config.additionalThreshold(),countSecondStream)) {
                 return true;
             }
