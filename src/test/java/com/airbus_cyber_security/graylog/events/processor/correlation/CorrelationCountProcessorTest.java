@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import org.graylog.events.event.EventFactory;
 import org.graylog.events.notifications.EventNotificationSettings;
 import org.graylog.events.processor.*;
+import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
-import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
@@ -35,7 +35,7 @@ public class CorrelationCountProcessorTest {
     @Mock
     private EventProcessorDependencyCheck eventProcessorDependencyCheck;
     @Mock
-    private Searches searches;
+    private MoreSearch moreSearch;
     @Mock
     private Messages messages;
 
@@ -58,7 +58,7 @@ public class CorrelationCountProcessorTest {
                 .build();
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, messages);
+                stateService, moreSearch, messages);
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {}))
                 .hasMessageContaining(eventDefinitionDto.title())
                 .hasMessageContaining(eventDefinitionDto.id())
