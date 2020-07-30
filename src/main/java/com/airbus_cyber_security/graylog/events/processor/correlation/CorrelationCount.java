@@ -116,9 +116,9 @@ public class CorrelationCount {
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
-        for (DateTime dateFirstStream : listDateFirstStream) {
+        for (DateTime dateFirstStream: listDateFirstStream) {
             int countSecondStream = 0;
-            for (DateTime dateSecondStream : listDateSecondStream) {
+            for (DateTime dateSecondStream: listDateSecondStream) {
                 if ((messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
                         (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))){
                     countSecondStream++;
@@ -149,7 +149,7 @@ public class CorrelationCount {
                 + " messages " + msgCondition + " the main stream had " + countMainStream + " messages with trigger condition "
                 + config.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.threshold() + " messages in the last " + config.searchWithinMs() + " milliseconds";
 
-        if(!config.groupingFields().isEmpty()) {
+        if (!config.groupingFields().isEmpty()) {
             resultDescription = resultDescription + " with the same value of the fields " + String.join(", ",config.groupingFields());
         }
 
@@ -158,7 +158,7 @@ public class CorrelationCount {
 
     private static boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
         boolean ruleTriggered = true;
-        if(CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.BEFORE)
+        if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.BEFORE)
                 || CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.AFTER)) {
             ruleTriggered = checkOrderSecondStream(summariesMainStream, summariesAdditionalStream, config);
         }
@@ -166,16 +166,16 @@ public class CorrelationCount {
     }
 
     public static CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
-        final String filterMainStream = HEADER_STREAM + config.stream();
-        final CountResult resultMainStream = searches.count(config.searchQuery(), timerange, filterMainStream);
-        final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
-        final CountResult resultAdditionalStream = searches.count(config.searchQuery(), timerange, filterAdditionalStream);
+        String filterMainStream = HEADER_STREAM + config.stream();
+        CountResult resultMainStream = searches.count(config.searchQuery(), timerange, filterMainStream);
+        String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
+        CountResult resultAdditionalStream = searches.count(config.searchQuery(), timerange, filterAdditionalStream);
 
         if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
                 isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
-            final List<MessageSummary> summaries = Lists.newArrayList();
-            final List<MessageSummary> summariesMainStream = Lists.newArrayList();
-            final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
+            List<MessageSummary> summaries = Lists.newArrayList();
+            List<MessageSummary> summariesMainStream = Lists.newArrayList();
+            List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
             if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                 addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, timerange);
@@ -195,11 +195,11 @@ public class CorrelationCount {
     private static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
 
         Map<String, Long[]> matchedTerms = new HashMap<>();
-        for (Map.Entry<String, Long> term : termResult.getTerms().entrySet()) {
+        for (Map.Entry<String, Long> term: termResult.getTerms().entrySet()) {
             Long termAdditionalStreamValue = termResultAdditionalStrem.getTerms().getOrDefault(term.getKey(), 0L);
             matchedTerms.put(term.getKey(), new Long[] {term.getValue(), termAdditionalStreamValue});
         }
-        for (Map.Entry<String, Long> termAdditionalStream : termResultAdditionalStrem.getTerms().entrySet()) {
+        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStrem.getTerms().entrySet()) {
             if(!matchedTerms.containsKey(termAdditionalStream.getKey())){
                 matchedTerms.put(termAdditionalStream.getKey(), new Long[] {0L, termAdditionalStream.getValue()});
             }
