@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count.svg?branch=master)](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count)
 [![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
-[![GitHub Release](https://img.shields.io/badge/release-v1.2.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
+[![GitHub Release](https://img.shields.io/badge/release-v2.0.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
 
 #### Alert condition plugin for Graylog to perform correlation
 
@@ -14,11 +14,19 @@ Perfect for example to be alerted when there is a successful authentication afte
 
 Please also take note that only a single alert is raised for this condition during the alerting interval, although multiple messages containing different values for the message fields may have been received since the last alert.
 
-**Required Graylog version:** 3.0.0 and later
-
 Example of raised alert:
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/alert.png)
+
+## Version Compatibility
+
+|  Plugin Version | Graylog Version | 
+| --------------- | --------------- | 
+| 2.0.x           | 3.2.x           | 
+| 1.2.x           | 3.0.x           |
+| 1.1.x           | 2.5.x           |
+| 1.0.x           | 2.4.x           |
+
 
 ## Installation
 
@@ -31,21 +39,19 @@ Restart `graylog-server` and you are done.
 
 ## Usage
 
-First you have to select the **Main Stream** and the alert type **Correlation Count Alert Condition**
+First you have to select the alert type **Correlation Count Alert Condition**
 
-![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/select_condition.png)
+Then, you can configure the **Stream**. The parameters **Threshold** and **Threshold Type** let you respectively select the threshold and its type which apply on the main stream.
 
-Then, in the popup that occurs, you can configure the **Additional Stream** to correlate messages of different kind from the main stream.
+Similarly, you can configure the **Additional Stream** to correlate messages of different kind from the main stream.
 
 The parameters **Additional Threshold** and **Additional Threshold Type** let you respectively select the threshold and its type which apply on the additional stream.
-
-Similarly, the parameters **Main Threshold** and **Main Threshold Type** let you respectively select the threshold and its type which apply on the main stream.
 
 You can configure the **Messages Order** between the additional stream and the main stream if you want for example the messages of the additional stream to precede the messages of the main stream to trigger the alert.
 
 You can optionally configure the **Grouping Fields** to only count messages with the same values in both streams.
 
-You can also set all the common parameters : **Title**, **Time Range**, **Grace Period**, **Message Backlog**, **Search Query** and **Repeat notifications**.
+You can also set all the common parameters : **Search within the last**, **Execute search every** and **Search Query**.
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/edit_condition.png)
 

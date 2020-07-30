@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.2.0....2.0.0) (2020-07-30)
+
+### Features
+* Add compatibility with Graylog 3.2
+
 ## [1.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.1.0....1.2.0) (2019-06-26)
 
 ### Features
