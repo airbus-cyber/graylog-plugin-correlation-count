@@ -1,5 +1,9 @@
-package com.airbus_cyber_security.graylog.events.processor.correlation;
+package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessor;
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorParameters;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCount;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.ThresholdType;
 import com.google.common.collect.ImmutableList;
 import org.graylog.events.event.EventFactory;
