@@ -225,7 +225,7 @@ public class CorrelationCount {
         long countFirstAdditionalStream = 0;
         boolean isFirstTriggered = true;
         final List<MessageSummary> summaries = Lists.newArrayList();
-        for (Map.Entry<String, Long[]> matchedTerm : matchedTerms.entrySet()) {
+        for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
