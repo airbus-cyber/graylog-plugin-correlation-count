@@ -150,7 +150,7 @@ public class CorrelationCount {
                 + config.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.threshold() + " messages in the last " + config.searchWithinMs() + " milliseconds";
 
         if(!config.groupingFields().isEmpty()) {
-            resultDescription = resultDescription+" with the same value of the fields " + String.join(", ",config.groupingFields());
+            resultDescription = resultDescription + " with the same value of the fields " + String.join(", ",config.groupingFields());
         }
 
         return resultDescription + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
