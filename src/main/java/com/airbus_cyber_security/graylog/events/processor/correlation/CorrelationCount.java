@@ -74,6 +74,14 @@ public class CorrelationCount {
         }
     }
 
+    private final Searches searches;
+    private final CorrelationCountProcessorConfig configuration;
+
+    public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration) {
+        this.searches = searches;
+        this.configuration = configuration;
+    }
+
     private static boolean isTriggered(CorrelationCount.ThresholdType thresholdType, int threshold, long count) {
         return (((thresholdType == CorrelationCount.ThresholdType.MORE) && (count > threshold)) ||
                 ((thresholdType == CorrelationCount.ThresholdType.LESS) && (count < threshold)));
@@ -259,5 +267,13 @@ public class CorrelationCount {
             return new CorrelationCountCheckResult(resultDescription, summaries);
         }
         return new CorrelationCountCheckResult("", new ArrayList<>());
+    }
+
+    CorrelationCountCheckResult runCheck(TimeRange timerange) {
+        if (this.configuration.groupingFields().isEmpty()) {
+            return runCheckCorrelationCount(timerange, this.searches, this.configuration);
+        } else {
+            return runCheckCorrelationWithFields(timerange, this.searches, this.configuration);
+        }
     }
 }
