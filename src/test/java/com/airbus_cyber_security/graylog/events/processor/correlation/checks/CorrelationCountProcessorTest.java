@@ -89,7 +89,7 @@ public class CorrelationCountProcessorTest {
         summariesStream2.add(new MessageSummary("7", new Message("message", "source", new DateTime(900))));
         summariesStream2.add(new MessageSummary("8", new Message("message", "source", new DateTime(1000))));
 
-        CorrelationCountProcessorConfig config = CorrelationCountProcessorConfig.builder()
+        CorrelationCountProcessorConfig configuration = CorrelationCountProcessorConfig.builder()
                 .stream("main stream")
                 .additionalStream("additional stream")
                 .additionalThresholdType("MORE")
@@ -104,8 +104,8 @@ public class CorrelationCountProcessorTest {
                 .searchQuery("*")
                 .build();
 
-        CorrelationCount correlationCount = new CorrelationCount(moreSearch, config);
-        assertEquals(true, correlationCount.checkOrderSecondStream(summariesStream2, summariesStream1, config));
+        CorrelationCount correlationCount = new CorrelationCount(moreSearch, configuration);
+        assertEquals(true, correlationCount.checkOrderSecondStream(summariesStream2, summariesStream1));
     }
 
     private CorrelationCountProcessorConfig getCorrelationCountProcessorConfig() {
