@@ -57,12 +57,14 @@ public class CorrelationCount {
         this.thresholds = new Thresholds(configuration);
     }
 
-    private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range) {
-        final SearchResult backlogResult = searches.search(searchQuery, filter,
+    private static List<MessageSummary> search(Searches searches, String searchQuery, String filter, TimeRange range) {
+        SearchResult backlogResult = searches.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
+        List<MessageSummary> result = Lists.newArrayList();
         for (ResultMessage resultMessage: backlogResult.getResults()) {
-            summaries.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
+            result.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
+        return result;
     }
 
     private static String buildSearchQuery(String firstField, List<String> nextFields, String matchedFieldValue, String searchQuery) {
@@ -168,19 +170,19 @@ public class CorrelationCount {
             return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
-        List<MessageSummary> summaries = Lists.newArrayList();
         List<MessageSummary> summariesMainStream = Lists.newArrayList();
         List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
         if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-            addSearchMessages(searches, summariesMainStream, config.searchQuery(), filterMainStream, timerange);
-            addSearchMessages(searches, summariesAdditionalStream, config.searchQuery(), filterAdditionalStream, timerange);
+            summariesMainStream = search(searches, config.searchQuery(), filterMainStream, timerange);
+            summariesAdditionalStream = search(searches, config.searchQuery(), filterAdditionalStream, timerange);
         }
 
         if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
             return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
+        List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
         String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count(), config);
@@ -215,8 +217,8 @@ public class CorrelationCount {
                 if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                     String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
 
-                    addSearchMessages(searches, summariesMainStream, searchQuery, filterMainStream, timerange);
-                    addSearchMessages(searches, summariesAdditionalStream, searchQuery, filterAdditionalStream, timerange);
+                    summariesMainStream = search(searches, searchQuery, filterMainStream, timerange);
+                    summariesAdditionalStream = search(searches, searchQuery, filterAdditionalStream, timerange);
                 }
 
                 if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
