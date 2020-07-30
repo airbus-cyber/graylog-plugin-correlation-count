@@ -165,6 +165,22 @@ public class CorrelationCount {
         return ruleTriggered;
     }
 
+    private static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
+
+        Map<String, Long[]> matchedTerms = new HashMap<>();
+        for (Map.Entry<String, Long> term: termResult.getTerms().entrySet()) {
+            Long termAdditionalStreamValue = termResultAdditionalStrem.getTerms().getOrDefault(term.getKey(), 0L);
+            matchedTerms.put(term.getKey(), new Long[] {term.getValue(), termAdditionalStreamValue});
+        }
+        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStrem.getTerms().entrySet()) {
+            if(!matchedTerms.containsKey(termAdditionalStream.getKey())){
+                matchedTerms.put(termAdditionalStream.getKey(), new Long[] {0L, termAdditionalStream.getValue()});
+            }
+        }
+
+        return matchedTerms;
+    }
+
     public static CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
         String filterMainStream = HEADER_STREAM + config.stream();
         CountResult resultMainStream = searches.count(config.searchQuery(), timerange, filterMainStream);
@@ -192,22 +208,6 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult("", new ArrayList<>());
     }
 
-    private static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
-
-        Map<String, Long[]> matchedTerms = new HashMap<>();
-        for (Map.Entry<String, Long> term: termResult.getTerms().entrySet()) {
-            Long termAdditionalStreamValue = termResultAdditionalStrem.getTerms().getOrDefault(term.getKey(), 0L);
-            matchedTerms.put(term.getKey(), new Long[] {term.getValue(), termAdditionalStreamValue});
-        }
-        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStrem.getTerms().entrySet()) {
-            if(!matchedTerms.containsKey(termAdditionalStream.getKey())){
-                matchedTerms.put(termAdditionalStream.getKey(), new Long[] {0L, termAdditionalStream.getValue()});
-            }
-        }
-
-        return matchedTerms;
-    }
-
     public static CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
         String filterMainStream = HEADER_STREAM + config.stream();
         String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
@@ -218,8 +218,8 @@ public class CorrelationCount {
         nextFields.remove(0);
 
         TermsResult termResult = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterMainStream, timerange, Sorting.Direction.DESC);
-        TermsResult termResultAdditionalTerms = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
-        Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalTerms);
+        TermsResult termResultAdditionalStream = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
+        Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
