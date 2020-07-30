@@ -1,5 +1,6 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.ThresholdType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.graylog2.indexer.results.CountResult;
@@ -12,41 +13,13 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class CorrelationCount {
-    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCount.class.getSimpleName());
     private static final int SEARCH_LIMIT = 500;
 
     private static final String HEADER_STREAM = "streams:";
-
-    enum ThresholdType {
-
-        MORE("MORE"),
-        LESS("LESS");
-
-        private final String description;
-
-        ThresholdType(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public static ThresholdType fromString(String text) {
-            for (ThresholdType type : ThresholdType.values()) {
-                if (type.description.equalsIgnoreCase(text)) {
-                    return type;
-                }
-            }
-            throw new IllegalArgumentException("Unknown ThresholdType value: " + text);
-        }
-    }
 
     enum OrderType {
 
@@ -82,9 +55,9 @@ public class CorrelationCount {
         this.configuration = configuration;
     }
 
-    private static boolean isTriggered(CorrelationCount.ThresholdType thresholdType, int threshold, long count) {
-        return (((thresholdType == CorrelationCount.ThresholdType.MORE) && (count > threshold)) ||
-                ((thresholdType == CorrelationCount.ThresholdType.LESS) && (count < threshold)));
+    private static boolean isTriggered(ThresholdType thresholdType, int threshold, long count) {
+        return (((thresholdType == ThresholdType.MORE) && (count > threshold)) ||
+                ((thresholdType == ThresholdType.LESS) && (count < threshold)));
     }
 
     private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range) {
@@ -134,8 +107,8 @@ public class CorrelationCount {
                     break;
                 }
             }
-            if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), countFirstStream)
-                    && isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), countSecondStream)) {
+            if (isTriggered(ThresholdType.fromString(config.thresholdType()), config.threshold(), countFirstStream)
+                    && isTriggered(ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), countSecondStream)) {
                 return true;
             }
             countFirstStream--;
@@ -195,8 +168,8 @@ public class CorrelationCount {
         String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
         CountResult resultAdditionalStream = searches.count(config.searchQuery(), timerange, filterAdditionalStream);
 
-        if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
-                isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
+        if (isTriggered(ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
+                isTriggered(ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
             List<MessageSummary> summaries = Lists.newArrayList();
             List<MessageSummary> summariesMainStream = Lists.newArrayList();
             List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
@@ -237,8 +210,8 @@ public class CorrelationCount {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
-            if (isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()), config.threshold(), counts[0])
-                    && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()), config.additionalThreshold(), counts[1])) {
+            if (isTriggered(ThresholdType.valueOf(config.thresholdType()), config.threshold(), counts[0])
+                    && isTriggered(ThresholdType.valueOf(config.additionalThresholdType()), config.additionalThreshold(), counts[1])) {
                 List<MessageSummary> summariesMainStream = Lists.newArrayList();
                 List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
