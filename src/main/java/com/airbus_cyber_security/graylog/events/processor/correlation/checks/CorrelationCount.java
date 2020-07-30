@@ -1,6 +1,7 @@
-package com.airbus_cyber_security.graylog.events.processor.correlation;
+package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.ThresholdType;
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountCheckResult;
+import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.graylog2.indexer.results.CountResult;
@@ -242,7 +243,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult("", new ArrayList<>());
     }
 
-    CorrelationCountCheckResult runCheck(TimeRange timerange) {
+    public CorrelationCountCheckResult runCheck(TimeRange timerange) {
         if (this.configuration.groupingFields().isEmpty()) {
             return runCheckCorrelationCount(timerange, this.searches, this.configuration);
         } else {
