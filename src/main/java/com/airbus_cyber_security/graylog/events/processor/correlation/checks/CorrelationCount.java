@@ -49,19 +49,12 @@ public class CorrelationCount {
 
     private final Searches searches;
     private final CorrelationCountProcessorConfig configuration;
-    private final Threshold mainStreamThreshold;
-    private final Threshold additionalStreamThreshold;
+    private final Thresholds thresholds;
 
     public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration) {
         this.searches = searches;
         this.configuration = configuration;
-        this.mainStreamThreshold = new Threshold(configuration.thresholdType(), configuration.threshold());
-        this.additionalStreamThreshold = new Threshold(configuration.additionalThresholdType(), configuration.additionalThreshold());
-    }
-
-    private static boolean isTriggered(ThresholdType thresholdType, int threshold, long count) {
-        return (((thresholdType == ThresholdType.MORE) && (count > threshold)) ||
-                ((thresholdType == ThresholdType.LESS) && (count < threshold)));
+        this.thresholds = new Thresholds(configuration);
     }
 
     private static void addSearchMessages(Searches searches, List<MessageSummary> summaries, String searchQuery, String filter, TimeRange range) {
@@ -111,7 +104,7 @@ public class CorrelationCount {
                     break;
                 }
             }
-            if (this.mainStreamThreshold.isReached(countFirstStream) && this.additionalStreamThreshold.isReached(countSecondStream)) {
+            if (this.thresholds.areReached(countFirstStream, countSecondStream)) {
                 return true;
             }
             countFirstStream--;
@@ -171,7 +164,7 @@ public class CorrelationCount {
         String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
         CountResult resultAdditionalStream = searches.count(config.searchQuery(), timerange, filterAdditionalStream);
 
-        if (this.mainStreamThreshold.isReached(resultMainStream.count()) && this.additionalStreamThreshold.isReached(resultAdditionalStream.count())) {
+        if (this.thresholds.areReached(resultMainStream.count(), resultAdditionalStream.count())) {
             List<MessageSummary> summaries = Lists.newArrayList();
             List<MessageSummary> summariesMainStream = Lists.newArrayList();
             List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
@@ -212,7 +205,7 @@ public class CorrelationCount {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
-            if (this.mainStreamThreshold.isReached(counts[0]) && this.additionalStreamThreshold.isReached(counts[1])) {
+            if (this.thresholds.areReached(counts[0], counts[1])) {
                 List<MessageSummary> summariesMainStream = Lists.newArrayList();
                 List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
