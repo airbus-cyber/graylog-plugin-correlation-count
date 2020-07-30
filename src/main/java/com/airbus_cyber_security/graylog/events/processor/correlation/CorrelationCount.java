@@ -126,8 +126,8 @@ public class CorrelationCount {
                     break;
                 }
             }
-            if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()),config.threshold(),countFirstStream)
-                    && isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()),config.additionalThreshold(),countSecondStream)) {
+            if (isTriggered(CorrelationCount.ThresholdType.fromString(config.thresholdType()), config.threshold(), countFirstStream)
+                    && isTriggered(CorrelationCount.ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), countSecondStream)) {
                 return true;
             }
             countFirstStream--;
@@ -229,10 +229,10 @@ public class CorrelationCount {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
-            if (isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()),config.threshold(),counts[0])
-                    && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()),config.additionalThreshold(),counts[1])) {
-                final List<MessageSummary> summariesMainStream = Lists.newArrayList();
-                final List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
+            if (isTriggered(CorrelationCount.ThresholdType.valueOf(config.thresholdType()), config.threshold(), counts[0])
+                    && isTriggered(CorrelationCount.ThresholdType.valueOf(config.additionalThresholdType()), config.additionalThreshold(), counts[1])) {
+                List<MessageSummary> summariesMainStream = Lists.newArrayList();
+                List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
                 if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
                     String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
