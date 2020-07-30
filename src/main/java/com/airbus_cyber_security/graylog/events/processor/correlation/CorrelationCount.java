@@ -218,8 +218,8 @@ public class CorrelationCount {
         nextFields.remove(0);
 
         TermsResult termResult = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterMainStream, timerange, Sorting.Direction.DESC);
-        TermsResult termResultAdditionalStrem = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
-        Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStrem);
+        TermsResult termResultAdditionalTerms = searches.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
+        Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalTerms);
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
