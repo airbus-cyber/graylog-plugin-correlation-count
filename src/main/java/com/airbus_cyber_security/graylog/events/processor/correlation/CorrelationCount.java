@@ -209,8 +209,8 @@ public class CorrelationCount {
     }
 
     public static CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
-        final String filterMainStream = HEADER_STREAM + config.stream();
-        final String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
+        String filterMainStream = HEADER_STREAM + config.stream();
+        String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
         boolean ruleTriggered = false;
 
         List<String> nextFields = new ArrayList<>(config.groupingFields());
