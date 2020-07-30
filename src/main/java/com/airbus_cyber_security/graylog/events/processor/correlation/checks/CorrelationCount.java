@@ -49,10 +49,14 @@ public class CorrelationCount {
 
     private final Searches searches;
     private final CorrelationCountProcessorConfig configuration;
+    private final Threshold mainStreamThreshold;
+    private final Threshold additionalStreamThreshold;
 
     public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration) {
         this.searches = searches;
         this.configuration = configuration;
+        this.mainStreamThreshold = new Threshold(configuration.thresholdType(), configuration.threshold());
+        this.additionalStreamThreshold = new Threshold(configuration.additionalThresholdType(), configuration.additionalThreshold());
     }
 
     private static boolean isTriggered(ThresholdType thresholdType, int threshold, long count) {
@@ -91,7 +95,7 @@ public class CorrelationCount {
      * Check that the Second Stream is before or after the first stream
      */
     @VisibleForTesting
-    protected static boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream, CorrelationCountProcessorConfig config) {
+    protected boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream, CorrelationCountProcessorConfig config) {
         int countFirstStream = summariesFirstStream.size();
         CorrelationCount.OrderType messagesOrder = CorrelationCount.OrderType.fromString(config.messagesOrder());
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
@@ -107,8 +111,7 @@ public class CorrelationCount {
                     break;
                 }
             }
-            if (isTriggered(ThresholdType.fromString(config.thresholdType()), config.threshold(), countFirstStream)
-                    && isTriggered(ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), countSecondStream)) {
+            if (this.mainStreamThreshold.isReached(countFirstStream) && this.additionalStreamThreshold.isReached(countSecondStream)) {
                 return true;
             }
             countFirstStream--;
@@ -137,7 +140,7 @@ public class CorrelationCount {
         return resultDescription + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
     }
 
-    private static boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
+    private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
         boolean ruleTriggered = true;
         if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.BEFORE)
                 || CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.AFTER)) {
@@ -162,14 +165,13 @@ public class CorrelationCount {
         return matchedTerms;
     }
 
-    public static CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
+    public CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
         String filterMainStream = HEADER_STREAM + config.stream();
         CountResult resultMainStream = searches.count(config.searchQuery(), timerange, filterMainStream);
         String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
         CountResult resultAdditionalStream = searches.count(config.searchQuery(), timerange, filterAdditionalStream);
 
-        if (isTriggered(ThresholdType.fromString(config.thresholdType()), config.threshold(), resultMainStream.count()) &&
-                isTriggered(ThresholdType.fromString(config.additionalThresholdType()), config.additionalThreshold(), resultAdditionalStream.count())) {
+        if (this.mainStreamThreshold.isReached(resultMainStream.count()) && this.additionalStreamThreshold.isReached(resultAdditionalStream.count())) {
             List<MessageSummary> summaries = Lists.newArrayList();
             List<MessageSummary> summariesMainStream = Lists.newArrayList();
             List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
@@ -189,7 +191,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult("", new ArrayList<>());
     }
 
-    public static CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
+    public CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
         String filterMainStream = HEADER_STREAM + config.stream();
         String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
         boolean ruleTriggered = false;
@@ -210,8 +212,7 @@ public class CorrelationCount {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
-            if (isTriggered(ThresholdType.valueOf(config.thresholdType()), config.threshold(), counts[0])
-                    && isTriggered(ThresholdType.valueOf(config.additionalThresholdType()), config.additionalThreshold(), counts[1])) {
+            if (this.mainStreamThreshold.isReached(counts[0]) && this.additionalStreamThreshold.isReached(counts[1])) {
                 List<MessageSummary> summariesMainStream = Lists.newArrayList();
                 List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
 
