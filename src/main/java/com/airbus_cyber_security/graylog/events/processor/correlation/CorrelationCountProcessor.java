@@ -10,7 +10,6 @@ import org.graylog.events.processor.*;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
-import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.slf4j.Logger;
@@ -32,21 +31,20 @@ public class CorrelationCountProcessor implements EventProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(CorrelationCountProcessor.class);
 
     private final EventDefinition eventDefinition;
-    private final CorrelationCountProcessorConfig config;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
-    private final MoreSearch moreSearch;
     private final Messages messages;
+    private final CorrelationCount correlationCount;
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
                                      DBEventProcessorStateService stateService, MoreSearch moreSearch, Messages messages) {
         this.eventDefinition = eventDefinition;
-        this.config = (CorrelationCountProcessorConfig) eventDefinition.config();
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
-        this.moreSearch = moreSearch;
         this.messages = messages;
+        CorrelationCountProcessorConfig configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
+        this.correlationCount = new CorrelationCount(moreSearch, configuration);
     }
 
     @Override
@@ -61,7 +59,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
-        CorrelationCountCheckResult correlationCountCheckResult = getCorrelationCountCheckResult(timerange, moreSearch, config);
+        CorrelationCountCheckResult correlationCountCheckResult = this.correlationCount.runCheck(timerange);
 
         List<EventWithContext> listEvents = new ArrayList<>();
         for (MessageSummary messageSummary : correlationCountCheckResult.getMessageSummaries()) {
@@ -92,14 +90,6 @@ public class CorrelationCountProcessor implements EventProcessor {
             messageConsumer.accept(Lists.newArrayList(new MessageSummary(message.getIndex(), message.getMessage())));
         } catch (IOException e) {
             throw new EventProcessorException("Failed to query origin context message", false, eventDefinition, e);
-        }
-    }
-
-    CorrelationCountCheckResult getCorrelationCountCheckResult(TimeRange timerange, Searches searches, CorrelationCountProcessorConfig config) {
-        if (config.groupingFields().isEmpty()) {
-            return CorrelationCount.runCheckCorrelationCount(timerange, searches, config);
-        } else {
-            return CorrelationCount.runCheckCorrelationWithFields(timerange, searches, config);
         }
     }
 }
