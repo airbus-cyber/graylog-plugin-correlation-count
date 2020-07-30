@@ -55,8 +55,6 @@ You can also set all the common parameters : **Search within the last**, **Execu
 
 ![](https://raw.githubusercontent.com/airbus-cyber/graylog-plugin-correlation-count/master/images/edit_condition.png)
 
-Click on **Manage conditions** in the **Alerts** section to see the conditions details.
-
 ## Build
 
 This project is using Maven 3 and requires Java 8 or higher.
