@@ -1,4 +1,4 @@
-package com.airbus_cyber_security.graylog.events.processor.correlation;
+package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import org.graylog2.plugin.MessageSummary;
 

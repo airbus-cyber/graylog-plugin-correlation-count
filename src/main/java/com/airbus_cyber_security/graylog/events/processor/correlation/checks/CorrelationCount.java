@@ -1,6 +1,5 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
-import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountCheckResult;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
