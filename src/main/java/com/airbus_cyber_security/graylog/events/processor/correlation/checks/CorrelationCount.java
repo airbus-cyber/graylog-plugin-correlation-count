@@ -90,9 +90,9 @@ public class CorrelationCount {
      * Check that the Second Stream is before or after the first stream
      */
     @VisibleForTesting
-    protected boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream, CorrelationCountProcessorConfig config) {
+    protected boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream) {
         int countFirstStream = summariesFirstStream.size();
-        CorrelationCount.OrderType messagesOrder = CorrelationCount.OrderType.fromString(config.messagesOrder());
+        CorrelationCount.OrderType messagesOrder = CorrelationCount.OrderType.fromString(this.configuration.messagesOrder());
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
@@ -135,11 +135,11 @@ public class CorrelationCount {
         return resultDescription + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
     }
 
-    private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
-        if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+    private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream) {
+        if (CorrelationCount.OrderType.fromString(this.configuration.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
             return true;
         }
-        return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream, config);
+        return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
     private static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
@@ -176,7 +176,7 @@ public class CorrelationCount {
             summariesAdditionalStream = search(searches, config.searchQuery(), filterAdditionalStream, timerange);
         }
 
-        if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
+        if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
             return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
@@ -219,7 +219,7 @@ public class CorrelationCount {
                     summariesAdditionalStream = search(searches, searchQuery, filterAdditionalStream, timerange);
                 }
 
-                if (isRuleTriggered(summariesMainStream, summariesAdditionalStream, config)) {
+                if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                     ruleTriggered = true;
                     if(isFirstTriggered) {
                         countFirstMainStream = counts[0];
