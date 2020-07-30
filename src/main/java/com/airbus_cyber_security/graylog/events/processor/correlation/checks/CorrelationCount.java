@@ -136,12 +136,10 @@ public class CorrelationCount {
     }
 
     private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream, CorrelationCountProcessorConfig config) {
-        boolean ruleTriggered = true;
-        if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.BEFORE)
-                || CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.AFTER)) {
-            ruleTriggered = checkOrderSecondStream(summariesMainStream, summariesAdditionalStream, config);
+        if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+            return true;
         }
-        return ruleTriggered;
+        return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream, config);
     }
 
     private static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
