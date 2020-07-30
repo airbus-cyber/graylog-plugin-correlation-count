@@ -1,6 +1,7 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCount;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountCheckResult;
 import com.google.common.collect.Lists;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
