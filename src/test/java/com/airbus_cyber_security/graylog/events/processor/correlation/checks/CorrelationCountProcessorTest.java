@@ -104,7 +104,8 @@ public class CorrelationCountProcessorTest {
                 .searchQuery("*")
                 .build();
 
-        assertEquals(true, CorrelationCount.checkOrderSecondStream(summariesStream2, summariesStream1, config));
+        CorrelationCount correlationCount = new CorrelationCount(moreSearch, config);
+        assertEquals(true, correlationCount.checkOrderSecondStream(summariesStream2, summariesStream1, config));
     }
 
     private CorrelationCountProcessorConfig getCorrelationCountProcessorConfig() {
