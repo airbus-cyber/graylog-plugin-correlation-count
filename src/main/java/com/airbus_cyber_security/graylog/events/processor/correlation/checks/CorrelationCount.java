@@ -168,13 +168,8 @@ public class CorrelationCount {
             return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
-        List<MessageSummary> summariesMainStream = Lists.newArrayList();
-        List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
-
-        if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-            summariesMainStream = search(searches, config.searchQuery(), filterMainStream, timerange);
-            summariesAdditionalStream = search(searches, config.searchQuery(), filterAdditionalStream, timerange);
-        }
+        List<MessageSummary> summariesMainStream = search(searches, config.searchQuery(), filterMainStream, timerange);
+        List<MessageSummary> summariesAdditionalStream = search(searches, config.searchQuery(), filterAdditionalStream, timerange);
 
         if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
             return new CorrelationCountCheckResult("", new ArrayList<>());
@@ -209,15 +204,9 @@ public class CorrelationCount {
             Long[] counts = matchedTerm.getValue();
 
             if (this.thresholds.areReached(counts[0], counts[1])) {
-                List<MessageSummary> summariesMainStream = Lists.newArrayList();
-                List<MessageSummary> summariesAdditionalStream = Lists.newArrayList();
-
-                if (!CorrelationCount.OrderType.valueOf(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-                    String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
-
-                    summariesMainStream = search(searches, searchQuery, filterMainStream, timerange);
-                    summariesAdditionalStream = search(searches, searchQuery, filterAdditionalStream, timerange);
-                }
+                String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
+                List<MessageSummary> summariesMainStream = search(searches, searchQuery, filterMainStream, timerange);
+                List<MessageSummary> summariesAdditionalStream = search(searches, searchQuery, filterAdditionalStream, timerange);
 
                 if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                     ruleTriggered = true;
