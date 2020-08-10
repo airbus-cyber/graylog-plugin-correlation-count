@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.0.0....2.1.0) (2020-08-10)
+
+### Features
+* Disabled isolated Plugin (shares a class loader with other plugins that have isolated=false)
+
+
 ## [2.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.2.0....2.0.0) (2020-07-30)
 
 ### Features
