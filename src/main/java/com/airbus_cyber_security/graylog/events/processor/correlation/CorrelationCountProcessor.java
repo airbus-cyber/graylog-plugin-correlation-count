@@ -37,6 +37,7 @@ public class CorrelationCountProcessor implements EventProcessor {
     private final DBEventProcessorStateService stateService;
     private final Messages messages;
     private final CorrelationCount correlationCount;
+    private final CorrelationCountProcessorConfig configuration;
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
@@ -45,7 +46,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.messages = messages;
-        CorrelationCountProcessorConfig configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
+        this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
         this.correlationCount = new CorrelationCount(moreSearch, configuration);
     }
 
@@ -67,6 +68,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         for (MessageSummary messageSummary : correlationCountCheckResult.getMessageSummaries()) {
             final Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
             event.setOriginContext(EventOriginContext.elasticsearchMessage(messageSummary.getIndex(), messageSummary.getId()));
+            event.addSourceStream(configuration.stream());
+            event.addSourceStream(configuration.additionalStream());
             LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
             EventWithContext eventWithContext = EventWithContext.create(event, messageSummary.getRawMessage());
             LOG.debug("Created event: id ", eventWithContext.event().getId(), eventWithContext.event().getMessage());
