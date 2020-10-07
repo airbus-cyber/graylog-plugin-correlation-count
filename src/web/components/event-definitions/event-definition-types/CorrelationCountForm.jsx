@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
-import naturalSort from 'javascript-natural-sort';
 import { naturalSortIgnoreCase } from 'util/SortUtils';
 
 import { ControlLabel, FormGroup, HelpBlock } from 'components/graylog';
@@ -10,15 +9,32 @@ import { Select, MultiSelect } from 'components/common';
 import { Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
+import { defaultCompare } from 'views/logic/DefaultCompare';
+
 
 class CorrelationCountForm extends React.Component {
+    // Memoize function to only format fields when they change. Use joined fieldNames as cache key.
+    formatFields = lodash.memoize(
+        (fieldTypes) => {
+            return fieldTypes
+                .sort((ftA, ftB) => defaultCompare(ftA.name, ftB.name))
+                .map((fieldType) => {
+                    return {
+                        label: `${fieldType.name} – ${fieldType.value.type.type}`,
+                        value: fieldType.name,
+                    };
+                }
+            );
+        },
+        (fieldTypes) => fieldTypes.map((ft) => ft.name).join('-'),
+    );
 
     static propTypes = {
         eventDefinition: PropTypes.object.isRequired,
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         streams: PropTypes.array.isRequired,
-        fields: PropTypes.array.isRequired,
+        allFieldTypes: PropTypes.array.isRequired,
     };
 
     formatStreamIds = () => {
@@ -76,10 +92,9 @@ class CorrelationCountForm extends React.Component {
         this.propagateChange('messages_order', nextValue);
     };
 
-    handleFieldsChange = (key) => {
-        return nextValue => {
-            this.propagateChange(key, nextValue === '' ? [] : nextValue.split(','));
-        }
+    handleGroupByChange = (selected) => {
+        const nextValue = selected === '' ? [] : selected.split(',');
+        this.propagateChange('grouping_fields', nextValue)
     };
 
     availableThresholdTypes = () => {
@@ -97,20 +112,11 @@ class CorrelationCountForm extends React.Component {
         ]
     };
 
-    _formatOption = (key, value) => {
-        return {value: value, label: key};
-    };
-
     render() {
-        const { eventDefinition, validation, fields } = this.props;
-
+        const { eventDefinition, validation, allFieldTypes } = this.props;
         const formattedStreams = this.formatStreamIds();
+        const formattedFields = this.formatFields(allFieldTypes);
 
-        let formattedOptions = null;
-        if(fields) {
-            formattedOptions = Object.keys(fields).map(key => this._formatOption(fields[key], fields[key]))
-                .sort((s1, s2) => naturalSort(s1.label.toLowerCase(), s2.label.toLowerCase()));
-        }
         return (
             <React.Fragment>
                 <FormGroup controlId="stream"
@@ -215,16 +221,15 @@ class CorrelationCountForm extends React.Component {
                     update={this.handleExecuteEveryMsChange}
                     errors={validation.errors.execute_every_ms}
                 />
-                <FormGroup controlId="grouping_fields">
-                    <ControlLabel>Grouping Fields <small className="text-muted">(Optional)</small></ControlLabel>
-                    <MultiSelect id="grouping_fields"
-                                 placeholder="Add Grouping Fields"
-                                 required
-                                 options={formattedOptions}
-                                 matchProp="value"
-                                 value={Array.isArray(lodash.defaultTo(eventDefinition.grouping_fields)) ? lodash.defaultTo(eventDefinition.grouping_fields).join(',') : eventDefinition.config.grouping_fields.join(',')}
-                                 onChange={this.handleFieldsChange('grouping_fields')}
-                    />
+                <FormGroup controlId="group-by">
+                    <ControlLabel>Group by Field(s) <small className="text-muted">(Optional)</small></ControlLabel>
+                    <MultiSelect id="group-by"
+                                 matchProp="label"
+                                 onChange={this.handleGroupByChange}
+                                 options={formattedFields}
+                                 ignoreAccents={false}
+                                 value={lodash.defaultTo(eventDefinition.config.grouping_fields, []).join(',')}
+                                 allowCreate />
                     <HelpBlock>
                         Fields that should be checked to count messages with the same values
                     </HelpBlock>
