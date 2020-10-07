@@ -4,7 +4,7 @@ import createReactClass from 'create-react-class';
 import { Spinner } from 'components/common';
 
 import connect from 'stores/connect';
-import withStreams from './withStreams';
+import withStreams from 'components/event-definitions/event-definition-types/withStreams';
 
 import CorrelationCountForm from './CorrelationCountForm';
 import StoreProvider from 'injection/StoreProvider';
