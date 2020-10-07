@@ -1,7 +1,7 @@
 {
   "name": "CorrelationCount",
   "version": "2.1.1",
-  "description": "Graylog plugin CorrelationConut Web Interface",
+  "description": "Graylog plugin CorrelationCount Web Interface",
   "repository": {
     "type": "git",
     "url": "https://github.com/airbus-cyber/graylog-plugin-correlation-count"
