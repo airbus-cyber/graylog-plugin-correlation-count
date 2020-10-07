@@ -1,5 +1,4 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
 import PropTypes from 'prop-types';
 import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
@@ -12,17 +11,17 @@ import { Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
 
-const CorrelationCountForm = createReactClass({
+class CorrelationCountForm extends React.Component {
 
-    propTypes: {
+    static propTypes = {
         eventDefinition: PropTypes.object.isRequired,
         validation: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
         streams: PropTypes.array.isRequired,
         fields: PropTypes.array.isRequired,
-    },
+    };
 
-    formatStreamIds() {
+    formatStreamIds = () => {
         const { streams } = this.props;
 
         return streams.map(s => s.id)
@@ -35,72 +34,72 @@ const CorrelationCountForm = createReactClass({
                 };
             })
             .sort((s1, s2) => naturalSortIgnoreCase(s1.label, s2.label));
-    },
+    };
 
-    propagateChange(key, value) {
+    propagateChange = (key, value) => {
         const { eventDefinition, onChange } = this.props;
         const config = lodash.cloneDeep(eventDefinition.config);
         config[key] = value;
         onChange('config', config);
-    },
+    };
 
-    handleChange(event) {
+    handleChange = (event) => {
         const { name } = event.target;
         this.propagateChange(name, FormsUtils.getValueFromInput(event.target));
-    },
+    };
 
-    handleSearchWithinMsChange(nextValue) {
+    handleSearchWithinMsChange = (nextValue) => {
         this.propagateChange('search_within_ms', nextValue);
-    },
+    };
 
-    handleExecuteEveryMsChange(nextValue) {
+    handleExecuteEveryMsChange = (nextValue) => {
         this.propagateChange('execute_every_ms', nextValue);
-    },
+    };
 
-    handleStreamChange(nextValue) {
+    handleStreamChange = (nextValue) => {
         this.propagateChange('stream', nextValue);
-    },
+    };
 
-    handleAdditionalStreamChange(nextValue) {
+    handleAdditionalStreamChange = (nextValue) => {
         this.propagateChange('additional_stream', nextValue);
-    },
+    };
 
-    handleAdditionalThresholdTypeChange(nextValue) {
+    handleAdditionalThresholdTypeChange = (nextValue) => {
         this.propagateChange('additional_threshold_type', nextValue);
-    },
+    };
 
-    handleThresholdTypeChange(nextValue) {
+    handleThresholdTypeChange = (nextValue) => {
         this.propagateChange('threshold_type', nextValue);
-    },
+    };
 
-    handleMessagesOrderChange(nextValue) {
+    handleMessagesOrderChange = (nextValue) => {
         this.propagateChange('messages_order', nextValue);
-    },
+    };
 
-    handleFieldsChange(key) {
+    handleFieldsChange = (key) => {
         return nextValue => {
             this.propagateChange(key, nextValue === '' ? [] : nextValue.split(','));
         }
-    },
+    };
 
-    availableThresholdTypes() {
+    availableThresholdTypes = () => {
         return [
             {value: 'MORE', label: 'more than'},
             {value: 'LESS', label: 'less than'},
         ];
-    },
+    };
 
-    availableMessagesOrder() {
+    availableMessagesOrder = () => {
         return [
             {value: 'BEFORE', label: 'additional messages before main messages'},
             {value: 'AFTER', label: 'additional messages after main messages'},
             {value: 'ANY', label: 'any order'},
         ]
-    },
+    };
 
-    _formatOption(key, value) {
+    _formatOption = (key, value) => {
         return {value: value, label: key};
-    },
+    };
 
     render() {
         const { eventDefinition, validation, fields } = this.props;
@@ -250,8 +249,7 @@ const CorrelationCountForm = createReactClass({
                 />
             </React.Fragment>
         );
-    },
-
-});
+    }
+}
 
 export default CorrelationCountForm;
