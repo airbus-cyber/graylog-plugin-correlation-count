@@ -11,6 +11,7 @@ import org.graylog.events.notifications.EventNotificationSettings;
 import org.graylog.events.processor.*;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
+import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
