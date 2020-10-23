@@ -18,7 +18,7 @@ services:
         ipv4_address: 172.15.0.2
 
   graylog:
-    image: "graylog/graylog:3.2"
+    image: "graylog/graylog:3.3"
     container_name : graylog
     links:
       - mongo:mongo
