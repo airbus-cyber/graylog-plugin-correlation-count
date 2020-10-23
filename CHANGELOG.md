@@ -1,6 +1,10 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
+## [2.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.2....2.2.0) (2020-10-23)
+### Features
+* Add compatibility with Graylog 3.3
+
 ## [2.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.1....2.1.2) (2020-10-16)
 ### Bug Fixes
 * Fix Create only 1 event when the condition is satisfied
