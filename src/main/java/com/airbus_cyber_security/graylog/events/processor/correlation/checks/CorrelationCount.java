@@ -22,17 +22,22 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.graylog.events.search.MoreSearch;
+import org.graylog.events.processor.EventDefinition;
+import org.graylog.events.processor.EventProcessorException;
+import org.graylog.events.processor.aggregation.*;
 import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
-import org.graylog2.indexer.results.TermsResult;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.graylog2.rest.models.search.responses.TermsResult;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -70,38 +75,47 @@ public class CorrelationCount {
 
     private final CorrelationCountProcessorConfig configuration;
     private final Thresholds thresholds;
-    private final MoreSearch moreSearch;
+    private final Searches searches;
+    private final AggregationSearch.Factory aggregationSearchFactory;
+    private final EventDefinition eventDefinition;
 
-    public CorrelationCount(MoreSearch moreSearch, CorrelationCountProcessorConfig configuration) {
-        this.moreSearch = moreSearch;
+    public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
+        this.searches = searches;
         this.configuration = configuration;
         this.thresholds = new Thresholds(configuration);
+        this.aggregationSearchFactory = aggregationSearchFactory;
+        this.eventDefinition = eventDefinition;
     }
 
-    public static List<MessageSummary> search(MoreSearch moreSearch, String searchQuery, String filter, TimeRange range) {
-        SearchResult backlogResult = moreSearch.search(searchQuery, filter,
+    public List<MessageSummary> search(String searchQuery, String stream, TimeRange range) {
+        String filter = HEADER_STREAM + stream;
+        SearchResult backlogResult = this.searches.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         List<MessageSummary> result = Lists.newArrayList();
-        for (ResultMessage resultMessage: backlogResult.getResults()) {
+        for (ResultMessage resultMessage : backlogResult.getResults()) {
             result.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
         return result;
     }
 
-    public static String buildSearchQuery(String firstField, List<String> nextFields, String matchedFieldValue, String searchQuery) {
+    public String buildSearchQuery(String matchedFieldValue) {
+        List<String> nextFields = new ArrayList<>(configuration.groupingFields());
+        String firstField = nextFields.remove(0);
+        String searchQuery = this.configuration.searchQuery();
+
         for (String field : nextFields) {
             matchedFieldValue = matchedFieldValue.replaceFirst(" - ", " AND " + field + ": ");
         }
         return (searchQuery + " AND " + firstField + ": " + matchedFieldValue);
     }
 
-    private static List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCount.OrderType messagesOrderType){
+    private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCount.OrderType messagesOrderType) {
         List<DateTime> listDate = new ArrayList<>();
         for (MessageSummary messageSummary : summaries) {
             listDate.add(messageSummary.getTimestamp());
         }
         Collections.sort(listDate);
-        if(messagesOrderType.equals(CorrelationCount.OrderType.AFTER)) {
+        if (messagesOrderType.equals(CorrelationCount.OrderType.AFTER)) {
             Collections.reverse(listDate);
         }
         return listDate;
@@ -117,11 +131,11 @@ public class CorrelationCount {
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
-        for (DateTime dateFirstStream: listDateFirstStream) {
+        for (DateTime dateFirstStream : listDateFirstStream) {
             int countSecondStream = 0;
-            for (DateTime dateSecondStream: listDateSecondStream) {
+            for (DateTime dateSecondStream : listDateSecondStream) {
                 if ((messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
-                        (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))){
+                        (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
                     countSecondStream++;
                 } else {
                     break;
@@ -135,25 +149,24 @@ public class CorrelationCount {
         return false;
     }
 
-    private static String getResultDescription(long countMainStream, long countAdditionalStream, CorrelationCountProcessorConfig config) {
-
+    private String getResultDescription(long countMainStream, long countAdditionalStream) {
         String msgCondition;
-        if (CorrelationCount.OrderType.fromString(config.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+        if (CorrelationCount.OrderType.fromString(this.configuration.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
             msgCondition = "and";
         } else {
-            msgCondition = config.messagesOrder();
+            msgCondition = this.configuration.messagesOrder();
         }
 
         String resultDescription = "The additional stream had " + countAdditionalStream + " messages with trigger condition "
-                + config.additionalThresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.additionalThreshold()
+                + this.configuration.additionalThresholdType().toLowerCase(Locale.ENGLISH) + " than " + this.configuration.additionalThreshold()
                 + " messages " + msgCondition + " the main stream had " + countMainStream + " messages with trigger condition "
-                + config.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + config.threshold() + " messages in the last " + config.searchWithinMs() + " milliseconds";
+                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + this.configuration.threshold() + " messages in the last " + this.configuration.searchWithinMs() + " milliseconds";
 
-        if (!config.groupingFields().isEmpty()) {
-            resultDescription = resultDescription + " with the same value of the fields " + String.join(", ",config.groupingFields());
+        if (!this.configuration.groupingFields().isEmpty()) {
+            resultDescription = resultDescription + " with the same value of the fields " + String.join(", ", this.configuration.groupingFields());
         }
 
-        return resultDescription + ". (Executes every: " + config.executeEveryMs() + " milliseconds)";
+        return resultDescription + ". (Executes every: " + this.configuration.executeEveryMs() + " milliseconds)";
     }
 
     private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream) {
@@ -163,34 +176,43 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    public static Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStrem){
-
+    public Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStream) {
         Map<String, Long[]> matchedTerms = new HashMap<>();
-        for (Map.Entry<String, Long> term: termResult.getTerms().entrySet()) {
-            Long termAdditionalStreamValue = termResultAdditionalStrem.getTerms().getOrDefault(term.getKey(), 0L);
-            matchedTerms.put(term.getKey(), new Long[] {term.getValue(), termAdditionalStreamValue});
+        for (Map.Entry<String, Long> term : termResult.terms().entrySet()) {
+            Long termAdditionalStreamValue = termResultAdditionalStream.terms().getOrDefault(term.getKey(), 0L);
+            matchedTerms.put(term.getKey(), new Long[]{term.getValue(), termAdditionalStreamValue});
         }
-        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStrem.getTerms().entrySet()) {
-            if(!matchedTerms.containsKey(termAdditionalStream.getKey())){
-                matchedTerms.put(termAdditionalStream.getKey(), new Long[] {0L, termAdditionalStream.getValue()});
+        for (Map.Entry<String, Long> termAdditionalStream : termResultAdditionalStream.terms().entrySet()) {
+            if (!matchedTerms.containsKey(termAdditionalStream.getKey())) {
+                matchedTerms.put(termAdditionalStream.getKey(), new Long[]{0L, termAdditionalStream.getValue()});
             }
         }
 
         return matchedTerms;
     }
 
-    public CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange, MoreSearch moreSearch, CorrelationCountProcessorConfig config) {
-        String filterMainStream = HEADER_STREAM + config.stream();
-        CountResult resultMainStream = moreSearch.count(config.searchQuery(), timerange, filterMainStream);
-        String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
-        CountResult resultAdditionalStream = moreSearch.count(config.searchQuery(), timerange, filterAdditionalStream);
+    /**
+     * get count of matching alerts for the configuration default query.
+     *
+     * @param timerange {@link TimeRange}
+     * @param stream    ID of the filtered stream
+     * @return the count response
+     */
+    private CountResult searchCount(TimeRange timerange, String stream) {
+        String filter = HEADER_STREAM + stream;
+        return this.searches.count(this.configuration.searchQuery(), timerange, filter);
+    }
+
+    private CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange) {
+        CountResult resultMainStream = searchCount(timerange, this.configuration.stream());
+        CountResult resultAdditionalStream = searchCount(timerange, this.configuration.additionalStream());
 
         if (!this.thresholds.areReached(resultMainStream.count(), resultAdditionalStream.count())) {
             return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
-        List<MessageSummary> summariesMainStream = search(moreSearch, config.searchQuery(), filterMainStream, timerange);
-        List<MessageSummary> summariesAdditionalStream = search(moreSearch, config.searchQuery(), filterAdditionalStream, timerange);
+        List<MessageSummary> summariesMainStream = search(this.configuration.searchQuery(), this.configuration.stream(), timerange);
+        List<MessageSummary> summariesAdditionalStream = search(this.configuration.searchQuery(), this.configuration.additionalStream(), timerange);
 
         if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
             return new CorrelationCountCheckResult("", new ArrayList<>());
@@ -199,39 +221,100 @@ public class CorrelationCount {
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
-        String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count(), config);
+        String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count());
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
-    public CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange, MoreSearch moreSearch, CorrelationCountProcessorConfig config) {
-        String filterMainStream = HEADER_STREAM + config.stream();
-        String filterAdditionalStream = HEADER_STREAM + config.additionalStream();
+    public TermsResult getTerms(String stream, TimeRange timeRange, long limit) {
+//        String streamFilter = HEADER_STREAM + stream;
+//        List<String> nextFields = new ArrayList<>(configuration.groupingFields());
+//        String firstField = nextFields.remove(0);
+//        return moreSearch.terms(firstField, nextFields, (int) limit, configuration.searchQuery(), streamFilter,
+//                timeRange, Sorting.Direction.DESC);
+        return getTermsResult(stream, timeRange, limit);
+    }
+
+    private TermsResult getTermsResult(String stream, TimeRange timeRange, long limit) {
+        ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
+        for (String groupingField : this.configuration.groupingFields()) { // TODO check for first grouping field (maybe unexpected date)
+            seriesBuilder.add(AggregationSeries.builder().id("correlation_id"+ groupingField).function(AggregationFunction.COUNT).field(groupingField).build());
+        }
+        AggregationEventProcessorConfig config = AggregationEventProcessorConfig.Builder.create()
+                .groupBy(new ArrayList<>(this.configuration.groupingFields()))
+                .query(this.configuration.searchQuery())
+                .streams(ImmutableSet.of(stream))
+                .executeEveryMs(this.configuration.executeEveryMs())
+                .searchWithinMs(this.configuration.searchWithinMs())
+//                .conditions() // TODO or not TODO, that is the question
+                .series(seriesBuilder.build())
+                .build(); // TODO
+        AggregationEventProcessorParameters parameters = AggregationEventProcessorParameters.builder()
+                .streams(ImmutableSet.of(stream)).batchSize(Long.valueOf(limit).intValue())
+                .timerange(timeRange)
+                .build(); // TODO Check if this is correct
+        String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
+        AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
+        try {
+            AggregationResult result = search.doSearch();
+            return convertResult(config, result);
+        } catch (EventProcessorException e) {
+            e.printStackTrace();
+        }
+        return convertResult(config, null); // TODO improve error case?
+    }
+
+    private TermsResult convertResult(AggregationEventProcessorConfig config, AggregationResult result) {
+        ImmutableMap.Builder<String, Long> terms = ImmutableMap.builder();
+        long total = 0;
+        if (null != result) {
+            total = result.totalAggregatedMessages();
+            result.keyResults().forEach(keyResult -> {
+                keyResult.seriesValues().forEach(seriesValue -> {
+                    String key = buildTermKey(seriesValue.key());
+                    Long value = Double.valueOf(seriesValue.value()).longValue();
+                    terms.put(key, value);
+                });
+            });
+        }
+        return TermsResult.create(0, terms.build(), 0, 0, total, config.query());
+    }
+
+    private String buildTermKey(Collection<String> keys) {
+        StringBuilder builder = new StringBuilder();
+        keys.forEach(key -> {
+            if (0 < builder.length()) {
+                builder.append(" - ");
+            }
+            builder.append(key);
+        });
+        return builder.toString();
+    }
+
+    private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange) {
         boolean ruleTriggered = false;
+        // Get matching terms in main stream
+        TermsResult termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
+        // Get matching terms in additional stream
+        TermsResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timerange, SEARCH_LIMIT);
 
-        List<String> nextFields = new ArrayList<>(config.groupingFields());
-        String firstField = config.groupingFields().iterator().next();
-        nextFields.remove(0);
-
-        TermsResult termResult = moreSearch.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterMainStream, timerange, Sorting.Direction.DESC);
-        TermsResult termResultAdditionalStream = moreSearch.terms(firstField, nextFields, SEARCH_LIMIT, config.searchQuery(), filterAdditionalStream, timerange, Sorting.Direction.DESC);
         Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
         boolean isFirstTriggered = true;
         final List<MessageSummary> summaries = Lists.newArrayList();
-        for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
+        for (Map.Entry<String, Long[]> matchedTerm : matchedTerms.entrySet()) {
             String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
 
             if (this.thresholds.areReached(counts[0], counts[1])) {
-                String searchQuery = buildSearchQuery(firstField, nextFields, matchedFieldValue, config.searchQuery());
-                List<MessageSummary> summariesMainStream = search(moreSearch, searchQuery, filterMainStream, timerange);
-                List<MessageSummary> summariesAdditionalStream = search(moreSearch, searchQuery, filterAdditionalStream, timerange);
+                String searchQuery = buildSearchQuery(matchedFieldValue);
+                List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timerange);
+                List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timerange);
 
                 if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                     ruleTriggered = true;
-                    if(isFirstTriggered) {
+                    if (isFirstTriggered) {
                         countFirstMainStream = counts[0];
                         countFirstAdditionalStream = counts[1];
                         isFirstTriggered = false;
@@ -243,7 +326,7 @@ public class CorrelationCount {
         }
 
         if (ruleTriggered) {
-            String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream, config);
+            String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream);
             return new CorrelationCountCheckResult(resultDescription, summaries);
         }
         return new CorrelationCountCheckResult("", new ArrayList<>());
@@ -251,9 +334,9 @@ public class CorrelationCount {
 
     public CorrelationCountCheckResult runCheck(TimeRange timerange) {
         if (this.configuration.groupingFields().isEmpty()) {
-            return runCheckCorrelationCount(timerange, this.moreSearch, this.configuration);
+            return runCheckCorrelationCount(timerange);
         } else {
-            return runCheckCorrelationWithFields(timerange, this.moreSearch, this.configuration);
+            return runCheckCorrelationWithFields(timerange);
         }
     }
 }

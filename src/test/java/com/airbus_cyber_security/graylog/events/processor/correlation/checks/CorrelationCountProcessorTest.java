@@ -23,12 +23,14 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessor;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorParameters;
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCount;
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.ThresholdType;
 import com.google.common.collect.ImmutableList;
 import org.graylog.events.event.EventFactory;
 import org.graylog.events.notifications.EventNotificationSettings;
-import org.graylog.events.processor.*;
+import org.graylog.events.processor.DBEventProcessorStateService;
+import org.graylog.events.processor.EventDefinitionDto;
+import org.graylog.events.processor.EventProcessorDependencyCheck;
+import org.graylog.events.processor.EventProcessorPreconditionException;
+import org.graylog.events.processor.aggregation.AggregationSearch;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.searches.Searches;
@@ -43,7 +45,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
@@ -62,6 +66,8 @@ public class CorrelationCountProcessorTest {
     private EventProcessorDependencyCheck eventProcessorDependencyCheck;
     @Mock
     private MoreSearch moreSearch;
+    @Mock
+    private Searches searches;
     @Mock
     private Messages messages;
 
@@ -82,10 +88,12 @@ public class CorrelationCountProcessorTest {
         final CorrelationCountProcessorParameters parameters = CorrelationCountProcessorParameters.builder()
                 .timerange(timeRange)
                 .build();
+        AggregationSearch.Factory aggregationSearchFactory = null; // TODO find a way to have this
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, moreSearch, messages);
-        assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {}))
+                stateService, searches, moreSearch, messages, aggregationSearchFactory);
+        assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {
+        }))
                 .hasMessageContaining(eventDefinitionDto.title())
                 .hasMessageContaining(eventDefinitionDto.id())
                 .hasMessageContaining(timeRange.from().toString())
@@ -118,14 +126,14 @@ public class CorrelationCountProcessorTest {
                 .thresholdType("MORE")
                 .threshold(4)
                 .messagesOrder("AFTER")
-                .searchWithinMs(10*60*1000)
+                .searchWithinMs(10 * 60 * 1000)
                 .executeEveryMs(0)
                 .groupingFields(new HashSet<>())
                 .comment("test comment")
                 .searchQuery("*")
                 .build();
 
-        CorrelationCount correlationCount = new CorrelationCount(moreSearch, configuration);
+        CorrelationCount correlationCount = new CorrelationCount(searches, configuration, null, null);
         assertEquals(true, correlationCount.checkOrderSecondStream(summariesStream2, summariesStream1));
     }
 
@@ -138,8 +146,8 @@ public class CorrelationCountProcessorTest {
                 .thresholdType(ThresholdType.MORE.getDescription())
                 .threshold(threshold)
                 .messagesOrder("any order")
-                .searchWithinMs(2*60*1000)
-                .executeEveryMs(2*60*1000)
+                .searchWithinMs(2 * 60 * 1000)
+                .executeEveryMs(2 * 60 * 1000)
                 .groupingFields(new HashSet<>())
                 .comment("test comment")
                 .searchQuery("*")
