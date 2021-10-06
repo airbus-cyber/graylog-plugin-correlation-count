@@ -120,6 +120,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             return;
         }
         final TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
+        LOG.debug("[DEV] sourceMessagesForEvent: groupingFields={}", Arrays.deepToString(this.configuration.groupingFields().toArray())); // TODO remove this log line
         if (this.configuration.groupingFields().isEmpty()) {
             final AtomicLong msgCount = new AtomicLong(0L);
             final MoreSearch.ScrollCallback callback = (messages, continueScrolling) -> {
@@ -154,6 +155,8 @@ public class CorrelationCountProcessor implements EventProcessor {
                 String matchedFieldValue = matchedTerm.getKey();
                 Long[] counts = matchedTerm.getValue();
                 if (thresholds.areReached(counts[0], counts[1])) {
+                    //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.7
+                    //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.1
                     String searchQuery = this.correlationCount.buildSearchQuery(matchedFieldValue);
                     List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, configuration.stream(), timeRange);
                     List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, configuration.additionalStream(), timeRange);

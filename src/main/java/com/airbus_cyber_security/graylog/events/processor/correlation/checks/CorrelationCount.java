@@ -39,10 +39,13 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.rest.models.search.responses.TermsResult;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class CorrelationCount {
+    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCount.class);
     private static final int SEARCH_LIMIT = 500;
 
     private static final String HEADER_STREAM = "streams:";
@@ -102,11 +105,12 @@ public class CorrelationCount {
         List<String> nextFields = new ArrayList<>(configuration.groupingFields());
         String firstField = nextFields.remove(0);
         String searchQuery = this.configuration.searchQuery();
-
         for (String field : nextFields) {
             matchedFieldValue = matchedFieldValue.replaceFirst(" - ", " AND " + field + ": ");
         }
-        return (searchQuery + " AND " + firstField + ": " + matchedFieldValue);
+        String globalSearchQuery = (searchQuery + " AND " + firstField + ": " + matchedFieldValue);
+        LOG.debug("[DEV] buildSearchQuery: matchedTerms={}", globalSearchQuery); // TODO remove this log line
+        return globalSearchQuery;
     }
 
     private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCount.OrderType messagesOrderType) {
@@ -187,6 +191,13 @@ public class CorrelationCount {
                 matchedTerms.put(termAdditionalStream.getKey(), new Long[]{0L, termAdditionalStream.getValue()});
             }
         }
+        if (LOG.isDebugEnabled()) { // TODO remove this log line
+            //getMatchedTerms: matchedTerms=2
+            //sourceMessagesForEvent: key=127.0.0.7, value=[4, 4]
+            //sourceMessagesForEvent: key=127.0.0.1, value=[4, 4]
+            LOG.debug("[DEV] getMatchedTerms: matchedTerms={}", matchedTerms.size());
+            matchedTerms.forEach((key, value) -> LOG.debug("[DEV] sourceMessagesForEvent: key={}, value={}", key, Arrays.deepToString(value)));
+        }
 
         return matchedTerms;
     }
@@ -235,10 +246,14 @@ public class CorrelationCount {
     }
 
     private TermsResult getTermsResult(String stream, TimeRange timeRange, long limit) {
+        // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
-        for (String groupingField : this.configuration.groupingFields()) { // TODO check for first grouping field (maybe unexpected date)
-            seriesBuilder.add(AggregationSeries.builder().id("correlation_id"+ groupingField).function(AggregationFunction.COUNT).field(groupingField).build());
+        StringBuilder idBuilder = new StringBuilder("correlation_id");
+        for (String groupingField : this.configuration.groupingFields()) {
+            idBuilder.append("#").append(groupingField);
         }
+        seriesBuilder.add(AggregationSeries.builder().id(idBuilder.toString()).function(AggregationFunction.COUNT).build());
+        // Create the graylog "legal" aggregation configuration
         AggregationEventProcessorConfig config = AggregationEventProcessorConfig.Builder.create()
                 .groupBy(new ArrayList<>(this.configuration.groupingFields()))
                 .query(this.configuration.searchQuery())
@@ -264,6 +279,34 @@ public class CorrelationCount {
     }
 
     private TermsResult convertResult(AggregationEventProcessorConfig config, AggregationResult result) {
+        if (LOG.isDebugEnabled()) { // TODO remove this log line
+// AggregationEventProcessorConfig#query=message:bob*,groupBy=[source]
+            LOG.debug("[DEV] convertResult: AggregationEventProcessorConfig#query={},groupBy={}", config.query(), Arrays.deepToString(config.groupBy().toArray()));
+// AggregationResult#totalAggregatedMessages=8
+            LOG.debug("[DEV] convertResult: AggregationResult#totalAggregatedMessages={}", result.totalAggregatedMessages());
+            // AggregationResult#effectiveTimerange=AbsoluteRange{type=absolute, from=2021-10-06T12:57:11.196Z, to=2021-10-06T13:02:11.195Z}
+            LOG.debug("[DEV] convertResult: AggregationResult#effectiveTimerange={}", result.effectiveTimerange());
+// AggregationResult#sourceStreams=[000000000000000000000001, 6153f2974eb75f06e159e2e1, 615bfe2df4dca616fb45950f]
+            LOG.debug("[DEV] convertResult: AggregationResult#sourceStreams={}", Arrays.deepToString(result.sourceStreams().toArray()));
+            for (AggregationKeyResult aggregationKeyResult : result.keyResults()) {
+                // AggregationResult#aggregationKeyResult#key=[127.0.0.1]
+                // AggregationResult#aggregationKeyResult#seriesValues#value=4.0
+                // AggregationResult#aggregationKeyResult#seriesValues#key=[127.0.0.1]
+                // AggregationResult#aggregationKeyResult#seriesValues#series#field=Optional[source],id=correlation_idsource,function=COUNT
+                LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#key={}", Arrays.deepToString(aggregationKeyResult.key().toArray()));
+                aggregationKeyResult.seriesValues().forEach(aggregationSeriesValue -> {
+                    LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#value={}", aggregationSeriesValue.value());
+                    LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#key={}", Arrays.deepToString(aggregationSeriesValue.key().toArray()));
+                    // It looks like if series is the same for all seriesValues
+                    LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#series#field={},id={},function={}", aggregationSeriesValue.series().field(), aggregationSeriesValue.series().id(), aggregationSeriesValue.series().function());
+                });
+                // AggregationResult#aggregationKeyResult#key=[127.0.0.7]
+                // AggregationResult#aggregationKeyResult#seriesValues#value=4.0
+                // AggregationResult#aggregationKeyResult#seriesValues#key=[127.0.0.7]
+                // AggregationResult#aggregationKeyResult#seriesValues#series#field=Optional[source],id=correlation_idsource,function=COUNT
+            }
+
+        }
         ImmutableMap.Builder<String, Long> terms = ImmutableMap.builder();
         long total = 0;
         if (null != result) {
