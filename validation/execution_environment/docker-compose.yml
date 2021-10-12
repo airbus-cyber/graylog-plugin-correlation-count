@@ -1,25 +1,28 @@
 version: '3'
 services:
 
+  # MongoDB: https://hub.docker.com/_/mongo/
+  mongo:
+    image: "mongo:4.2"
+    container_name: mongo4
+    networks:
+      net:
+        ipv4_address: 172.15.0.2
+
+  # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/7.10/docker.html
   elasticsearch:
-    image: "docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.6"
-    container_name : elasticsearch6
+    image: "docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2"
+    container_name: elasticsearch7
     environment:
       - "discovery.type=single-node"
     networks:
       net:
         ipv4_address: 172.15.0.3
 
-  mongo:
-    image: "mongo:3"
-    container_name : mongo3
-    networks:
-      net:
-        ipv4_address: 172.15.0.2
-
+  # Graylog: https://hub.docker.com/r/graylog/graylog/ 
   graylog:
-    image: "graylog/graylog:3.3"
-    container_name : graylog
+    image: "graylog/graylog:4.1"
+    container_name: graylog
     links:
       - mongo:mongo
       - elasticsearch
