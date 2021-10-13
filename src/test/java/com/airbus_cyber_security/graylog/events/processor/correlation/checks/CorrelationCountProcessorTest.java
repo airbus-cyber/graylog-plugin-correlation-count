@@ -68,8 +68,6 @@ public class CorrelationCountProcessorTest {
     private MoreSearch moreSearch;
     @Mock
     private Searches searches;
-    @Mock
-    private Messages messages;
 
     @Test
     public void testEvents() {
@@ -91,7 +89,7 @@ public class CorrelationCountProcessorTest {
         AggregationSearch.Factory aggregationSearchFactory = null; // TODO find a way to have this
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, moreSearch, messages, aggregationSearchFactory);
+                stateService, searches, moreSearch, aggregationSearchFactory);
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {
         }))
                 .hasMessageContaining(eventDefinitionDto.title())
