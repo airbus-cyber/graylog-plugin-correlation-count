@@ -1,7 +1,7 @@
 # Correlation Count Plugin for Graylog
 
 [![Build Status](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count.svg?branch=master)](https://travis-ci.org/airbus-cyber/graylog-plugin-correlation-count)
-[![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
+[![License](https://img.shields.io/badge/license-SSPL-green)](https://www.mongodb.com/licensing/server-side-public-license)
 [![GitHub Release](https://img.shields.io/badge/release-v2.2.0-blue.svg)](https://github.com/airbus-cyber/graylog-plugin-correlation-count/releases)
 
 #### Alert condition plugin for Graylog to perform correlation
@@ -70,4 +70,4 @@ This project is using Maven 3 and requires Java 8 or higher.
 
 ## License
 
-This plugin is released under version 3.0 of the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.txt).
+This plugin is released under version 1 of the [Server Side Public License (SSPL)](LICENSE).
