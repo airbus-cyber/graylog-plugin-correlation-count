@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.0....4.0.1) (2021-11-30)
+### Bug Fixes
+* Put back missing jar in release page of github thanks to a continuous integration based on github actions
+
 ## [4.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.2.0....4.0.0) (2021-09-30)
 ### Features
 * Add compatibility with Graylog 4.1
