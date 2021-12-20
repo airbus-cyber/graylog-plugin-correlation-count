@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [4.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.1....4.1.0)
 ### Features
+* Add compatibility with Graylog 4.2
 
 ## [4.0.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.0....4.0.1) (2021-11-30)
 ### Bug Fixes
@@ -12,7 +13,7 @@ All notable changes to this project will be documented in this file.
 ## [4.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.2.0....4.0.0) (2021-09-30)
 ### Features
 * Add compatibility with Graylog 4.1
-* Changed plugin license to SSPL version 1
+* Change plugin license to SSPL version 1
 
 ## [2.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.2....2.2.0) (2020-10-23)
 ### Features
