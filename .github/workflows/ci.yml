@@ -59,9 +59,28 @@ jobs:
           path: plugin/target/${{ steps.requestPom.outputs.name }}-${{ steps.requestPom.outputs.version }}.jar
           if-no-files-found: error
 
-  release:
+  backendTests:
     runs-on: ubuntu-20.04
     needs: build
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Download jar from build
+        uses: actions/download-artifact@v2
+        with:
+          name: jar
+          path: runtime/graylog/plugin
+      - name: Execute tests
+        working-directory: validation
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python -m unittest
+
+  release:
+    runs-on: ubuntu-20.04
+    needs: [build, backendTests]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download jar from build
