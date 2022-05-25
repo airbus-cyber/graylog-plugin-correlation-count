@@ -1,7 +1,7 @@
 import socket
 import json
 
-_GRAYLOG_INPUT_ADDRESS = ('127.0.01', 12201)
+_GRAYLOG_INPUT_ADDRESS = ('127.0.0.1', 12201)
 
 
 class GraylogInputs:
