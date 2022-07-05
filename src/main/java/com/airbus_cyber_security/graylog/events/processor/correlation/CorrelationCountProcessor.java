@@ -32,7 +32,6 @@ import org.graylog.events.processor.*;
 import org.graylog.events.processor.aggregation.AggregationSearch;
 import org.graylog.events.search.MoreSearch;
 import org.graylog.plugins.views.search.Parameter;
-import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
@@ -76,18 +75,18 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     @Override
     public void createEvents(EventFactory eventFactory, EventProcessorParameters eventProcessorParameters, EventConsumer<List<EventWithContext>> eventConsumer) throws EventProcessorException {
-        final CorrelationCountProcessorParameters parameters = (CorrelationCountProcessorParameters) eventProcessorParameters;
+        CorrelationCountProcessorParameters parameters = (CorrelationCountProcessorParameters) eventProcessorParameters;
 
         TimeRange timerange = parameters.timerange();
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
         if (!dependencyCheck.hasMessagesIndexedUpTo(timerange.getTo())) {
-            final String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
+            String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
                     eventDefinition.title(), eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
         CorrelationCountCheckResult correlationCountCheckResult = this.correlationCount.runCheck(timerange);
-        final Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
+        Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
         event.addSourceStream(configuration.stream());
         event.addSourceStream(configuration.additionalStream());
 
@@ -99,7 +98,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             event.setOriginContext(EventOriginContext.elasticsearchMessage(msgSummary.getIndex(), msgSummary.getId()));
             LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
 
-            final ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
+            ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
             // TODO: Choose a better message for the context
             EventWithContext eventWithContext = EventWithContext.create(event, msgSummary.getRawMessage());
             listEvents.add(eventWithContext);
@@ -114,18 +113,18 @@ public class CorrelationCountProcessor implements EventProcessor {
         if (limit <= 0) {
             return;
         }
-        final TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
+        TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         LOG.debug("[DEV] sourceMessagesForEvent: groupingFields={}", Arrays.deepToString(this.configuration.groupingFields().toArray())); // TODO remove this log line
         if (this.configuration.groupingFields().isEmpty()) {
-            final AtomicLong msgCount = new AtomicLong(0L);
-            final MoreSearch.ScrollCallback callback = (messages, continueScrolling) -> {
-                final List<MessageSummary> summaries = Lists.newArrayList();
-                for (final ResultMessage resultMessage : messages) {
+            AtomicLong msgCount = new AtomicLong(0L);
+            MoreSearch.ScrollCallback callback = (messages, continueScrolling) -> {
+                List<MessageSummary> summaries = Lists.newArrayList();
+                for (ResultMessage resultMessage : messages) {
                     if (msgCount.incrementAndGet() > limit) {
                         continueScrolling.set(false);
                         break;
                     }
-                    final Message msg = resultMessage.getMessage();
+                    Message msg = resultMessage.getMessage();
                     summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
                 }
                 messageConsumer.accept(summaries);
@@ -144,7 +143,7 @@ public class CorrelationCountProcessor implements EventProcessor {
 
             Map<String, Long[]> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
 
-            final List<MessageSummary> summaries = Lists.newArrayList();
+            List<MessageSummary> summaries = Lists.newArrayList();
             Thresholds thresholds = new Thresholds(configuration);
             for (Map.Entry<String, Long[]> matchedTerm : matchedTerms.entrySet()) {
                 String matchedFieldValue = matchedTerm.getKey();
