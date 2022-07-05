@@ -234,15 +234,6 @@ public class CorrelationCount {
     }
 
     public TermsResult getTerms(String stream, TimeRange timeRange, long limit) {
-//        String streamFilter = HEADER_STREAM + stream;
-//        List<String> nextFields = new ArrayList<>(configuration.groupingFields());
-//        String firstField = nextFields.remove(0);
-//        return moreSearch.terms(firstField, nextFields, (int) limit, configuration.searchQuery(), streamFilter,
-//                timeRange, Sorting.Direction.DESC);
-        return getTermsResult(stream, timeRange, limit);
-    }
-
-    private TermsResult getTermsResult(String stream, TimeRange timeRange, long limit) {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
