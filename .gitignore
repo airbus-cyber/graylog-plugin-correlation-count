@@ -16,3 +16,7 @@ node/
 
 # IDE
 /.idea
+
+# For backend tests in python
+__pycache__/
+venv/
