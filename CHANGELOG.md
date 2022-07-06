@@ -2,46 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.0....4.1.1)
+## [4.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.0...4.1.1)
 ### Bug Fixes
 * Log an error instead of raising an exception when there are several results with the same grouping field
   values (see Alert Wizard plugin [issue 60](https://github.com/airbus-cyber/graylog-plugin-alert-wizard/issues/60))
 
-## [4.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.1....4.1.0)
+## [4.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.1...4.1.0)
 ### Features
 * Add compatibility with Graylog 4.2
 
-## [4.0.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.0....4.0.1)
+## [4.0.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.0.0...4.0.1)
 ### Bug Fixes
 * Put back missing jar in release page of github thanks to a continuous integration based on github actions
 
-## [4.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.2.0....4.0.0)
+## [4.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.2.0...4.0.0)
 ### Features
 * Add compatibility with Graylog 4.1
 * Change plugin license to SSPL version 1
 
-## [2.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.2....2.2.0)
+## [2.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.2...2.2.0)
 ### Features
 * Add compatibility with Graylog 3.3
 
-## [2.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.1....2.1.2)
+## [2.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.1...2.1.2)
 ### Bug Fixes
 * Fix Create only 1 event when the condition is satisfied
 
-## [2.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.0....2.1.1)
+## [2.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.1.0...2.1.1)
 ### Bug Fixes
 * Fix event source streams empty
 
-## [2.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.0.0....2.1.0)
+## [2.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.0.0...2.1.0)
 ### Features
 * Disabled isolated Plugin (shares a class loader with other plugins that have isolated=false)
 
 
-## [2.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.2.0....2.0.0)
+## [2.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.2.0...2.0.0)
 ### Features
 * Add compatibility with Graylog 3.2
 
-## [1.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.1.0....1.2.0)
+## [1.2.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.1.0...1.2.0)
 ### Features
 * Add compatibility with Graylog 3.0
 
