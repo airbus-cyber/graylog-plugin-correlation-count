@@ -262,7 +262,11 @@ public class CorrelationCount {
             return convertResult(config, result);
         } catch (EventProcessorException e) {
             e.printStackTrace();
+        }  catch (IllegalArgumentException e) {
+            LOG.error("Error when converting result: {}", e.getMessage());
+            LOG.info("Complementary information in case of exception, timerange: {}, {}", timeRange.getFrom(), timeRange.getTo());
         }
+
         return convertResult(config, null); // TODO improve error case?
     }
 
