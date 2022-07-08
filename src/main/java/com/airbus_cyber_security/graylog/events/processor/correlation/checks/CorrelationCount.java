@@ -102,7 +102,7 @@ public class CorrelationCount {
         List<String> nextFields = new ArrayList<>(configuration.groupingFields());
         String firstField = nextFields.remove(0);
         String searchQuery = this.configuration.searchQuery();
-        for (String field : nextFields) {
+        for (String field: nextFields) {
             matchedFieldValue = matchedFieldValue.replaceFirst(" - ", " AND " + field + ": ");
         }
         String globalSearchQuery = (searchQuery + " AND " + firstField + ": " + matchedFieldValue);
