@@ -27,7 +27,7 @@ public class CorrelationCountCheckResult {
 
     private List<MessageSummary> messageSummaries;
 
-    public CorrelationCountCheckResult(final String resultDescription, final List<MessageSummary> messageSummaries) {
+    public CorrelationCountCheckResult(String resultDescription, List<MessageSummary> messageSummaries) {
         this.resultDescription = resultDescription;
         this.messageSummaries = messageSummaries;
     }
