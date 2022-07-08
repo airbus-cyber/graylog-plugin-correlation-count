@@ -140,23 +140,23 @@ public class CorrelationCountProcessor implements EventProcessor {
             TermsResult termResult = this.correlationCount.getTerms(configuration.stream(), timeRange, limit);
             // Get matching terms in additional stream
             TermsResult termResultAdditionalStream = this.correlationCount.getTerms(configuration.additionalStream(), timeRange, limit);
-
             Map<String, Long[]> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
 
             List<MessageSummary> summaries = Lists.newArrayList();
             Thresholds thresholds = new Thresholds(configuration);
             for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
-                String matchedFieldValue = matchedTerm.getKey();
                 Long[] counts = matchedTerm.getValue();
-                if (thresholds.areReached(counts[0], counts[1])) {
-                    //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.7
-                    //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.1
-                    String searchQuery = this.correlationCount.buildSearchQuery(matchedFieldValue);
-                    List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, configuration.stream(), timeRange);
-                    List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, configuration.additionalStream(), timeRange);
-                    summaries.addAll(summariesMainStream);
-                    summaries.addAll(summariesAdditionalStream);
+                if (!thresholds.areReached(counts[0], counts[1])) {
+                    continue;
                 }
+                String matchedFieldValue = matchedTerm.getKey();
+                //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.7
+                //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.1
+                String searchQuery = this.correlationCount.buildSearchQuery(matchedFieldValue);
+                List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, configuration.stream(), timeRange);
+                List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, configuration.additionalStream(), timeRange);
+                summaries.addAll(summariesMainStream);
+                summaries.addAll(summariesAdditionalStream);
             }
             messageConsumer.accept(summaries);
         }

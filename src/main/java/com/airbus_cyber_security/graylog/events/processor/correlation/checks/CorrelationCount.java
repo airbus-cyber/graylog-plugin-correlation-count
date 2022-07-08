@@ -331,7 +331,6 @@ public class CorrelationCount {
         TermsResult termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
         // Get matching terms in additional stream
         TermsResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timerange, SEARCH_LIMIT);
-
         Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
 
         long countFirstMainStream = 0;
@@ -339,24 +338,24 @@ public class CorrelationCount {
         boolean isFirstTriggered = true;
         final List<MessageSummary> summaries = Lists.newArrayList();
         for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
-            String matchedFieldValue = matchedTerm.getKey();
             Long[] counts = matchedTerm.getValue();
+            if (!this.thresholds.areReached(counts[0], counts[1])) {
+                continue;
+            }
+            String matchedFieldValue = matchedTerm.getKey();
+            String searchQuery = buildSearchQuery(matchedFieldValue);
+            List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timerange);
+            List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timerange);
 
-            if (this.thresholds.areReached(counts[0], counts[1])) {
-                String searchQuery = buildSearchQuery(matchedFieldValue);
-                List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timerange);
-                List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timerange);
-
-                if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
-                    ruleTriggered = true;
-                    if (isFirstTriggered) {
-                        countFirstMainStream = counts[0];
-                        countFirstAdditionalStream = counts[1];
-                        isFirstTriggered = false;
-                    }
-                    summaries.addAll(summariesMainStream);
-                    summaries.addAll(summariesAdditionalStream);
+            if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
+                ruleTriggered = true;
+                if (isFirstTriggered) {
+                    countFirstMainStream = counts[0];
+                    countFirstAdditionalStream = counts[1];
+                    isFirstTriggered = false;
                 }
+                summaries.addAll(summariesMainStream);
+                summaries.addAll(summariesAdditionalStream);
             }
         }
 
