@@ -336,7 +336,7 @@ public class CorrelationCount {
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
         boolean isFirstTriggered = true;
-        final List<MessageSummary> summaries = Lists.newArrayList();
+        List<MessageSummary> summaries = Lists.newArrayList();
         for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
             Long[] counts = matchedTerm.getValue();
             if (!this.thresholds.areReached(counts[0], counts[1])) {
