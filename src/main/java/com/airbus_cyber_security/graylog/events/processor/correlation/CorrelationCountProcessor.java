@@ -145,7 +145,7 @@ public class CorrelationCountProcessor implements EventProcessor {
 
             List<MessageSummary> summaries = Lists.newArrayList();
             Thresholds thresholds = new Thresholds(configuration);
-            for (Map.Entry<String, Long[]> matchedTerm : matchedTerms.entrySet()) {
+            for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
                 String matchedFieldValue = matchedTerm.getKey();
                 Long[] counts = matchedTerm.getValue();
                 if (thresholds.areReached(counts[0], counts[1])) {
