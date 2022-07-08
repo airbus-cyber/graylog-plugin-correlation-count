@@ -132,9 +132,9 @@ public class CorrelationCount {
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
-        for (DateTime dateFirstStream : listDateFirstStream) {
+        for (DateTime dateFirstStream: listDateFirstStream) {
             int countSecondStream = 0;
-            for (DateTime dateSecondStream : listDateSecondStream) {
+            for (DateTime dateSecondStream: listDateSecondStream) {
                 if ((messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
                         (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
                     countSecondStream++;
