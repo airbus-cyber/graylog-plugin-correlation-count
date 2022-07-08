@@ -95,8 +95,6 @@ public class CorrelationCountProcessor implements EventProcessor {
 
         if (correlationCountCheckResult.getMessageSummaries() != null && !correlationCountCheckResult.getMessageSummaries().isEmpty()) {
             MessageSummary msgSummary = correlationCountCheckResult.getMessageSummaries().get(0);
-            event.setOriginContext(EventOriginContext.elasticsearchMessage(msgSummary.getIndex(), msgSummary.getId()));
-            LOG.debug("Created event: [id: " + event.getId() + "], [message: " + event.getMessage() + "].");
 
             ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
             // TODO: Choose a better message for the context
