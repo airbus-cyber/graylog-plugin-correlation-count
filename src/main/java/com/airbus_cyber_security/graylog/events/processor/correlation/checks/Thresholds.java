@@ -19,6 +19,7 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 
+// TODO try to remove this class: does not seem to be useful
 public class Thresholds {
 
     private final Threshold mainStreamThreshold;
