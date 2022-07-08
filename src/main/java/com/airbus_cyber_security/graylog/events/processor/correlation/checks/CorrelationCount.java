@@ -92,7 +92,7 @@ public class CorrelationCount {
         SearchResult backlogResult = this.searches.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
         List<MessageSummary> result = Lists.newArrayList();
-        for (ResultMessage resultMessage : backlogResult.getResults()) {
+        for (ResultMessage resultMessage: backlogResult.getResults()) {
             result.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
         return result;
