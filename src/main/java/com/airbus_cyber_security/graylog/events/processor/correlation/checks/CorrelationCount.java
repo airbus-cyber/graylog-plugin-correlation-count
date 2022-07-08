@@ -179,11 +179,11 @@ public class CorrelationCount {
 
     public Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStream) {
         Map<String, Long[]> matchedTerms = new HashMap<>();
-        for (Map.Entry<String, Long> term : termResult.terms().entrySet()) {
+        for (Map.Entry<String, Long> term: termResult.terms().entrySet()) {
             Long termAdditionalStreamValue = termResultAdditionalStream.terms().getOrDefault(term.getKey(), 0L);
             matchedTerms.put(term.getKey(), new Long[]{term.getValue(), termAdditionalStreamValue});
         }
-        for (Map.Entry<String, Long> termAdditionalStream : termResultAdditionalStream.terms().entrySet()) {
+        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStream.terms().entrySet()) {
             if (!matchedTerms.containsKey(termAdditionalStream.getKey())) {
                 matchedTerms.put(termAdditionalStream.getKey(), new Long[]{0L, termAdditionalStream.getValue()});
             }
