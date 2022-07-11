@@ -107,8 +107,7 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     private TimeRange getTimeRangeFromParameters(EventProcessorParameters eventProcessorParameters) {
         CorrelationCountProcessorParameters parameters = (CorrelationCountProcessorParameters) eventProcessorParameters;
-        TimeRange timerange = parameters.timerange();
-        return timerange;
+        return parameters.timerange();
     }
 
     @Override
