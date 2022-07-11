@@ -328,7 +328,6 @@ public class CorrelationCount {
     }
 
     private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange) {
-        boolean ruleTriggered = false;
         // Get matching terms in main stream
         TermsResult termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
         // Get matching terms in additional stream
@@ -337,6 +336,7 @@ public class CorrelationCount {
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
+        boolean ruleTriggered = false;
         boolean isFirstTriggered = true;
         List<MessageSummary> summaries = Lists.newArrayList();
         for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
