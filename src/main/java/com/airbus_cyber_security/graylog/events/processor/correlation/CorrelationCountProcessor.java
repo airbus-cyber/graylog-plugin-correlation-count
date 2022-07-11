@@ -75,13 +75,12 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     @Override
     public void createEvents(EventFactory eventFactory, EventProcessorParameters eventProcessorParameters, EventConsumer<List<EventWithContext>> eventConsumer) throws EventProcessorException {
-        CorrelationCountProcessorParameters parameters = (CorrelationCountProcessorParameters) eventProcessorParameters;
+        TimeRange timerange = getTimeRangeFromParameters(eventProcessorParameters);
 
-        TimeRange timerange = parameters.timerange();
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
         if (!dependencyCheck.hasMessagesIndexedUpTo(timerange.getTo())) {
             String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
-                    this.eventDefinition.title(), this.eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
+                    this.eventDefinition.title(), this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
             throw new EventProcessorPreconditionException(msg, this.eventDefinition);
         }
 
@@ -103,7 +102,13 @@ public class CorrelationCountProcessor implements EventProcessor {
             eventConsumer.accept(listEvents.build());
         }
         // Update the state for this processor! This state will be used for dependency checks between event processors.
-        this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
+        this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
+    }
+
+    private TimeRange getTimeRangeFromParameters(EventProcessorParameters eventProcessorParameters) {
+        CorrelationCountProcessorParameters parameters = (CorrelationCountProcessorParameters) eventProcessorParameters;
+        TimeRange timerange = parameters.timerange();
+        return timerange;
     }
 
     @Override
