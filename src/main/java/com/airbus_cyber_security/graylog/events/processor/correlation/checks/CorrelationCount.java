@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+// TODO could rename this class into CorrelationCountSearch
 public class CorrelationCount {
     private static final Logger LOG = LoggerFactory.getLogger(CorrelationCount.class);
     private static final int SEARCH_LIMIT = 500;
@@ -367,6 +368,7 @@ public class CorrelationCount {
     }
 
     public CorrelationCountCheckResult runCheck(TimeRange timerange) {
+        // TODO should avoid having two different implementations
         if (this.configuration.groupingFields().isEmpty()) {
             return runCheckCorrelationCount(timerange);
         } else {
