@@ -207,16 +207,17 @@ public class CorrelationCount {
      * @param stream    ID of the filtered stream
      * @return the count response
      */
-    private CountResult searchCount(TimeRange timerange, String stream) {
+    private long searchCount(TimeRange timerange, String stream) {
         String filter = HEADER_STREAM + stream;
-        return this.searches.count(this.configuration.searchQuery(), timerange, filter);
+        CountResult result = this.searches.count(this.configuration.searchQuery(), timerange, filter);
+        return result.count();
     }
 
     private CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange) {
-        CountResult resultMainStream = searchCount(timerange, this.configuration.stream());
-        CountResult resultAdditionalStream = searchCount(timerange, this.configuration.additionalStream());
+        long resultMainStreamCount = searchCount(timerange, this.configuration.stream());
+        long resultAdditionalStreamCount = searchCount(timerange, this.configuration.additionalStream());
 
-        if (!this.thresholds.areReached(resultMainStream.count(), resultAdditionalStream.count())) {
+        if (!this.thresholds.areReached(resultMainStreamCount, resultAdditionalStreamCount)) {
             return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
@@ -230,7 +231,7 @@ public class CorrelationCount {
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
-        String resultDescription = getResultDescription(resultMainStream.count(), resultAdditionalStream.count());
+        String resultDescription = getResultDescription(resultMainStreamCount, resultAdditionalStreamCount);
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
