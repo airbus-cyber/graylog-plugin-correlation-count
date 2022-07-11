@@ -69,7 +69,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
-        this.correlationCount = new CorrelationCount(searches, configuration, aggregationSearchFactory, eventDefinition);
+        this.correlationCount = new CorrelationCount(searches, this.configuration, aggregationSearchFactory, eventDefinition);
         this.moreSearch = moreSearch;
     }
 
@@ -81,14 +81,14 @@ public class CorrelationCountProcessor implements EventProcessor {
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
         if (!dependencyCheck.hasMessagesIndexedUpTo(timerange.getTo())) {
             String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
-                    eventDefinition.title(), eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
-            throw new EventProcessorPreconditionException(msg, eventDefinition);
+                    this.eventDefinition.title(), this.eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
+            throw new EventProcessorPreconditionException(msg, this.eventDefinition);
         }
 
         CorrelationCountCheckResult correlationCountCheckResult = this.correlationCount.runCheck(timerange);
-        Event event = eventFactory.createEvent(eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
-        event.addSourceStream(configuration.stream());
-        event.addSourceStream(configuration.additionalStream());
+        Event event = eventFactory.createEvent(this.eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
+        event.addSourceStream(this.configuration.stream());
+        event.addSourceStream(this.configuration.additionalStream());
 
         event.setTimerangeStart(timerange.getFrom());
         event.setTimerangeEnd(timerange.getTo());
@@ -103,7 +103,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             eventConsumer.accept(listEvents.build());
         }
         // Update the state for this processor! This state will be used for dependency checks between event processors.
-        stateService.setState(eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
+        this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), parameters.timerange().getTo());
     }
 
     @Override
@@ -128,20 +128,20 @@ public class CorrelationCountProcessor implements EventProcessor {
                 messageConsumer.accept(summaries);
             };
             Set<String> streams = new HashSet<>();
-            streams.add(configuration.stream());
-            streams.add(configuration.additionalStream());
+            streams.add(this.configuration.stream());
+            streams.add(this.configuration.additionalStream());
             Set<Parameter> parameters = new HashSet<>();
-            this.moreSearch.scrollQuery(configuration.searchQuery(), streams, parameters, timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
+            this.moreSearch.scrollQuery(this.configuration.searchQuery(), streams, parameters, timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
 
         } else {
             // Get matching terms in main stream
-            TermsResult termResult = this.correlationCount.getTerms(configuration.stream(), timeRange, limit);
+            TermsResult termResult = this.correlationCount.getTerms(this.configuration.stream(), timeRange, limit);
             // Get matching terms in additional stream
-            TermsResult termResultAdditionalStream = this.correlationCount.getTerms(configuration.additionalStream(), timeRange, limit);
+            TermsResult termResultAdditionalStream = this.correlationCount.getTerms(this.configuration.additionalStream(), timeRange, limit);
             Map<String, Long[]> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
 
             List<MessageSummary> summaries = Lists.newArrayList();
-            Thresholds thresholds = new Thresholds(configuration);
+            Thresholds thresholds = new Thresholds(this.configuration);
             for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
                 Long[] counts = matchedTerm.getValue();
                 if (!thresholds.areReached(counts[0], counts[1])) {
@@ -151,8 +151,8 @@ public class CorrelationCountProcessor implements EventProcessor {
                 //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.7
                 //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.1
                 String searchQuery = this.correlationCount.buildSearchQuery(matchedFieldValue);
-                List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, configuration.stream(), timeRange);
-                List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, configuration.additionalStream(), timeRange);
+                List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, this.configuration.stream(), timeRange);
+                List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, this.configuration.additionalStream(), timeRange);
                 summaries.addAll(summariesMainStream);
                 summaries.addAll(summariesAdditionalStream);
             }
