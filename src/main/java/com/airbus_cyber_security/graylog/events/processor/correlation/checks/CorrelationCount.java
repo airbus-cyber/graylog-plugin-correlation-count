@@ -177,7 +177,7 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    public Map<String, CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) {
+    public Map<String, CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) throws EventProcessorException {
         // Get matching terms in main stream
         Map<String, Long> termResult = getTerms(this.configuration.stream(), timeRange, limit);
         // Get matching terms in additional stream
@@ -231,7 +231,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
-    private Map<String, Long> getTerms(String stream, TimeRange timeRange, long limit) {
+    private Map<String, Long> getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
@@ -258,9 +258,7 @@ public class CorrelationCount {
         try {
             AggregationResult result = search.doSearch();
             return convertResult(result);
-        } catch (EventProcessorException e) {
-            e.printStackTrace();
-        }  catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             LOG.error("Error when converting result: {}", e.getMessage());
             LOG.info("Complementary information in case of exception, timerange: {}, {}", timeRange.getFrom(), timeRange.getTo());
         }
@@ -312,7 +310,7 @@ public class CorrelationCount {
         return builder.toString();
     }
 
-    private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) {
+    private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) throws EventProcessorException {
         Map<String, CorrelationCountResult> matchedTerms = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
         long countFirstMainStream = 0;
@@ -351,7 +349,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult("", new ArrayList<>());
     }
 
-    public CorrelationCountCheckResult runCheck(TimeRange timerange) {
+    public CorrelationCountCheckResult runCheck(TimeRange timerange) throws EventProcessorException {
         // TODO should avoid having two different implementations
         if (this.configuration.groupingFields().isEmpty()) {
             return runCheckCorrelationCount(timerange);
