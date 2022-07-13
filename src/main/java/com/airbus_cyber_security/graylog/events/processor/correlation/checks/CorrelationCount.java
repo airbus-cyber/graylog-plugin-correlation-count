@@ -34,7 +34,6 @@ import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
-import org.graylog2.rest.models.search.responses.TermsResult;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,26 +177,18 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    public Map<String, Long[]> getMatchedTerms(Map<String, Long> termResult, Map<String, Long> termResultAdditionalStream) {
-        Map<String, Long[]> matchedTerms = new HashMap<>();
+    public Map<String, CorrelationCountResult> getMatchedTerms(Map<String, Long> termResult, Map<String, Long> termResultAdditionalStream) {
+        CorrelationCountMap correlations = new CorrelationCountMap();
         for (Map.Entry<String, Long> term: termResult.entrySet()) {
-            Long termAdditionalStreamValue = termResultAdditionalStream.getOrDefault(term.getKey(), 0L);
-            matchedTerms.put(term.getKey(), new Long[]{term.getValue(), termAdditionalStreamValue});
+            String groupByFields = term.getKey();
+            correlations.addFirstStreamCount(groupByFields, term.getValue());
         }
         for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStream.entrySet()) {
-            if (!matchedTerms.containsKey(termAdditionalStream.getKey())) {
-                matchedTerms.put(termAdditionalStream.getKey(), new Long[]{0L, termAdditionalStream.getValue()});
-            }
-        }
-        if (LOG.isDebugEnabled()) { // TODO remove this log line
-            //getMatchedTerms: matchedTerms=2
-            //sourceMessagesForEvent: key=127.0.0.7, value=[4, 4]
-            //sourceMessagesForEvent: key=127.0.0.1, value=[4, 4]
-            LOG.debug("[DEV] getMatchedTerms: matchedTerms={}", matchedTerms.size());
-            matchedTerms.forEach((key, value) -> LOG.debug("[DEV] sourceMessagesForEvent: key={}, value={}", key, Arrays.deepToString(value)));
+            String groupByFields = termAdditionalStream.getKey();
+            correlations.addSecondStreamCount(groupByFields, termAdditionalStream.getValue());
         }
 
-        return matchedTerms;
+        return correlations.getResults();
     }
 
     /**
@@ -321,16 +312,18 @@ public class CorrelationCount {
         Map<String, Long> termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
         // Get matching terms in additional stream
         Map<String, Long> termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timerange, SEARCH_LIMIT);
-        Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
+        Map<String, CorrelationCountResult> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
         boolean ruleTriggered = false;
         boolean isFirstTriggered = true;
         List<MessageSummary> summaries = Lists.newArrayList();
-        for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
-            Long[] counts = matchedTerm.getValue();
-            if (!this.thresholds.areReached(counts[0], counts[1])) {
+        for (Map.Entry<String, CorrelationCountResult> matchedTerm: matchedTerms.entrySet()) {
+            CorrelationCountResult result = matchedTerm.getValue();
+            long firstStreamCount = result.getFirstStreamCount();
+            long secondStreamCount = result.getSecondStreamCount();
+            if (!this.thresholds.areReached(firstStreamCount, secondStreamCount)) {
                 continue;
             }
             String matchedFieldValue = matchedTerm.getKey();
@@ -341,8 +334,8 @@ public class CorrelationCount {
             if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 ruleTriggered = true;
                 if (isFirstTriggered) {
-                    countFirstMainStream = counts[0];
-                    countFirstAdditionalStream = counts[1];
+                    countFirstMainStream = firstStreamCount;
+                    countFirstAdditionalStream = secondStreamCount;
                     isFirstTriggered = false;
                 }
                 summaries.addAll(summariesMainStream);

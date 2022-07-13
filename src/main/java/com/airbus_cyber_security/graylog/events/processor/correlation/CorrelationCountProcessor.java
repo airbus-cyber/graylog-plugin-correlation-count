@@ -19,6 +19,7 @@ package com.airbus_cyber_security.graylog.events.processor.correlation;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCount;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountCheckResult;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountResult;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.Thresholds;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -142,13 +143,13 @@ public class CorrelationCountProcessor implements EventProcessor {
             Map<String, Long> termResult = this.correlationCount.getTerms(this.configuration.stream(), timeRange, limit);
             // Get matching terms in additional stream
             Map<String, Long> termResultAdditionalStream = this.correlationCount.getTerms(this.configuration.additionalStream(), timeRange, limit);
-            Map<String, Long[]> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
+            Map<String, CorrelationCountResult> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
 
             List<MessageSummary> summaries = Lists.newArrayList();
             Thresholds thresholds = new Thresholds(this.configuration);
-            for (Map.Entry<String, Long[]> matchedTerm: matchedTerms.entrySet()) {
-                Long[] counts = matchedTerm.getValue();
-                if (!thresholds.areReached(counts[0], counts[1])) {
+            for (Map.Entry<String, CorrelationCountResult> matchedTerm: matchedTerms.entrySet()) {
+                CorrelationCountResult result = matchedTerm.getValue();
+                if (!thresholds.areReached(result.getFirstStreamCount(), result.getSecondStreamCount())) {
                     continue;
                 }
                 String matchedFieldValue = matchedTerm.getKey();
