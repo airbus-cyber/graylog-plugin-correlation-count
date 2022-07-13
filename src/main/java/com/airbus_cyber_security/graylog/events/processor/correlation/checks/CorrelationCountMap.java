@@ -17,6 +17,9 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
+import com.google.common.collect.ImmutableList;
+import org.graylog.events.processor.aggregation.AggregationKeyResult;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,26 +31,38 @@ public class CorrelationCountMap {
     public CorrelationCountMap() {
         this.results = new HashMap<>();
     }
+    private String buildTermKey(ImmutableList<String> groupByFields) {
+        StringBuilder builder = new StringBuilder();
+        for (String field: groupByFields) {
+            if (0 < builder.length()) {
+                builder.append(" - ");
+            }
+            builder.append(field);
+        }
+        return builder.toString();
+    }
 
-    private void setResult(String groupByFields, long firstStreamCount, long secondStreamCount) {
-        CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
-        this.results.put(groupByFields, result);
+    private void setResult(String key, ImmutableList<String> groupByFields, long firstStreamCount, long secondStreamCount) {
+        CorrelationCountResult result = new CorrelationCountResult(key, firstStreamCount, secondStreamCount);
+        this.results.put(key, result);
     }
 
     // TODO add timestamp, change type of groupByFields to ImmutableList<String>
-    public void addFirstStreamCount(String groupByFields, long firstStreamCount) {
+    public void addFirstStreamCount(ImmutableList<String> groupByFields, long firstStreamCount) {
+        String key = buildTermKey(groupByFields);
         long secondStreamCount = 0L;
-        this.setResult(groupByFields, firstStreamCount, secondStreamCount);
+        this.setResult(key, groupByFields, firstStreamCount, secondStreamCount);
     }
 
     // TODO add timestamp, change type of groupByFields to ImmutableList<String>
-    public void addSecondStreamCount(String groupByFields, long secondStreamCount) {
+    public void addSecondStreamCount(ImmutableList<String> groupByFields, long secondStreamCount) {
+        String key = buildTermKey(groupByFields);
         long firstStreamCount = 0L;
-        CorrelationCountResult previousResult = this.results.get(groupByFields);
+        CorrelationCountResult previousResult = this.results.get(key);
         if (previousResult != null) {
             firstStreamCount = previousResult.getFirstStreamCount();
         }
-        this.setResult(groupByFields, firstStreamCount, secondStreamCount);
+        this.setResult(key, groupByFields, firstStreamCount, secondStreamCount);
     }
 
     public Collection<CorrelationCountResult> getResults() {

@@ -184,17 +184,15 @@ public class CorrelationCount {
 
         CorrelationCountMap correlations = new CorrelationCountMap();
         for (AggregationKeyResult keyResult: termResult.keyResults()) {
-            String groupByFields = buildTermKey(keyResult);
             long value = extractCount(keyResult);
 
-            correlations.addFirstStreamCount(groupByFields, value);
+            correlations.addFirstStreamCount(keyResult.key(), value);
         }
         
         for (AggregationKeyResult keyResult: termResultAdditionalStream.keyResults()) {
-            String groupByFields = buildTermKey(keyResult);
             long value = extractCount(keyResult);
 
-            correlations.addSecondStreamCount(groupByFields, value);
+            correlations.addSecondStreamCount(keyResult.key(), value);
         }
 
         return correlations.getResults();
@@ -267,18 +265,6 @@ public class CorrelationCount {
         String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
         AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
         return search.doSearch();
-    }
-
-    private String buildTermKey(AggregationKeyResult keyResult) {
-        Collection<String> keys = keyResult.key();
-        StringBuilder builder = new StringBuilder();
-        keys.forEach(key -> {
-            if (0 < builder.length()) {
-                builder.append(" - ");
-            }
-            builder.append(key);
-        });
-        return builder.toString();
     }
 
     private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) throws EventProcessorException {
