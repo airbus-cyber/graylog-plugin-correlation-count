@@ -179,21 +179,33 @@ public class CorrelationCount {
 
     public Map<String, CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) throws EventProcessorException {
         // Get matching terms in main stream
-        Map<String, Long> termResult = getTerms(this.configuration.stream(), timeRange, limit);
+        AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
         // Get matching terms in additional stream
-        Map<String, Long> termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
+        AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
 
         CorrelationCountMap correlations = new CorrelationCountMap();
-        for (Map.Entry<String, Long> term: termResult.entrySet()) {
-            String groupByFields = term.getKey();
-            correlations.addFirstStreamCount(groupByFields, term.getValue());
+        for (AggregationKeyResult keyResult: termResult.keyResults()) {
+            String groupByFields = buildTermKey(keyResult);
+            long value = extractCount(keyResult);
+
+            correlations.addFirstStreamCount(groupByFields, value);
         }
-        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStream.entrySet()) {
-            String groupByFields = termAdditionalStream.getKey();
-            correlations.addSecondStreamCount(groupByFields, termAdditionalStream.getValue());
+        
+        for (AggregationKeyResult keyResult: termResultAdditionalStream.keyResults()) {
+            String groupByFields = buildTermKey(keyResult);
+            long value = extractCount(keyResult);
+
+            correlations.addSecondStreamCount(groupByFields, value);
         }
 
         return correlations.getResults();
+    }
+
+    private long extractCount(AggregationKeyResult keyResult) {
+        ImmutableList<AggregationSeriesValue> seriesValues = keyResult.seriesValues();
+        // there should only be one series (the AggregationFunction.COUNT)
+        AggregationSeriesValue seriesValue = seriesValues.get(0);
+        return Double.valueOf(seriesValue.value()).longValue();
     }
 
     /**
@@ -231,7 +243,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
-    private Map<String, Long> getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
+    private AggregationResult getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
@@ -255,47 +267,7 @@ public class CorrelationCount {
                 .build(); // TODO Check if this is correct
         String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
         AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
-        try {
-            AggregationResult result = search.doSearch();
-            return convertResult(result);
-        } catch (IllegalArgumentException e) {
-            LOG.error("Error when converting result: {}", e.getMessage());
-            LOG.info("Complementary information in case of exception, timerange: {}, {}", timeRange.getFrom(), timeRange.getTo());
-        }
-
-        ImmutableMap.Builder<String, Long> terms = ImmutableMap.builder();
-        return terms.build(); // TODO improve error case?
-    }
-
-    private Map<String, Long> convertResult(AggregationResult result) {
-        if (LOG.isDebugEnabled()) { // TODO remove this log line
-            LOG.debug("[DEV] convertResult: AggregationResult#totalAggregatedMessages={}", result.totalAggregatedMessages());
-            LOG.debug("[DEV] convertResult: AggregationResult#effectiveTimerange={}", result.effectiveTimerange());
-            LOG.debug("[DEV] convertResult: AggregationResult#sourceStreams={}", Arrays.deepToString(result.sourceStreams().toArray()));
-            for (AggregationKeyResult aggregationKeyResult : result.keyResults()) {
-                LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#key={}", Arrays.deepToString(aggregationKeyResult.key().toArray()));
-                aggregationKeyResult.seriesValues().forEach(aggregationSeriesValue -> {
-                    LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#value={}", aggregationSeriesValue.value());
-                    LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#key={}", Arrays.deepToString(aggregationSeriesValue.key().toArray()));
-                    // It looks like if series is the same for all seriesValues
-                    LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#series#field={},id={},function={}", aggregationSeriesValue.series().field(), aggregationSeriesValue.series().id(), aggregationSeriesValue.series().function());
-                });
-                // AggregationResult#aggregationKeyResult#key=[127.0.0.7]
-                // AggregationResult#aggregationKeyResult#seriesValues#value=4.0
-                // AggregationResult#aggregationKeyResult#seriesValues#key=[127.0.0.7]
-                // AggregationResult#aggregationKeyResult#seriesValues#series#field=Optional[source],id=correlation_idsource,function=COUNT
-            }
-
-        }
-        ImmutableMap.Builder<String, Long> terms = ImmutableMap.builder();
-        for (AggregationKeyResult keyResult: result.keyResults()) {
-            String key = buildTermKey(keyResult);
-            for (AggregationSeriesValue seriesValue: keyResult.seriesValues()) {
-                Long value = Double.valueOf(seriesValue.value()).longValue();
-                terms.put(key, value);
-            }
-        }
-        return terms.build();
+        return search.doSearch();
     }
 
     private String buildTermKey(AggregationKeyResult keyResult) {
