@@ -36,15 +36,7 @@ public class CorrelationCountCheckResult {
         return resultDescription;
     }
 
-    public void setResultDescription(String resultDescription) {
-        this.resultDescription = resultDescription;
-    }
-
     public List<MessageSummary> getMessageSummaries() {
         return messageSummaries;
-    }
-
-    public void setMessageSummaries(List<MessageSummary> messageSummaries) {
-        this.messageSummaries = messageSummaries;
     }
 }
