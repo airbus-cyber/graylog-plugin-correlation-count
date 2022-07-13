@@ -20,7 +20,6 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
@@ -177,7 +176,7 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    public Map<String, CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) throws EventProcessorException {
+    public Collection<CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) throws EventProcessorException {
         // Get matching terms in main stream
         AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
         // Get matching terms in additional stream
@@ -283,21 +282,20 @@ public class CorrelationCount {
     }
 
     private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) throws EventProcessorException {
-        Map<String, CorrelationCountResult> matchedTerms = getMatchedTerms(timeRange, SEARCH_LIMIT);
+        Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
         boolean ruleTriggered = false;
         boolean isFirstTriggered = true;
         List<MessageSummary> summaries = Lists.newArrayList();
-        for (Map.Entry<String, CorrelationCountResult> matchedTerm: matchedTerms.entrySet()) {
-            CorrelationCountResult result = matchedTerm.getValue();
-            long firstStreamCount = result.getFirstStreamCount();
-            long secondStreamCount = result.getSecondStreamCount();
+        for (CorrelationCountResult matchedResult: matchedResults) {
+            long firstStreamCount = matchedResult.getFirstStreamCount();
+            long secondStreamCount = matchedResult.getSecondStreamCount();
             if (!this.thresholds.areReached(firstStreamCount, secondStreamCount)) {
                 continue;
             }
-            String groupByFields = result.getGroupByFields();
+            String groupByFields = matchedResult.getGroupByFields();
             String searchQuery = buildSearchQuery(groupByFields);
             List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timeRange);
             List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timeRange);

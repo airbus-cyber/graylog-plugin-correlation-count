@@ -139,19 +139,18 @@ public class CorrelationCountProcessor implements EventProcessor {
             this.moreSearch.scrollQuery(this.configuration.searchQuery(), streams, parameters, timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
 
         } else {
-            Map<String, CorrelationCountResult> matchedTerms = this.correlationCount.getMatchedTerms(timeRange, limit);
+            Collection<CorrelationCountResult> matchedTerms = this.correlationCount.getMatchedTerms(timeRange, limit);
 
             List<MessageSummary> summaries = Lists.newArrayList();
             Thresholds thresholds = new Thresholds(this.configuration);
-            for (Map.Entry<String, CorrelationCountResult> matchedTerm: matchedTerms.entrySet()) {
-                CorrelationCountResult result = matchedTerm.getValue();
-                if (!thresholds.areReached(result.getFirstStreamCount(), result.getSecondStreamCount())) {
+            for (CorrelationCountResult matchedResult: matchedTerms) {
+                if (!thresholds.areReached(matchedResult.getFirstStreamCount(), matchedResult.getSecondStreamCount())) {
                     continue;
                 }
-                String matchedFieldValue = matchedTerm.getKey();
+                String groupByFields = matchedResult.getGroupByFields();
                 //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.7
                 //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.1
-                String searchQuery = this.correlationCount.buildSearchQuery(matchedFieldValue);
+                String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);
                 List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, this.configuration.stream(), timeRange);
                 List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, this.configuration.additionalStream(), timeRange);
                 summaries.addAll(summariesMainStream);

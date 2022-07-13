@@ -17,6 +17,7 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class CorrelationCountMap {
         this.setResult(groupByFields, firstStreamCount, secondStreamCount);
     }
 
-    public Map<String, CorrelationCountResult> getResults() {
-        return this.results;
+    public Collection<CorrelationCountResult> getResults() {
+        return this.results.values();
     }
 }
