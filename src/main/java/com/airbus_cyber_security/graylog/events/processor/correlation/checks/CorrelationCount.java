@@ -297,8 +297,8 @@ public class CorrelationCount {
             if (!this.thresholds.areReached(firstStreamCount, secondStreamCount)) {
                 continue;
             }
-            String matchedFieldValue = matchedTerm.getKey();
-            String searchQuery = buildSearchQuery(matchedFieldValue);
+            String groupByFields = result.getGroupByFields();
+            String searchQuery = buildSearchQuery(groupByFields);
             List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timeRange);
             List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timeRange);
 

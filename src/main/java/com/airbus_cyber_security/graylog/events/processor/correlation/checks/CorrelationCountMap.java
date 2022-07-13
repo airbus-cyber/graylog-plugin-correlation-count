@@ -29,7 +29,7 @@ public class CorrelationCountMap {
     }
 
     private void setResult(String groupByFields, long firstStreamCount, long secondStreamCount) {
-        CorrelationCountResult result = new CorrelationCountResult(firstStreamCount, secondStreamCount);
+        CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
         this.results.put(groupByFields, result);
     }
 
