@@ -139,9 +139,9 @@ public class CorrelationCountProcessor implements EventProcessor {
 
         } else {
             // Get matching terms in main stream
-            TermsResult termResult = this.correlationCount.getTerms(this.configuration.stream(), timeRange, limit);
+            Map<String, Long> termResult = this.correlationCount.getTerms(this.configuration.stream(), timeRange, limit);
             // Get matching terms in additional stream
-            TermsResult termResultAdditionalStream = this.correlationCount.getTerms(this.configuration.additionalStream(), timeRange, limit);
+            Map<String, Long> termResultAdditionalStream = this.correlationCount.getTerms(this.configuration.additionalStream(), timeRange, limit);
             Map<String, Long[]> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
 
             List<MessageSummary> summaries = Lists.newArrayList();

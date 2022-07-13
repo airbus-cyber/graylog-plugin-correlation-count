@@ -178,13 +178,13 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    public Map<String, Long[]> getMatchedTerms(TermsResult termResult, TermsResult termResultAdditionalStream) {
+    public Map<String, Long[]> getMatchedTerms(Map<String, Long> termResult, Map<String, Long> termResultAdditionalStream) {
         Map<String, Long[]> matchedTerms = new HashMap<>();
-        for (Map.Entry<String, Long> term: termResult.terms().entrySet()) {
-            Long termAdditionalStreamValue = termResultAdditionalStream.terms().getOrDefault(term.getKey(), 0L);
+        for (Map.Entry<String, Long> term: termResult.entrySet()) {
+            Long termAdditionalStreamValue = termResultAdditionalStream.getOrDefault(term.getKey(), 0L);
             matchedTerms.put(term.getKey(), new Long[]{term.getValue(), termAdditionalStreamValue});
         }
-        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStream.terms().entrySet()) {
+        for (Map.Entry<String, Long> termAdditionalStream: termResultAdditionalStream.entrySet()) {
             if (!matchedTerms.containsKey(termAdditionalStream.getKey())) {
                 matchedTerms.put(termAdditionalStream.getKey(), new Long[]{0L, termAdditionalStream.getValue()});
             }
@@ -235,7 +235,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
-    public TermsResult getTerms(String stream, TimeRange timeRange, long limit) {
+    public Map<String, Long> getTerms(String stream, TimeRange timeRange, long limit) {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
@@ -261,7 +261,7 @@ public class CorrelationCount {
         AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
         try {
             AggregationResult result = search.doSearch();
-            return convertResult(config, result);
+            return convertResult(result);
         } catch (EventProcessorException e) {
             e.printStackTrace();
         }  catch (IllegalArgumentException e) {
@@ -269,24 +269,16 @@ public class CorrelationCount {
             LOG.info("Complementary information in case of exception, timerange: {}, {}", timeRange.getFrom(), timeRange.getTo());
         }
 
-        return convertResult(config, null); // TODO improve error case?
+        ImmutableMap.Builder<String, Long> terms = ImmutableMap.builder();
+        return terms.build(); // TODO improve error case?
     }
 
-    private TermsResult convertResult(AggregationEventProcessorConfig config, AggregationResult result) {
+    private Map<String, Long> convertResult(AggregationResult result) {
         if (LOG.isDebugEnabled()) { // TODO remove this log line
-// AggregationEventProcessorConfig#query=message:bob*,groupBy=[source]
-            LOG.debug("[DEV] convertResult: AggregationEventProcessorConfig#query={},groupBy={}", config.query(), Arrays.deepToString(config.groupBy().toArray()));
-// AggregationResult#totalAggregatedMessages=8
             LOG.debug("[DEV] convertResult: AggregationResult#totalAggregatedMessages={}", result.totalAggregatedMessages());
-            // AggregationResult#effectiveTimerange=AbsoluteRange{type=absolute, from=2021-10-06T12:57:11.196Z, to=2021-10-06T13:02:11.195Z}
             LOG.debug("[DEV] convertResult: AggregationResult#effectiveTimerange={}", result.effectiveTimerange());
-// AggregationResult#sourceStreams=[000000000000000000000001, 6153f2974eb75f06e159e2e1, 615bfe2df4dca616fb45950f]
             LOG.debug("[DEV] convertResult: AggregationResult#sourceStreams={}", Arrays.deepToString(result.sourceStreams().toArray()));
             for (AggregationKeyResult aggregationKeyResult : result.keyResults()) {
-                // AggregationResult#aggregationKeyResult#key=[127.0.0.1]
-                // AggregationResult#aggregationKeyResult#seriesValues#value=4.0
-                // AggregationResult#aggregationKeyResult#seriesValues#key=[127.0.0.1]
-                // AggregationResult#aggregationKeyResult#seriesValues#series#field=Optional[source],id=correlation_idsource,function=COUNT
                 LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#key={}", Arrays.deepToString(aggregationKeyResult.key().toArray()));
                 aggregationKeyResult.seriesValues().forEach(aggregationSeriesValue -> {
                     LOG.debug("[DEV] convertResult: AggregationResult#aggregationKeyResult#seriesValues#value={}", aggregationSeriesValue.value());
@@ -302,18 +294,14 @@ public class CorrelationCount {
 
         }
         ImmutableMap.Builder<String, Long> terms = ImmutableMap.builder();
-        long total = 0;
-        if (null != result) {
-            total = result.totalAggregatedMessages();
-            result.keyResults().forEach(keyResult -> {
-                String key = buildTermKey(keyResult);
-                keyResult.seriesValues().forEach(seriesValue -> {
-                    Long value = Double.valueOf(seriesValue.value()).longValue();
-                    terms.put(key, value);
-                });
-            });
+        for (AggregationKeyResult keyResult: result.keyResults()) {
+            String key = buildTermKey(keyResult);
+            for (AggregationSeriesValue seriesValue: keyResult.seriesValues()) {
+                Long value = Double.valueOf(seriesValue.value()).longValue();
+                terms.put(key, value);
+            }
         }
-        return TermsResult.create(0, terms.build(), 0, 0, total, config.query());
+        return terms.build();
     }
 
     private String buildTermKey(AggregationKeyResult keyResult) {
@@ -330,9 +318,9 @@ public class CorrelationCount {
 
     private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange) {
         // Get matching terms in main stream
-        TermsResult termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
+        Map<String, Long> termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
         // Get matching terms in additional stream
-        TermsResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timerange, SEARCH_LIMIT);
+        Map<String, Long> termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timerange, SEARCH_LIMIT);
         Map<String, Long[]> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
 
         long countFirstMainStream = 0;
