@@ -139,11 +139,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             this.moreSearch.scrollQuery(this.configuration.searchQuery(), streams, parameters, timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
 
         } else {
-            // Get matching terms in main stream
-            Map<String, Long> termResult = this.correlationCount.getTerms(this.configuration.stream(), timeRange, limit);
-            // Get matching terms in additional stream
-            Map<String, Long> termResultAdditionalStream = this.correlationCount.getTerms(this.configuration.additionalStream(), timeRange, limit);
-            Map<String, CorrelationCountResult> matchedTerms = this.correlationCount.getMatchedTerms(termResult, termResultAdditionalStream);
+            Map<String, CorrelationCountResult> matchedTerms = this.correlationCount.getMatchedTerms(timeRange, limit);
 
             List<MessageSummary> summaries = Lists.newArrayList();
             Thresholds thresholds = new Thresholds(this.configuration);

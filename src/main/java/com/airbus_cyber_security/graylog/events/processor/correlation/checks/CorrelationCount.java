@@ -177,7 +177,12 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    public Map<String, CorrelationCountResult> getMatchedTerms(Map<String, Long> termResult, Map<String, Long> termResultAdditionalStream) {
+    public Map<String, CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) {
+        // Get matching terms in main stream
+        Map<String, Long> termResult = getTerms(this.configuration.stream(), timeRange, limit);
+        // Get matching terms in additional stream
+        Map<String, Long> termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
+
         CorrelationCountMap correlations = new CorrelationCountMap();
         for (Map.Entry<String, Long> term: termResult.entrySet()) {
             String groupByFields = term.getKey();
@@ -226,7 +231,7 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
-    public Map<String, Long> getTerms(String stream, TimeRange timeRange, long limit) {
+    private Map<String, Long> getTerms(String stream, TimeRange timeRange, long limit) {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
@@ -307,12 +312,8 @@ public class CorrelationCount {
         return builder.toString();
     }
 
-    private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timerange) {
-        // Get matching terms in main stream
-        Map<String, Long> termResult = getTerms(this.configuration.stream(), timerange, SEARCH_LIMIT);
-        // Get matching terms in additional stream
-        Map<String, Long> termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timerange, SEARCH_LIMIT);
-        Map<String, CorrelationCountResult> matchedTerms = getMatchedTerms(termResult, termResultAdditionalStream);
+    private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) {
+        Map<String, CorrelationCountResult> matchedTerms = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
         long countFirstMainStream = 0;
         long countFirstAdditionalStream = 0;
@@ -328,8 +329,8 @@ public class CorrelationCount {
             }
             String matchedFieldValue = matchedTerm.getKey();
             String searchQuery = buildSearchQuery(matchedFieldValue);
-            List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timerange);
-            List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timerange);
+            List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timeRange);
+            List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timeRange);
 
             if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 ruleTriggered = true;
