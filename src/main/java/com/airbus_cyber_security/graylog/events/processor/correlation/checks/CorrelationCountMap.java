@@ -26,6 +26,7 @@ import java.util.Map;
 
 public class CorrelationCountMap {
 
+    // TODO: should distinguish by timestamps too!!
     private final Map<String, CorrelationCountResult> results;
 
     public CorrelationCountMap() {
@@ -43,7 +44,7 @@ public class CorrelationCountMap {
     }
 
     private void setResult(String key, ImmutableList<String> groupByFields, long firstStreamCount, long secondStreamCount) {
-        CorrelationCountResult result = new CorrelationCountResult(key, firstStreamCount, secondStreamCount);
+        CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
         this.results.put(key, result);
     }
 

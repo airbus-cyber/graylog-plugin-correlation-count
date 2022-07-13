@@ -97,16 +97,16 @@ public class CorrelationCount {
         return result;
     }
 
-    public String buildSearchQuery(String matchedFieldValue) {
-        List<String> nextFields = new ArrayList<>(configuration.groupingFields());
-        String firstField = nextFields.remove(0);
-        String searchQuery = this.configuration.searchQuery();
-        for (String field: nextFields) {
-            matchedFieldValue = matchedFieldValue.replaceFirst(" - ", " AND " + field + ": ");
+    public String buildSearchQuery(List<String> fieldValues) {
+        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
+
+        StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String name = fieldNames.get(i);
+            String value = fieldValues.get(i);
+            builder.append(" AND " + name + ": " + value);
         }
-        String globalSearchQuery = (searchQuery + " AND " + firstField + ": " + matchedFieldValue);
-        LOG.debug("[DEV] buildSearchQuery: matchedTerms={}", globalSearchQuery); // TODO remove this log line
-        return globalSearchQuery;
+        return builder.toString();
     }
 
     private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCount.OrderType messagesOrderType) {
@@ -281,8 +281,10 @@ public class CorrelationCount {
             if (!this.thresholds.areReached(firstStreamCount, secondStreamCount)) {
                 continue;
             }
-            String groupByFields = matchedResult.getGroupByFields();
+            List<String> groupByFields = matchedResult.getGroupByFields();
             String searchQuery = buildSearchQuery(groupByFields);
+
+            // TODO should compute the timerange from the timestamp!!
             List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timeRange);
             List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timeRange);
 

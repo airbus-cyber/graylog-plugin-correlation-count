@@ -113,6 +113,8 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) throws EventProcessorException {
+        // TODO try to imitate code of the AggregationCountProcessor (even, call it if possible)
+        // should not have to redo all the computations performed in createEvent but rather use the information stored on the Event (again the grouping fields and timestamp)
         if (limit <= 0) {
             return;
         }
@@ -147,7 +149,7 @@ public class CorrelationCountProcessor implements EventProcessor {
                 if (!thresholds.areReached(matchedResult.getFirstStreamCount(), matchedResult.getSecondStreamCount())) {
                     continue;
                 }
-                String groupByFields = matchedResult.getGroupByFields();
+                List<String> groupByFields = matchedResult.getGroupByFields();
                 //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.7
                 //[CorrelationCount] [DEV] buildSearchQuery: matchedTerms=message:bob* AND source: 127.0.0.1
                 String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);

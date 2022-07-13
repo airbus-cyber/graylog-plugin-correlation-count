@@ -17,14 +17,16 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
+import java.util.List;
+
 public class CorrelationCountResult {
 
-    private final String groupByFields;
+    private final List<String> groupByFields;
     private final long firstStreamCount;
     private final long secondStreamCount;
 
-    // TODO should have the timestamp and the group fields (as an Immutable list)
-    public CorrelationCountResult(String groupByFields, long firstStreamCount, long secondStreamCount) {
+    // TODO should have the timestamp
+    public CorrelationCountResult(List<String> groupByFields, long firstStreamCount, long secondStreamCount) {
         this.groupByFields = groupByFields;
         this.firstStreamCount = firstStreamCount;
         this.secondStreamCount = secondStreamCount;
@@ -38,7 +40,7 @@ public class CorrelationCountResult {
         return this.secondStreamCount;
     }
 
-    public String getGroupByFields() {
+    public List<String> getGroupByFields() {
         return this.groupByFields;
     }
 }
