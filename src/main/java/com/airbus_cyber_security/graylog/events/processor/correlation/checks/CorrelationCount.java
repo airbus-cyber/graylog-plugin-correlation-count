@@ -306,8 +306,8 @@ public class CorrelationCount {
         if (null != result) {
             total = result.totalAggregatedMessages();
             result.keyResults().forEach(keyResult -> {
+                String key = buildTermKey(keyResult);
                 keyResult.seriesValues().forEach(seriesValue -> {
-                    String key = buildTermKey(seriesValue.key());
                     Long value = Double.valueOf(seriesValue.value()).longValue();
                     terms.put(key, value);
                 });
@@ -316,7 +316,8 @@ public class CorrelationCount {
         return TermsResult.create(0, terms.build(), 0, 0, total, config.query());
     }
 
-    private String buildTermKey(Collection<String> keys) {
+    private String buildTermKey(AggregationKeyResult keyResult) {
+        Collection<String> keys = keyResult.key();
         StringBuilder builder = new StringBuilder();
         keys.forEach(key -> {
             if (0 < builder.length()) {
