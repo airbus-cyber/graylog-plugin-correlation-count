@@ -75,15 +75,13 @@ public class CorrelationCount {
     private final CorrelationCountProcessorConfig configuration;
     private final Thresholds thresholds;
     private final Searches searches;
-    private final AggregationSearch.Factory aggregationSearchFactory;
-    private final EventDefinition eventDefinition;
+    private final CorrelationCountSearch correlationCountSearch;
 
     public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
+        this.correlationCountSearch = new CorrelationCountSearch(configuration, aggregationSearchFactory, eventDefinition);
         this.searches = searches;
         this.configuration = configuration;
         this.thresholds = new Thresholds(configuration);
-        this.aggregationSearchFactory = aggregationSearchFactory;
-        this.eventDefinition = eventDefinition;
     }
 
     public List<MessageSummary> search(String searchQuery, String stream, TimeRange range) {
@@ -176,33 +174,9 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
+    // TODO try to remove this method
     public Collection<CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) throws EventProcessorException {
-        // Get matching terms in main stream
-        AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
-        // Get matching terms in additional stream
-        AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
-
-        CorrelationCountMap correlations = new CorrelationCountMap();
-        for (AggregationKeyResult keyResult: termResult.keyResults()) {
-            long value = extractCount(keyResult);
-
-            correlations.addFirstStreamCount(keyResult.key(), value);
-        }
-        
-        for (AggregationKeyResult keyResult: termResultAdditionalStream.keyResults()) {
-            long value = extractCount(keyResult);
-
-            correlations.addSecondStreamCount(keyResult.key(), value);
-        }
-
-        return correlations.getResults();
-    }
-
-    private long extractCount(AggregationKeyResult keyResult) {
-        ImmutableList<AggregationSeriesValue> seriesValues = keyResult.seriesValues();
-        // there should only be one series (the AggregationFunction.COUNT)
-        AggregationSeriesValue seriesValue = seriesValues.get(0);
-        return Double.valueOf(seriesValue.value()).longValue();
+        return this.correlationCountSearch.doSearch(timeRange, limit);
     }
 
     /**
@@ -238,33 +212,6 @@ public class CorrelationCount {
         summaries.addAll(summariesAdditionalStream);
         String resultDescription = getResultDescription(resultMainStreamCount, resultAdditionalStreamCount);
         return new CorrelationCountCheckResult(resultDescription, summaries);
-    }
-
-    private AggregationResult getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
-        // Build series from configuration
-        ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
-        StringBuilder idBuilder = new StringBuilder("correlation_id");
-        for (String groupingField : this.configuration.groupingFields()) {
-            idBuilder.append("#").append(groupingField);
-        }
-        seriesBuilder.add(AggregationSeries.builder().id(idBuilder.toString()).function(AggregationFunction.COUNT).build());
-        // Create the graylog "legal" aggregation configuration
-        AggregationEventProcessorConfig config = AggregationEventProcessorConfig.Builder.create()
-                .groupBy(new ArrayList<>(this.configuration.groupingFields()))
-                .query(this.configuration.searchQuery())
-                .streams(ImmutableSet.of(stream))
-                .executeEveryMs(this.configuration.executeEveryMs())
-                .searchWithinMs(this.configuration.searchWithinMs())
-//                .conditions() // TODO or not TODO, that is the question
-                .series(seriesBuilder.build())
-                .build(); // TODO
-        AggregationEventProcessorParameters parameters = AggregationEventProcessorParameters.builder()
-                .streams(ImmutableSet.of(stream)).batchSize(Long.valueOf(limit).intValue())
-                .timerange(timeRange)
-                .build(); // TODO Check if this is correct
-        String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
-        AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
-        return search.doSearch();
     }
 
     private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) throws EventProcessorException {
