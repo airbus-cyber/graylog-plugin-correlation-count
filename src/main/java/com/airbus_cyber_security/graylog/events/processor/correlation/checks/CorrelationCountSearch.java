@@ -52,26 +52,8 @@ public class CorrelationCountSearch {
         return builder.toString();
     }
 
-    private Map<String, ImmutableList<String>> classifyGroupByFields(AggregationResult firstResults, AggregationResult secondResults) {
-        Map<String, ImmutableList<String>> groupingFields = new HashMap<>();
-        for (AggregationKeyResult keyResult: firstResults.keyResults()) {
-            ImmutableList<String> groupByFields = keyResult.key();
-            String key = buildTermKey(groupByFields);
-
-            groupingFields.put(key, groupByFields);
-        }
-
-        for (AggregationKeyResult keyResult: secondResults.keyResults()) {
-            ImmutableList<String> groupByFields = keyResult.key();
-            String key = buildTermKey(groupByFields);
-
-            groupingFields.put(key, groupByFields);
-        }
-        return groupingFields;
-    }
-
     // TODO add timestamp
-    private Map<String, Long> classifyCounts(AggregationResult termResult) {
+    private Map<String, Long> classifyCounts(AggregationResult termResult, Map<String, ImmutableList<String>> groupingFields) {
         Map<String, Long> streamCounts = new HashMap<>();
 
         for (AggregationKeyResult keyResult: termResult.keyResults()) {
@@ -79,6 +61,7 @@ public class CorrelationCountSearch {
             String key = buildTermKey(groupByFields);
             long value = extractCount(keyResult);
 
+            groupingFields.put(key, groupByFields);
             if (streamCounts.containsKey(key)) {
                 throw new IllegalArgumentException("Unexpected duplicated key in stream: " + key);
             }
@@ -128,9 +111,9 @@ public class CorrelationCountSearch {
         AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
         AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
 
-        Map<String, ImmutableList<String>> groupingFields = classifyGroupByFields(termResult, termResultAdditionalStream);
-        Map<String, Long> firstStreamCounts = classifyCounts(termResult);
-        Map<String, Long> secondStreamCounts = classifyCounts(termResultAdditionalStream);
+        Map<String, ImmutableList<String>> groupingFields = new HashMap<>();
+        Map<String, Long> firstStreamCounts = classifyCounts(termResult, groupingFields);
+        Map<String, Long> secondStreamCounts = classifyCounts(termResultAdditionalStream, groupingFields);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (String key: groupingFields.keySet()) {
