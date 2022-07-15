@@ -69,10 +69,10 @@ public class CorrelationCountCombinedResults {
 
     Collection<CorrelationCountResult> getAll() {
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
-        for (String key: groupingFields.keySet()) {
-            ImmutableList<String> groupByFields = groupingFields.get(key);
-            long firstStreamCount = firstStreamCounts.getOrDefault(key, 0L);
-            long secondStreamCount = secondStreamCounts.getOrDefault(key, 0L);
+        for (String key: this.groupingFields.keySet()) {
+            ImmutableList<String> groupByFields = this.groupingFields.get(key);
+            long firstStreamCount = this.firstStreamCounts.getOrDefault(key, 0L);
+            long secondStreamCount = this.secondStreamCounts.getOrDefault(key, 0L);
             CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
             results.add(result);
         }
