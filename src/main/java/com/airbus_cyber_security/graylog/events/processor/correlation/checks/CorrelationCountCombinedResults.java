@@ -18,6 +18,7 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.google.common.collect.ImmutableList;
+import org.joda.time.DateTime;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class CorrelationCountCombinedResults {
         return builder.toString();
     }
 
-    void addFirstStreamResult(ImmutableList<String> groupByFields, long count) {
+    void addFirstStreamResult(DateTime timestamp, ImmutableList<String> groupByFields, long count) {
         String key = buildTermKey(groupByFields);
 
         this.groupingFields.put(key, groupByFields);
@@ -56,7 +57,7 @@ public class CorrelationCountCombinedResults {
         this.firstStreamCounts.put(key, count);
     }
 
-    void addSecondStreamResult(ImmutableList<String> groupByFields, long count) {
+    void addSecondStreamResult(DateTime timestamp, ImmutableList<String> groupByFields, long count) {
         String key = buildTermKey(groupByFields);
 
         this.groupingFields.put(key, groupByFields);

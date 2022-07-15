@@ -24,6 +24,7 @@ import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
 import org.graylog.events.processor.aggregation.*;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,16 +85,18 @@ public class CorrelationCountSearch {
 
         for (AggregationKeyResult keyResult: termResult.keyResults()) {
             ImmutableList<String> groupByFields = keyResult.key();
+            DateTime timestamp = keyResult.timestamp().get();
             long value = extractCount(keyResult);
 
-            results.addFirstStreamResult(groupByFields, value);
+            results.addFirstStreamResult(timestamp, groupByFields, value);
         }
 
         for (AggregationKeyResult keyResult: termResultAdditionalStream.keyResults()) {
             ImmutableList<String> groupByFields = keyResult.key();
+            DateTime timestamp = keyResult.timestamp().get();
             long value = extractCount(keyResult);
 
-            results.addSecondStreamResult(groupByFields, value);
+            results.addSecondStreamResult(timestamp, groupByFields, value);
         }
 
         return results.getAll();
