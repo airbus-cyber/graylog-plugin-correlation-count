@@ -30,6 +30,7 @@ import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
+import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -190,6 +191,7 @@ public class CorrelationCount {
         return result.count();
     }
 
+    // TODO should rather return a list of Events...
     private CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange) {
         long resultMainStreamCount = searchCount(timerange, this.configuration.stream());
         long resultAdditionalStreamCount = searchCount(timerange, this.configuration.additionalStream());
@@ -212,6 +214,11 @@ public class CorrelationCount {
         return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 
+    private TimeRange buildSearchTimeRange(DateTime to) {
+        DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
+        return AbsoluteRange.create(from, to.minusMillis(1));
+    }
+
     private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) throws EventProcessorException {
         Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
@@ -229,9 +236,11 @@ public class CorrelationCount {
             List<String> groupByFields = matchedResult.getGroupByFields();
             String searchQuery = buildSearchQuery(groupByFields);
 
+            TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
+
             // TODO should compute the timerange from the timestamp!!
-            List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), timeRange);
-            List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), timeRange);
+            List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), searchTimeRange);
+            List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 
             if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 ruleTriggered = true;

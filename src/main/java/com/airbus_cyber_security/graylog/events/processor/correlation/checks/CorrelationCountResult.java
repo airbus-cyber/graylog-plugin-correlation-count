@@ -17,19 +17,28 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
+import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.joda.time.DateTime;
+
 import java.util.List;
 
 public class CorrelationCountResult {
 
+    private final DateTime timestamp;
     private final List<String> groupByFields;
     private final long firstStreamCount;
     private final long secondStreamCount;
 
     // TODO should have the timestamp
-    public CorrelationCountResult(List<String> groupByFields, long firstStreamCount, long secondStreamCount) {
+    public CorrelationCountResult(DateTime timestamp, List<String> groupByFields, long firstStreamCount, long secondStreamCount) {
+        this.timestamp = timestamp;
         this.groupByFields = groupByFields;
         this.firstStreamCount = firstStreamCount;
         this.secondStreamCount = secondStreamCount;
+    }
+
+    public DateTime getTimestamp() {
+        return this.timestamp;
     }
 
     public long getFirstStreamCount() {
