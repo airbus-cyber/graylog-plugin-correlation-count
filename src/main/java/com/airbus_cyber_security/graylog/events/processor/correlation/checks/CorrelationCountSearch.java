@@ -75,7 +75,6 @@ public class CorrelationCountSearch {
         return Double.valueOf(seriesValue.value()).longValue();
     }
 
-    // TODO: should distinguish by timestamps too!!
     public Collection<CorrelationCountResult> doSearch(TimeRange timeRange, long limit) throws EventProcessorException {
 
         AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);

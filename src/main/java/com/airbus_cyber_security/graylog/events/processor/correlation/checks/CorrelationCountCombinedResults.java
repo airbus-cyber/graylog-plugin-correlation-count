@@ -21,19 +21,17 @@ import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CorrelationCountCombinedResults {
 
-    private final Map<String, ImmutableList<String>> groupingFields;
-    private final Map<String, Long> firstStreamCounts;
-    private final Map<String, Long> secondStreamCounts;
+    private final TimestampGroupByMap<ImmutableList<String>> groupingFields;
+    private final TimestampGroupByMap<Long> firstStreamCounts;
+    private final TimestampGroupByMap<Long> secondStreamCounts;
 
     CorrelationCountCombinedResults() {
-        this.groupingFields = new HashMap<>();
-        this.firstStreamCounts = new HashMap<>();
-        this.secondStreamCounts = new HashMap<>();
+        this.groupingFields = new TimestampGroupByMap<>();
+        this.firstStreamCounts = new TimestampGroupByMap<>();
+        this.secondStreamCounts = new TimestampGroupByMap<>();
     }
 
     private String buildTermKey(ImmutableList<String> groupByFields) {
@@ -50,31 +48,33 @@ public class CorrelationCountCombinedResults {
     void addFirstStreamResult(DateTime timestamp, ImmutableList<String> groupByFields, long count) {
         String key = buildTermKey(groupByFields);
 
-        this.groupingFields.put(key, groupByFields);
-        if (this.firstStreamCounts.containsKey(key)) {
-            throw new IllegalArgumentException("Unexpected duplicated key in stream: " + key);
+        this.groupingFields.put(timestamp, key, groupByFields);
+        if (this.firstStreamCounts.containsKey(timestamp, key)) {
+            throw new IllegalArgumentException("Unexpected duplicated key in stream: " + timestamp + ", " + key);
         }
-        this.firstStreamCounts.put(key, count);
+        this.firstStreamCounts.put(timestamp, key, count);
     }
 
     void addSecondStreamResult(DateTime timestamp, ImmutableList<String> groupByFields, long count) {
         String key = buildTermKey(groupByFields);
 
-        this.groupingFields.put(key, groupByFields);
-        if (this.secondStreamCounts.containsKey(key)) {
-            throw new IllegalArgumentException("Unexpected duplicated key in stream: " + key);
+        this.groupingFields.put(timestamp, key, groupByFields);
+        if (this.secondStreamCounts.containsKey(timestamp, key)) {
+            throw new IllegalArgumentException("Unexpected duplicated key in additional stream: " + timestamp + ", " + key);
         }
-        this.secondStreamCounts.put(key, count);
+        this.secondStreamCounts.put(timestamp, key, count);
     }
 
     Collection<CorrelationCountResult> getAll() {
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
-        for (String key: this.groupingFields.keySet()) {
-            ImmutableList<String> groupByFields = this.groupingFields.get(key);
-            long firstStreamCount = this.firstStreamCounts.getOrDefault(key, 0L);
-            long secondStreamCount = this.secondStreamCounts.getOrDefault(key, 0L);
-            CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
-            results.add(result);
+        for (DateTime timestamp: this.groupingFields.getTimestamps()) {
+            for (String key: this.groupingFields.getGroupByFields(timestamp)) {
+                ImmutableList<String> groupByFields = this.groupingFields.get(timestamp, key);
+                long firstStreamCount = this.firstStreamCounts.getOrDefault(timestamp, key, 0L);
+                long secondStreamCount = this.secondStreamCounts.getOrDefault(timestamp, key, 0L);
+                CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
+                results.add(result);
+            }
         }
 
         return results.build();
