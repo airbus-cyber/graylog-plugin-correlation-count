@@ -21,6 +21,7 @@ import org.graylog2.plugin.MessageSummary;
 
 import java.util.List;
 
+// TODO try to remove this class
 public class CorrelationCountCheckResult {
 
     private String resultDescription;

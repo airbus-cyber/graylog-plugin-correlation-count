@@ -35,14 +35,11 @@ public class CorrelationCountSearch {
     private final CorrelationCountProcessorConfig configuration;
     private final AggregationSearch.Factory aggregationSearchFactory;
     private final EventDefinition eventDefinition;
-    // TODO: should distinguish by timestamps too!!
-    private final Map<String, CorrelationCountResult> results;
 
     public CorrelationCountSearch(CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
         this.configuration = configuration;
         this.aggregationSearchFactory = aggregationSearchFactory;
         this.eventDefinition = eventDefinition;
-        this.results = new HashMap<>();
     }
     private String buildTermKey(ImmutableList<String> groupByFields) {
         StringBuilder builder = new StringBuilder();
@@ -55,27 +52,40 @@ public class CorrelationCountSearch {
         return builder.toString();
     }
 
-    private void setResult(String key, ImmutableList<String> groupByFields, long firstStreamCount, long secondStreamCount) {
-        CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
-        this.results.put(key, result);
-    }
+    private Map<String, ImmutableList<String>> classifyGroupByFields(AggregationResult firstResults, AggregationResult secondResults) {
+        Map<String, ImmutableList<String>> groupingFields = new HashMap<>();
+        for (AggregationKeyResult keyResult: firstResults.keyResults()) {
+            ImmutableList<String> groupByFields = keyResult.key();
+            String key = buildTermKey(groupByFields);
 
-    // TODO add timestamp, change type of groupByFields to ImmutableList<String>
-    private void addFirstStreamCount(ImmutableList<String> groupByFields, long firstStreamCount) {
-        String key = buildTermKey(groupByFields);
-        long secondStreamCount = 0L;
-        this.setResult(key, groupByFields, firstStreamCount, secondStreamCount);
-    }
-
-    // TODO add timestamp, change type of groupByFields to ImmutableList<String>
-    private void addSecondStreamCount(ImmutableList<String> groupByFields, long secondStreamCount) {
-        String key = buildTermKey(groupByFields);
-        long firstStreamCount = 0L;
-        CorrelationCountResult previousResult = this.results.get(key);
-        if (previousResult != null) {
-            firstStreamCount = previousResult.getFirstStreamCount();
+            groupingFields.put(key, groupByFields);
         }
-        this.setResult(key, groupByFields, firstStreamCount, secondStreamCount);
+
+        for (AggregationKeyResult keyResult: secondResults.keyResults()) {
+            ImmutableList<String> groupByFields = keyResult.key();
+            String key = buildTermKey(groupByFields);
+
+            groupingFields.put(key, groupByFields);
+        }
+        return groupingFields;
+    }
+
+    // TODO add timestamp
+    private Map<String, Long> classifyCounts(AggregationResult termResult) {
+        Map<String, Long> streamCounts = new HashMap<>();
+
+        for (AggregationKeyResult keyResult: termResult.keyResults()) {
+            ImmutableList<String> groupByFields = keyResult.key();
+            String key = buildTermKey(groupByFields);
+            long value = extractCount(keyResult);
+
+            if (streamCounts.containsKey(key)) {
+                throw new IllegalArgumentException("Unexpected duplicated key in stream: " + key);
+            }
+            streamCounts.put(key, value);
+        }
+
+        return streamCounts;
     }
 
     private AggregationResult getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
@@ -112,25 +122,25 @@ public class CorrelationCountSearch {
         return Double.valueOf(seriesValue.value()).longValue();
     }
 
+    // TODO: should distinguish by timestamps too!!
     public Collection<CorrelationCountResult> doSearch(TimeRange timeRange, long limit) throws EventProcessorException {
 
-        // Get matching terms in main stream
         AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
-        // Get matching terms in additional stream
         AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
 
-        for (AggregationKeyResult keyResult: termResult.keyResults()) {
-            long value = extractCount(keyResult);
+        Map<String, ImmutableList<String>> groupingFields = classifyGroupByFields(termResult, termResultAdditionalStream);
+        Map<String, Long> firstStreamCounts = classifyCounts(termResult);
+        Map<String, Long> secondStreamCounts = classifyCounts(termResultAdditionalStream);
 
-            addFirstStreamCount(keyResult.key(), value);
+        ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
+        for (String key: groupingFields.keySet()) {
+            ImmutableList<String> groupByFields = groupingFields.get(key);
+            long firstStreamCount = firstStreamCounts.getOrDefault(key, 0L);
+            long secondStreamCount = secondStreamCounts.getOrDefault(key, 0L);
+            CorrelationCountResult result = new CorrelationCountResult(groupByFields, firstStreamCount, secondStreamCount);
+            results.add(result);
         }
 
-        for (AggregationKeyResult keyResult: termResultAdditionalStream.keyResults()) {
-            long value = extractCount(keyResult);
-
-            addSecondStreamCount(keyResult.key(), value);
-        }
-
-        return this.results.values();
+        return results.build();
     }
 }
