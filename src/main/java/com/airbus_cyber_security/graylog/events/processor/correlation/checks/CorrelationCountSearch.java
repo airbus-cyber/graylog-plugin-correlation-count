@@ -80,7 +80,7 @@ public class CorrelationCountSearch {
         AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
         AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
 
-        CorrelationCountResults results = new CorrelationCountResults();
+        CorrelationCountCombinedResults results = new CorrelationCountCombinedResults();
 
         for (AggregationKeyResult keyResult: termResult.keyResults()) {
             ImmutableList<String> groupByFields = keyResult.key();
