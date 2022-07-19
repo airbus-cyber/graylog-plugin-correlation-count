@@ -178,49 +178,14 @@ public class CorrelationCount {
         return this.correlationCountSearch.doSearch(timeRange, limit);
     }
 
-    /**
-     * get count of matching alerts for the configuration default query.
-     *
-     * @param timerange {@link TimeRange}
-     * @param stream    ID of the filtered stream
-     * @return the count response
-     */
-    private long searchCount(TimeRange timerange, String stream) {
-        String filter = HEADER_STREAM + stream;
-        CountResult result = this.searches.count(this.configuration.searchQuery(), timerange, filter);
-        return result.count();
-    }
-
-    // TODO should rather return a list of Events...
-    private CorrelationCountCheckResult runCheckCorrelationCount(TimeRange timerange) {
-        long resultMainStreamCount = searchCount(timerange, this.configuration.stream());
-        long resultAdditionalStreamCount = searchCount(timerange, this.configuration.additionalStream());
-
-        if (!this.thresholds.areReached(resultMainStreamCount, resultAdditionalStreamCount)) {
-            return new CorrelationCountCheckResult("", new ArrayList<>());
-        }
-
-        List<MessageSummary> summariesMainStream = search(this.configuration.searchQuery(), this.configuration.stream(), timerange);
-        List<MessageSummary> summariesAdditionalStream = search(this.configuration.searchQuery(), this.configuration.additionalStream(), timerange);
-
-        if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
-            return new CorrelationCountCheckResult("", new ArrayList<>());
-        }
-
-        List<MessageSummary> summaries = Lists.newArrayList();
-        summaries.addAll(summariesMainStream);
-        summaries.addAll(summariesAdditionalStream);
-        String resultDescription = getResultDescription(resultMainStreamCount, resultAdditionalStreamCount);
-        return new CorrelationCountCheckResult(resultDescription, summaries);
-    }
-
     private TimeRange buildSearchTimeRange(DateTime to) {
         DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
         // TODO: will have to remove the minusMillis(1), once we migrate past Graylog 4.3.0 (see Graylog issue #11550)
         return AbsoluteRange.create(from, to.minusMillis(1));
     }
 
-    private CorrelationCountCheckResult runCheckCorrelationWithFields(TimeRange timeRange) throws EventProcessorException {
+    // TODO should rather return a list of Events...
+    public CorrelationCountCheckResult runCheck(TimeRange timeRange) throws EventProcessorException {
         Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
         long countFirstMainStream = 0;
@@ -259,14 +224,5 @@ public class CorrelationCount {
             return new CorrelationCountCheckResult(resultDescription, summaries);
         }
         return new CorrelationCountCheckResult("", new ArrayList<>());
-    }
-
-    public CorrelationCountCheckResult runCheck(TimeRange timerange) throws EventProcessorException {
-        // TODO should avoid having two different implementations
-        if (this.configuration.groupingFields().isEmpty()) {
-            return runCheckCorrelationCount(timerange);
-        } else {
-            return runCheckCorrelationWithFields(timerange);
-        }
     }
 }

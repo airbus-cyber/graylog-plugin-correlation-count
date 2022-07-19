@@ -1,6 +1,7 @@
 import time
 from graylog_server import GraylogServer
 from graylog_rest_api import GraylogRestApi
+from graylog_inputs import GraylogInputs
 
 
 class Graylog:
@@ -31,3 +32,15 @@ class Graylog:
 
     def extract_logs(self):
         return self._server.extract_logs()
+
+    def create_gelf_input(self):
+        identifier = self._api.create_gelf_input()
+        while not self._api.gelf_input_is_running(identifier):
+            time.sleep(.1)
+        return GraylogInputs()
+
+    def create_correlation_count(self, *args, **kwargs):
+        self._api.create_correlation_count(*args, **kwargs)
+
+    def get_events_count(self):
+        return self._api.get_events_count()
