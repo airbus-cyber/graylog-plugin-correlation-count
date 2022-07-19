@@ -216,6 +216,7 @@ public class CorrelationCount {
 
     private TimeRange buildSearchTimeRange(DateTime to) {
         DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
+        // TODO: will have to remove the minusMillis(1), once we migrate past Graylog 4.3.0 (see Graylog issue #11550)
         return AbsoluteRange.create(from, to.minusMillis(1));
     }
 
@@ -238,7 +239,6 @@ public class CorrelationCount {
 
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
-            // TODO should compute the timerange from the timestamp!!
             List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), searchTimeRange);
             List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 
