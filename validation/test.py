@@ -6,16 +6,16 @@
 # * activate venv
 #   source ./venv/bin/activate
 # * execute tests
-#   python -m unittest
+#   python -m unittest --verbose
 
 from unittest import TestCase
-from graylog_server import GraylogServer
+from graylog import Graylog
 
 
 class Test(TestCase):
 
     def setUp(self) -> None:
-        self._graylog = GraylogServer('../runtime')
+        self._graylog = Graylog()
         self._graylog.start()
 
     def tearDown(self) -> None:
