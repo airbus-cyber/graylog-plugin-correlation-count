@@ -97,7 +97,7 @@ class GraylogRestApi:
                 'additional_threshold_type': 'MORE',
 
                 'search_query': '*',
-                'messages_order': 'BEFORE'
+                'messages_order': 'ANY'
             },
             'description': '',
             'field_spec': {},
