@@ -18,9 +18,10 @@ class Graylog:
         """
         print('Waiting for graylog to start...')
 
-        while True:
-            if self._api.default_deflector_is_up():
-                break
+        while not self._api.default_deflector_is_up():
+            time.sleep(1)
+
+        while not self._api.events_search_is_available():
             time.sleep(1)
 
     def start(self):

@@ -47,7 +47,7 @@ class Test(TestCase):
             #  need to investigate
             inputs.send({})
             inputs.send({})
-            time.sleep(2*_PERIOD)
+            time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
             self._assert_got_new_event_within(60)
