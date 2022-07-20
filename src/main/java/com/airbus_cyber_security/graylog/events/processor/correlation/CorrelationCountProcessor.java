@@ -31,6 +31,7 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,8 @@ public class CorrelationCountProcessor implements EventProcessor {
     private final DBEventProcessorStateService stateService;
     private final CorrelationCount correlationCount;
     private final CorrelationCountProcessorConfig configuration;
+    private final CorrelationCountCheck correlationCountCheck;
+    private final CorrelationCountSearches correlationCountSearches;
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
@@ -59,7 +62,9 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
-        this.correlationCount = new CorrelationCount(searches, this.configuration, aggregationSearchFactory, eventDefinition);
+        this.correlationCount = new CorrelationCount(searches);
+        this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
+        this.correlationCountSearches = new CorrelationCountSearches(configuration, aggregationSearchFactory, eventDefinition);
     }
 
     @Override
@@ -73,7 +78,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, this.eventDefinition);
         }
 
-        List<CorrelationCountResult> results = this.correlationCount.runCheck(timerange);
+        List<CorrelationCountResult> results = runCheck(timerange);
         List<EventWithContext> events = eventsFromCorrelationResults(eventFactory, timerange, results);
         eventConsumer.accept(events);
         // Update the state for this processor! This state will be used for dependency checks between event processors.
@@ -84,7 +89,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
 
         for (CorrelationCountResult result: results) {
-            Map<String, String> groupByFields = this.correlationCount.associateGroupByFields(result.getGroupByFields());
+            Map<String, String> groupByFields = this.associateGroupByFields(result.getGroupByFields());
 
             String resultDescription = getResultDescription(result.getFirstStreamCount(), result.getSecondStreamCount());
             Message message = new Message(resultDescription, "", result.getTimestamp());
@@ -139,12 +144,70 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         Map<String, String> groupByFields = event.getGroupByFields();
-        String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);
+        String searchQuery = this.buildSearchQuery(groupByFields);
         List<MessageSummary> summariesMainStream = this.correlationCount.searchMessages(searchQuery, this.configuration.stream(), timeRange);
         List<MessageSummary> summariesAdditionalStream = this.correlationCount.searchMessages(searchQuery, this.configuration.additionalStream(), timeRange);
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
         messageConsumer.accept(summaries);
+    }
+
+    private Map<String, String> associateGroupByFields(List<String> groupByFields) {
+        Map<String, String> fields = new HashMap<>();
+        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
+        for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
+            String name = fieldNames.get(i);
+            String value = groupByFields.get(i);
+            fields.put(name, value);
+        }
+        return fields;
+    }
+
+    private String buildSearchQuery(Map<String, String> groupByFields) {
+        StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
+        for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
+            String name = groupBy.getKey();
+            String value = groupBy.getValue();
+            // TODO should escape the value here. Method org.graylog.events.search.MoreSearch.LuceneEscape probably works
+            builder.append(" AND " + name + ": " + value);
+        }
+        return builder.toString();
+    }
+
+    // TODO move down SEARCH_LIMIT
+    private static final int SEARCH_LIMIT = 500;
+
+    private ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
+        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange, SEARCH_LIMIT);
+
+        ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
+        for (CorrelationCountResult matchedResult: matchedResults) {
+            long firstStreamCount = matchedResult.getFirstStreamCount();
+            long secondStreamCount = matchedResult.getSecondStreamCount();
+            if (!this.correlationCountCheck.thresholdsAreReached(firstStreamCount, secondStreamCount)) {
+                continue;
+            }
+            Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
+            String searchQuery = buildSearchQuery(groupByFields);
+
+            TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
+
+            List<MessageSummary> summariesMainStream = this.correlationCount.searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
+            List<MessageSummary> summariesAdditionalStream = this.correlationCount.searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
+
+            if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
+                continue;
+            }
+
+            results.add(matchedResult);
+        }
+        return results.build();
+    }
+
+    private TimeRange buildSearchTimeRange(DateTime to) {
+        DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
+        // TODO: will have to remove the minusMillis(1), once we migrate past Graylog 4.3.0 (see Graylog issue #11550)
+        return AbsoluteRange.create(from, to.minusMillis(1));
     }
 }

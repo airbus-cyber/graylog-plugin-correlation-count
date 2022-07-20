@@ -39,23 +39,14 @@ import java.util.*;
 
 // TODO could rename this class into CorrelationCountSearch
 public class CorrelationCount {
-    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCount.class);
     private static final int SEARCH_LIMIT = 500;
-
     private static final String HEADER_STREAM = "streams:";
-
-    private final CorrelationCountProcessorConfig configuration;
-    private final CorrelationCountCheck correlationCountCheck;
 
     // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
     private final Searches searches;
-    private final CorrelationCountSearches correlationCountSearches;
 
-    public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
-        this.correlationCountSearches = new CorrelationCountSearches(configuration, aggregationSearchFactory, eventDefinition);
+    public CorrelationCount(Searches searches) {
         this.searches = searches;
-        this.configuration = configuration;
-        this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
     }
 
     public List<MessageSummary> searchMessages(String searchQuery, String stream, TimeRange range) {
@@ -67,60 +58,5 @@ public class CorrelationCount {
             result.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
         }
         return result;
-    }
-
-    public String buildSearchQuery(Map<String, String> groupByFields) {
-        StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
-        for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
-            String name = groupBy.getKey();
-            String value = groupBy.getValue();
-            // TODO should escape the value here. Method org.graylog.events.search.MoreSearch.LuceneEscape probably works
-            builder.append(" AND " + name + ": " + value);
-        }
-        return builder.toString();
-    }
-
-    public Map<String, String> associateGroupByFields(List<String> groupByFields) {
-        Map<String, String> fields = new HashMap<>();
-        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
-        for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
-            String name = fieldNames.get(i);
-            String value = groupByFields.get(i);
-            fields.put(name, value);
-        }
-        return fields;
-    }
-
-    private TimeRange buildSearchTimeRange(DateTime to) {
-        DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
-        // TODO: will have to remove the minusMillis(1), once we migrate past Graylog 4.3.0 (see Graylog issue #11550)
-        return AbsoluteRange.create(from, to.minusMillis(1));
-    }
-
-    public ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
-        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange, SEARCH_LIMIT);
-
-        ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
-        for (CorrelationCountResult matchedResult: matchedResults) {
-            long firstStreamCount = matchedResult.getFirstStreamCount();
-            long secondStreamCount = matchedResult.getSecondStreamCount();
-            if (!this.correlationCountCheck.thresholdsAreReached(firstStreamCount, secondStreamCount)) {
-                continue;
-            }
-            Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
-            String searchQuery = buildSearchQuery(groupByFields);
-
-            TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
-
-            List<MessageSummary> summariesMainStream = searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
-            List<MessageSummary> summariesAdditionalStream = searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
-
-            if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
-                continue;
-            }
-
-            results.add(matchedResult);
-        }
-        return results.build();
     }
 }
