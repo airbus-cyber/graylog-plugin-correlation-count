@@ -213,9 +213,21 @@ public class CorrelationCount {
                     countFirstMainStream = firstStreamCount;
                     countFirstAdditionalStream = secondStreamCount;
                     isFirstTriggered = false;
+
+                    Map<String, Object> fields = new HashMap<>();
+
+                    List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
+                    for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
+                        String name = fieldNames.get(i);
+                        String value = groupByFields.get(i);
+                        fields.put(name, value);
+                    }
+
+                    String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream);
+                    Message message = new Message(resultDescription, "", matchedResult.getTimestamp());
+                    message.addFields(fields);
+                    summaries.add(new MessageSummary("Unused index", message));
                 }
-                summaries.addAll(summariesMainStream);
-                summaries.addAll(summariesAdditionalStream);
             }
         }
 
