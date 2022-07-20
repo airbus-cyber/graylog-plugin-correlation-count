@@ -41,42 +41,38 @@ public class CorrelationCountSearches {
 
     private static final int SEARCH_LIMIT = 500;
     private static final String HEADER_STREAM = "streams:";
-    private final CorrelationCountProcessorConfig configuration;
     private final AggregationSearch.Factory aggregationSearchFactory;
-    private final EventDefinition eventDefinition;
     // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
     private final Searches searches;
 
-    public CorrelationCountSearches(CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition, Searches searches) {
-        this.configuration = configuration;
+    public CorrelationCountSearches(AggregationSearch.Factory aggregationSearchFactory, Searches searches) {
         this.aggregationSearchFactory = aggregationSearchFactory;
-        this.eventDefinition = eventDefinition;
         this.searches = searches;
     }
 
-    private AggregationResult getTerms(String stream, TimeRange timeRange) throws EventProcessorException {
+    private AggregationResult getTerms(String stream, TimeRange timeRange, CorrelationCountProcessorConfig configuration, EventDefinition eventDefinition) throws EventProcessorException {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
-        for (String groupingField : this.configuration.groupingFields()) {
+        for (String groupingField : configuration.groupingFields()) {
             idBuilder.append("#").append(groupingField);
         }
         seriesBuilder.add(AggregationSeries.builder().id(idBuilder.toString()).function(AggregationFunction.COUNT).build());
         // Create the graylog "legal" aggregation configuration
         AggregationEventProcessorConfig config = AggregationEventProcessorConfig.Builder.create()
-                .groupBy(new ArrayList<>(this.configuration.groupingFields()))
-                .query(this.configuration.searchQuery())
+                .groupBy(new ArrayList<>(configuration.groupingFields()))
+                .query(configuration.searchQuery())
                 .streams(ImmutableSet.of(stream))
-                .executeEveryMs(this.configuration.executeEveryMs())
-                .searchWithinMs(this.configuration.searchWithinMs())
+                .executeEveryMs(configuration.executeEveryMs())
+                .searchWithinMs(configuration.searchWithinMs())
                 .series(seriesBuilder.build())
                 .build();
         AggregationEventProcessorParameters parameters = AggregationEventProcessorParameters.builder()
                 .streams(ImmutableSet.of(stream)).batchSize(Long.valueOf(SEARCH_LIMIT).intValue())
                 .timerange(timeRange)
                 .build();
-        String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
-        AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
+        String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + eventDefinition.id();
+        AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, eventDefinition);
         return search.doSearch();
     }
 
@@ -87,10 +83,10 @@ public class CorrelationCountSearches {
         return Double.valueOf(seriesValue.value()).longValue();
     }
 
-    public Collection<CorrelationCountResult> count(TimeRange timeRange) throws EventProcessorException {
+    public Collection<CorrelationCountResult> count(TimeRange timeRange, CorrelationCountProcessorConfig configuration, EventDefinition eventDefinition) throws EventProcessorException {
 
-        AggregationResult termResult = getTerms(this.configuration.stream(), timeRange);
-        AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange);
+        AggregationResult termResult = getTerms(configuration.stream(), timeRange, configuration, eventDefinition);
+        AggregationResult termResultAdditionalStream = getTerms(configuration.additionalStream(), timeRange, configuration, eventDefinition);
 
         CorrelationCountCombinedResults results = new CorrelationCountCombinedResults();
 

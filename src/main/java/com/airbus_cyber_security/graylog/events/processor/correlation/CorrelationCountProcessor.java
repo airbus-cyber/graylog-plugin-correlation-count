@@ -61,8 +61,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
-        this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
-        this.correlationCountSearches = new CorrelationCountSearches(configuration, aggregationSearchFactory, eventDefinition, searches);
+        this.correlationCountCheck = new CorrelationCountCheck(this.configuration, this.configuration.messagesOrder());
+        this.correlationCountSearches = new CorrelationCountSearches(aggregationSearchFactory, searches);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class CorrelationCountProcessor implements EventProcessor {
     }
 
     private ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
-        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange);
+        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange, this.configuration, this.eventDefinition);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (CorrelationCountResult matchedResult: matchedResults) {
