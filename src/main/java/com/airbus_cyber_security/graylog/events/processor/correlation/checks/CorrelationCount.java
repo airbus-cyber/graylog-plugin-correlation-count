@@ -46,32 +46,6 @@ public class CorrelationCount {
 
     private static final String HEADER_STREAM = "streams:";
 
-    enum OrderType {
-
-        ANY("ANY"),
-        BEFORE("BEFORE"),
-        AFTER("AFTER");
-
-        private final String description;
-
-        OrderType(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public static OrderType fromString(String text) {
-            for (OrderType orderType : OrderType.values()) {
-                if (orderType.description.equals(text)) {
-                    return orderType;
-                }
-            }
-            throw new IllegalArgumentException("Unknown OrderType value: " + text);
-        }
-    }
-
     private final CorrelationCountProcessorConfig configuration;
     private final Thresholds thresholds;
     private final Searches searches;
@@ -107,13 +81,13 @@ public class CorrelationCount {
         return builder.toString();
     }
 
-    private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, CorrelationCount.OrderType messagesOrderType) {
+    private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, OrderType messagesOrderType) {
         List<DateTime> listDate = new ArrayList<>();
         for (MessageSummary messageSummary : summaries) {
             listDate.add(messageSummary.getTimestamp());
         }
         Collections.sort(listDate);
-        if (messagesOrderType.equals(CorrelationCount.OrderType.AFTER)) {
+        if (messagesOrderType.equals(OrderType.AFTER)) {
             Collections.reverse(listDate);
         }
         return listDate;
@@ -125,15 +99,15 @@ public class CorrelationCount {
     @VisibleForTesting
     protected boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream) {
         int countFirstStream = summariesFirstStream.size();
-        CorrelationCount.OrderType messagesOrder = CorrelationCount.OrderType.fromString(this.configuration.messagesOrder());
+        OrderType messagesOrder = OrderType.fromString(this.configuration.messagesOrder());
         List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
         List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
 
         for (DateTime dateFirstStream: listDateFirstStream) {
             int countSecondStream = 0;
             for (DateTime dateSecondStream: listDateSecondStream) {
-                if ((messagesOrder.equals(CorrelationCount.OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
-                        (messagesOrder.equals(CorrelationCount.OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
+                if ((messagesOrder.equals(OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
+                        (messagesOrder.equals(OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
                     countSecondStream++;
                 } else {
                     break;
@@ -147,28 +121,8 @@ public class CorrelationCount {
         return false;
     }
 
-    private String getResultDescription(long countMainStream, long countAdditionalStream) {
-        String msgCondition;
-        if (CorrelationCount.OrderType.fromString(this.configuration.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
-            msgCondition = "and";
-        } else {
-            msgCondition = this.configuration.messagesOrder();
-        }
-
-        String resultDescription = "The additional stream had " + countAdditionalStream + " messages with trigger condition "
-                + this.configuration.additionalThresholdType().toLowerCase(Locale.ENGLISH) + " than " + this.configuration.additionalThreshold()
-                + " messages " + msgCondition + " the main stream had " + countMainStream + " messages with trigger condition "
-                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + this.configuration.threshold() + " messages in the last " + this.configuration.searchWithinMs() + " milliseconds";
-
-        if (!this.configuration.groupingFields().isEmpty()) {
-            resultDescription = resultDescription + " with the same value of the fields " + String.join(", ", this.configuration.groupingFields());
-        }
-
-        return resultDescription + ". (Executes every: " + this.configuration.executeEveryMs() + " milliseconds)";
-    }
-
     private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream) {
-        if (CorrelationCount.OrderType.fromString(this.configuration.messagesOrder()).equals(CorrelationCount.OrderType.ANY)) {
+        if (OrderType.fromString(this.configuration.messagesOrder()).equals(OrderType.ANY)) {
             return true;
         }
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
@@ -186,7 +140,7 @@ public class CorrelationCount {
     }
 
     // TODO should rather return a list of Events...
-    public CorrelationCountCheckResult runCheck(TimeRange timeRange) throws EventProcessorException {
+    public ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
         Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
@@ -210,29 +164,6 @@ public class CorrelationCount {
 
             results.add(matchedResult);
         }
-        ImmutableList<CorrelationCountResult> events = results.build();
-
-        if (events.isEmpty()) {
-            return new CorrelationCountCheckResult("", new ArrayList<>());
-        }
-
-        List<MessageSummary> summaries = Lists.newArrayList();
-        CorrelationCountResult firstResult = events.get(0);
-        List<String> groupByFields = firstResult.getGroupByFields();
-
-        Map<String, Object> fields = new HashMap<>();
-        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
-        for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
-            String name = fieldNames.get(i);
-            String value = groupByFields.get(i);
-            fields.put(name, value);
-        }
-
-        String resultDescription = getResultDescription(firstResult.getFirstStreamCount(), firstResult.getSecondStreamCount());
-        Message message = new Message(resultDescription, "", firstResult.getTimestamp());
-        message.addFields(fields);
-        summaries.add(new MessageSummary("Unused index", message));
-
-        return new CorrelationCountCheckResult(resultDescription, summaries);
+        return results.build();
     }
 }

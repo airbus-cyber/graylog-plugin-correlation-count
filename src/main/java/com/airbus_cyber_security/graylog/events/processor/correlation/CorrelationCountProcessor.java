@@ -17,10 +17,7 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCount;
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountCheckResult;
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountResult;
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.Thresholds;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
@@ -85,7 +82,32 @@ public class CorrelationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, this.eventDefinition);
         }
 
-        CorrelationCountCheckResult correlationCountCheckResult = this.correlationCount.runCheck(timerange);
+        CorrelationCountCheckResult correlationCountCheckResult;
+        List<CorrelationCountResult> results = this.correlationCount.runCheck(timerange);
+
+        if (results.isEmpty()) {
+            correlationCountCheckResult = new CorrelationCountCheckResult("", new ArrayList<>());
+        } else {
+            List<MessageSummary> summaries = Lists.newArrayList();
+            CorrelationCountResult firstResult = results.get(0);
+            List<String> groupByFields = firstResult.getGroupByFields();
+
+            Map<String, Object> fields = new HashMap<>();
+            List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
+            for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
+                String name = fieldNames.get(i);
+                String value = groupByFields.get(i);
+                fields.put(name, value);
+            }
+
+            String resultDescription = getResultDescription(firstResult.getFirstStreamCount(), firstResult.getSecondStreamCount());
+            Message message = new Message(resultDescription, "", firstResult.getTimestamp());
+            message.addFields(fields);
+            summaries.add(new MessageSummary("Unused index", message));
+
+            correlationCountCheckResult = new CorrelationCountCheckResult(resultDescription, summaries);
+        }
+
         Event event = eventFactory.createEvent(this.eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
         event.addSourceStream(this.configuration.stream());
         event.addSourceStream(this.configuration.additionalStream());
@@ -104,6 +126,26 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
         // Update the state for this processor! This state will be used for dependency checks between event processors.
         this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
+    }
+
+    private String getResultDescription(long countMainStream, long countAdditionalStream) {
+        String msgCondition;
+        if (OrderType.fromString(this.configuration.messagesOrder()).equals(OrderType.ANY)) {
+            msgCondition = "and";
+        } else {
+            msgCondition = this.configuration.messagesOrder();
+        }
+
+        String resultDescription = "The additional stream had " + countAdditionalStream + " messages with trigger condition "
+                + this.configuration.additionalThresholdType().toLowerCase(Locale.ENGLISH) + " than " + this.configuration.additionalThreshold()
+                + " messages " + msgCondition + " the main stream had " + countMainStream + " messages with trigger condition "
+                + this.configuration.thresholdType().toLowerCase(Locale.ENGLISH) + " than " + this.configuration.threshold() + " messages in the last " + this.configuration.searchWithinMs() + " milliseconds";
+
+        if (!this.configuration.groupingFields().isEmpty()) {
+            resultDescription = resultDescription + " with the same value of the fields " + String.join(", ", this.configuration.groupingFields());
+        }
+
+        return resultDescription + ". (Executes every: " + this.configuration.executeEveryMs() + " milliseconds)";
     }
 
     private TimeRange getTimeRangeFromParameters(EventProcessorParameters eventProcessorParameters) {
