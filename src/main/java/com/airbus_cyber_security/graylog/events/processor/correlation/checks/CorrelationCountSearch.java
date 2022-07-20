@@ -56,13 +56,12 @@ public class CorrelationCountSearch {
                 .streams(ImmutableSet.of(stream))
                 .executeEveryMs(this.configuration.executeEveryMs())
                 .searchWithinMs(this.configuration.searchWithinMs())
-//                .conditions() // TODO or not TODO, that is the question
                 .series(seriesBuilder.build())
-                .build(); // TODO
+                .build();
         AggregationEventProcessorParameters parameters = AggregationEventProcessorParameters.builder()
                 .streams(ImmutableSet.of(stream)).batchSize(Long.valueOf(limit).intValue())
                 .timerange(timeRange)
-                .build(); // TODO Check if this is correct
+                .build();
         String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
         AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, this.eventDefinition);
         return search.doSearch();
