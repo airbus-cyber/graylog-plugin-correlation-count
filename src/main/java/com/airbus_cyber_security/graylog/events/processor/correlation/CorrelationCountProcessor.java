@@ -173,11 +173,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         return builder.toString();
     }
 
-    // TODO move down SEARCH_LIMIT
-    private static final int SEARCH_LIMIT = 500;
-
     private ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
-        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange, SEARCH_LIMIT);
+        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (CorrelationCountResult matchedResult: matchedResults) {

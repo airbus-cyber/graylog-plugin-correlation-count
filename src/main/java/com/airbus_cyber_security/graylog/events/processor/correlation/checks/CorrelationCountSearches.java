@@ -54,7 +54,7 @@ public class CorrelationCountSearches {
         this.searches = searches;
     }
 
-    private AggregationResult getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
+    private AggregationResult getTerms(String stream, TimeRange timeRange) throws EventProcessorException {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
@@ -72,7 +72,7 @@ public class CorrelationCountSearches {
                 .series(seriesBuilder.build())
                 .build();
         AggregationEventProcessorParameters parameters = AggregationEventProcessorParameters.builder()
-                .streams(ImmutableSet.of(stream)).batchSize(Long.valueOf(limit).intValue())
+                .streams(ImmutableSet.of(stream)).batchSize(Long.valueOf(SEARCH_LIMIT).intValue())
                 .timerange(timeRange)
                 .build();
         String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + this.eventDefinition.id();
@@ -87,10 +87,10 @@ public class CorrelationCountSearches {
         return Double.valueOf(seriesValue.value()).longValue();
     }
 
-    public Collection<CorrelationCountResult> count(TimeRange timeRange, long limit) throws EventProcessorException {
+    public Collection<CorrelationCountResult> count(TimeRange timeRange) throws EventProcessorException {
 
-        AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
-        AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);
+        AggregationResult termResult = getTerms(this.configuration.stream(), timeRange);
+        AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange);
 
         CorrelationCountCombinedResults results = new CorrelationCountCombinedResults();
 
