@@ -68,13 +68,13 @@ public class CorrelationCount {
         return result;
     }
 
-    public String buildSearchQuery(List<String> fieldValues) {
+    public String buildSearchQuery(Map<String, String> groupByFields) {
         List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
 
         StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
-        for (int i = 0; i < fieldNames.size(); i++) {
-            String name = fieldNames.get(i);
-            String value = fieldValues.get(i);
+        for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
+            String name = groupBy.getKey();
+            String value = groupBy.getValue();
             // TODO should escape the value here. Method org.graylog.events.search.MoreSearch.LuceneEscape probably works
             builder.append(" AND " + name + ": " + value);
         }
@@ -161,7 +161,7 @@ public class CorrelationCount {
             if (!this.thresholds.areReached(firstStreamCount, secondStreamCount)) {
                 continue;
             }
-            List<String> groupByFields = matchedResult.getGroupByFields();
+            Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
             String searchQuery = buildSearchQuery(groupByFields);
 
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
