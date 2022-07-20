@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// TODO try to remove this class: does not seem to be useful
 public class CorrelationCountCheck {
 
     private final Threshold mainStreamThreshold;
