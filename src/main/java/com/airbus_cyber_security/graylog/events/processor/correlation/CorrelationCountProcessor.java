@@ -140,8 +140,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         Map<String, String> groupByFields = event.getGroupByFields();
         String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);
-        List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, this.configuration.stream(), timeRange);
-        List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, this.configuration.additionalStream(), timeRange);
+        List<MessageSummary> summariesMainStream = this.correlationCount.searchMessages(searchQuery, this.configuration.stream(), timeRange);
+        List<MessageSummary> summariesAdditionalStream = this.correlationCount.searchMessages(searchQuery, this.configuration.additionalStream(), timeRange);
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);

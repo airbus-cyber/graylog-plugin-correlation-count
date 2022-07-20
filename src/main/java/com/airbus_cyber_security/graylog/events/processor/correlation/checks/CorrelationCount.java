@@ -58,7 +58,7 @@ public class CorrelationCount {
         this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
     }
 
-    public List<MessageSummary> search(String searchQuery, String stream, TimeRange range) {
+    public List<MessageSummary> searchMessages(String searchQuery, String stream, TimeRange range) {
         String filter = HEADER_STREAM + stream;
         SearchResult backlogResult = this.searches.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
@@ -112,8 +112,8 @@ public class CorrelationCount {
 
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
-            List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), searchTimeRange);
-            List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), searchTimeRange);
+            List<MessageSummary> summariesMainStream = searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
+            List<MessageSummary> summariesAdditionalStream = searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 
             if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 continue;
