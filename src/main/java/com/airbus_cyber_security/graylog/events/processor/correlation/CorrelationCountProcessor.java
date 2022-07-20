@@ -93,13 +93,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         for (CorrelationCountResult result: results) {
             List<String> groupByFields = result.getGroupByFields();
 
-            Map<String, Object> fields = new HashMap<>();
-            List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
-            for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
-                String name = fieldNames.get(i);
-                String value = groupByFields.get(i);
-                fields.put(name, value);
-            }
+            Map<String, Object> fields = this.correlationCount.associateGroupByFields(groupByFields);
 
             String resultDescription = getResultDescription(result.getFirstStreamCount(), result.getSecondStreamCount());
             Message message = new Message(resultDescription, "", result.getTimestamp());

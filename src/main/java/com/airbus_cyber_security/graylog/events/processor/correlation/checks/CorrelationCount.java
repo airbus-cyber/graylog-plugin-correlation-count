@@ -133,6 +133,17 @@ public class CorrelationCount {
         return this.correlationCountSearch.doSearch(timeRange, limit);
     }
 
+    public Map<String, Object> associateGroupByFields(List<String> groupByFields) {
+        Map<String, Object> fields = new HashMap<>();
+        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
+        for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
+            String name = fieldNames.get(i);
+            String value = groupByFields.get(i);
+            fields.put(name, value);
+        }
+        return fields;
+    }
+
     private TimeRange buildSearchTimeRange(DateTime to) {
         DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
         // TODO: will have to remove the minusMillis(1), once we migrate past Graylog 4.3.0 (see Graylog issue #11550)
