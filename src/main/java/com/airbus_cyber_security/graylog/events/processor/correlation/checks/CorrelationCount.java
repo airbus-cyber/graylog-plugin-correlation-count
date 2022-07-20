@@ -133,8 +133,8 @@ public class CorrelationCount {
         return this.correlationCountSearch.doSearch(timeRange, limit);
     }
 
-    public Map<String, Object> associateGroupByFields(List<String> groupByFields) {
-        Map<String, Object> fields = new HashMap<>();
+    public Map<String, String> associateGroupByFields(List<String> groupByFields) {
+        Map<String, String> fields = new HashMap<>();
         List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
         for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
             String name = fieldNames.get(i);
