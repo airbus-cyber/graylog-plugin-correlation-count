@@ -19,6 +19,7 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
@@ -188,11 +189,7 @@ public class CorrelationCount {
     public CorrelationCountCheckResult runCheck(TimeRange timeRange) throws EventProcessorException {
         Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
 
-        long countFirstMainStream = 0;
-        long countFirstAdditionalStream = 0;
-        boolean ruleTriggered = false;
-        boolean isFirstTriggered = true;
-        List<MessageSummary> summaries = Lists.newArrayList();
+        ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (CorrelationCountResult matchedResult: matchedResults) {
             long firstStreamCount = matchedResult.getFirstStreamCount();
             long secondStreamCount = matchedResult.getSecondStreamCount();
@@ -207,34 +204,35 @@ public class CorrelationCount {
             List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), searchTimeRange);
             List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 
-            if (isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
-                ruleTriggered = true;
-                if (isFirstTriggered) {
-                    countFirstMainStream = firstStreamCount;
-                    countFirstAdditionalStream = secondStreamCount;
-                    isFirstTriggered = false;
-
-                    Map<String, Object> fields = new HashMap<>();
-
-                    List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
-                    for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
-                        String name = fieldNames.get(i);
-                        String value = groupByFields.get(i);
-                        fields.put(name, value);
-                    }
-
-                    String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream);
-                    Message message = new Message(resultDescription, "", matchedResult.getTimestamp());
-                    message.addFields(fields);
-                    summaries.add(new MessageSummary("Unused index", message));
-                }
+            if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
+                continue;
             }
+
+            results.add(matchedResult);
+        }
+        ImmutableList<CorrelationCountResult> events = results.build();
+
+        if (events.isEmpty()) {
+            return new CorrelationCountCheckResult("", new ArrayList<>());
         }
 
-        if (ruleTriggered) {
-            String resultDescription = getResultDescription(countFirstMainStream, countFirstAdditionalStream);
-            return new CorrelationCountCheckResult(resultDescription, summaries);
+        List<MessageSummary> summaries = Lists.newArrayList();
+        CorrelationCountResult firstResult = events.get(0);
+        List<String> groupByFields = firstResult.getGroupByFields();
+
+        Map<String, Object> fields = new HashMap<>();
+        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
+        for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
+            String name = fieldNames.get(i);
+            String value = groupByFields.get(i);
+            fields.put(name, value);
         }
-        return new CorrelationCountCheckResult("", new ArrayList<>());
+
+        String resultDescription = getResultDescription(firstResult.getFirstStreamCount(), firstResult.getSecondStreamCount());
+        Message message = new Message(resultDescription, "", firstResult.getTimestamp());
+        message.addFields(fields);
+        summaries.add(new MessageSummary("Unused index", message));
+
+        return new CorrelationCountCheckResult(resultDescription, summaries);
     }
 }
