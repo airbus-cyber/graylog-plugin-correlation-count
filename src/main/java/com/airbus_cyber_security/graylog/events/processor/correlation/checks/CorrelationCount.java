@@ -18,7 +18,6 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
@@ -50,10 +49,10 @@ public class CorrelationCount {
 
     // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
     private final Searches searches;
-    private final CorrelationCountSearch correlationCountSearch;
+    private final CorrelationCountSearches correlationCountSearches;
 
     public CorrelationCount(Searches searches, CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
-        this.correlationCountSearch = new CorrelationCountSearch(configuration, aggregationSearchFactory, eventDefinition);
+        this.correlationCountSearches = new CorrelationCountSearches(configuration, aggregationSearchFactory, eventDefinition);
         this.searches = searches;
         this.configuration = configuration;
         this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
@@ -99,7 +98,7 @@ public class CorrelationCount {
     }
 
     public ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
-        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearch.doSearch(timeRange, SEARCH_LIMIT);
+        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.doSearch(timeRange, SEARCH_LIMIT);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (CorrelationCountResult matchedResult: matchedResults) {

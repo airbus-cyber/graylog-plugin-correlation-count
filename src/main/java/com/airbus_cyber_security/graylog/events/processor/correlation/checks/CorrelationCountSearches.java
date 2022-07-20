@@ -29,13 +29,13 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class CorrelationCountSearch {
+public class CorrelationCountSearches {
 
     private final CorrelationCountProcessorConfig configuration;
     private final AggregationSearch.Factory aggregationSearchFactory;
     private final EventDefinition eventDefinition;
 
-    public CorrelationCountSearch(CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
+    public CorrelationCountSearches(CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
         this.configuration = configuration;
         this.aggregationSearchFactory = aggregationSearchFactory;
         this.eventDefinition = eventDefinition;
