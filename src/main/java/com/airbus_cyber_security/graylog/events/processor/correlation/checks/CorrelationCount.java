@@ -75,6 +75,7 @@ public class CorrelationCount {
         for (int i = 0; i < fieldNames.size(); i++) {
             String name = fieldNames.get(i);
             String value = fieldValues.get(i);
+            // TODO should escape the value here. Method org.graylog.events.search.MoreSearch.LuceneEscape probably works
             builder.append(" AND " + name + ": " + value);
         }
         return builder.toString();
