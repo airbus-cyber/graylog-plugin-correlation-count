@@ -24,7 +24,6 @@ import com.google.common.primitives.Ints;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
 import org.graylog.events.event.EventFactory;
-import org.graylog.events.event.EventOriginContext;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
 import org.graylog.events.processor.aggregation.AggregationSearch;
@@ -36,7 +35,6 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
-import org.graylog2.rest.models.search.responses.TermsResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

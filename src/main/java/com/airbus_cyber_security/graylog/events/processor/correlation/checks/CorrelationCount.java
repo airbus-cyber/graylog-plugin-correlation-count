@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
 import org.graylog.events.processor.aggregation.*;
-import org.graylog2.indexer.results.CountResult;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.searches.Searches;
