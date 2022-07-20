@@ -60,7 +60,7 @@ public class CorrelationCountSearches {
         seriesBuilder.add(AggregationSeries.builder().id(idBuilder.toString()).function(AggregationFunction.COUNT).build());
         // Create the graylog "legal" aggregation configuration
         AggregationEventProcessorConfig config = AggregationEventProcessorConfig.Builder.create()
-                .groupBy(new ArrayList<>(configuration.groupingFields()))
+                .groupBy(configuration.groupingFields())
                 .query(configuration.searchQuery())
                 .streams(ImmutableSet.of(stream))
                 .executeEveryMs(configuration.executeEveryMs())
