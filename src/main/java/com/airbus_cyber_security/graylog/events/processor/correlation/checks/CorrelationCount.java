@@ -128,11 +128,6 @@ public class CorrelationCount {
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
-    // TODO try to remove this method
-    public Collection<CorrelationCountResult> getMatchedTerms(TimeRange timeRange, long limit) throws EventProcessorException {
-        return this.correlationCountSearch.doSearch(timeRange, limit);
-    }
-
     public Map<String, String> associateGroupByFields(List<String> groupByFields) {
         Map<String, String> fields = new HashMap<>();
         List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
@@ -151,7 +146,7 @@ public class CorrelationCount {
     }
 
     public ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
-        Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
+        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearch.doSearch(timeRange, SEARCH_LIMIT);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (CorrelationCountResult matchedResult: matchedResults) {
