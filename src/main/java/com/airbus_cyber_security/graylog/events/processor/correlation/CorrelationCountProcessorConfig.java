@@ -86,6 +86,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
 
+    // TODO should be a List<String> instead of Set<String> => would simplify code
     @JsonProperty(FIELD_GROUPING_FIELDS)
     public abstract Set<String> groupingFields();
 
