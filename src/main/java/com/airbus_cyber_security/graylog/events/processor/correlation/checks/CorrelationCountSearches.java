@@ -74,7 +74,7 @@ public class CorrelationCountSearches {
         return Double.valueOf(seriesValue.value()).longValue();
     }
 
-    public Collection<CorrelationCountResult> doSearch(TimeRange timeRange, long limit) throws EventProcessorException {
+    public Collection<CorrelationCountResult> count(TimeRange timeRange, long limit) throws EventProcessorException {
 
         AggregationResult termResult = getTerms(this.configuration.stream(), timeRange, limit);
         AggregationResult termResultAdditionalStream = getTerms(this.configuration.additionalStream(), timeRange, limit);

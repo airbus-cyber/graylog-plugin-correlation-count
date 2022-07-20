@@ -98,7 +98,7 @@ public class CorrelationCount {
     }
 
     public ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
-        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.doSearch(timeRange, SEARCH_LIMIT);
+        Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange, SEARCH_LIMIT);
 
         ImmutableList.Builder<CorrelationCountResult> results = ImmutableList.builder();
         for (CorrelationCountResult matchedResult: matchedResults) {
