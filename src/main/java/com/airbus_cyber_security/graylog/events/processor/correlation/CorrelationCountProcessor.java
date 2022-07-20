@@ -82,8 +82,15 @@ public class CorrelationCountProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, this.eventDefinition);
         }
 
-        CorrelationCountCheckResult correlationCountCheckResult;
         List<CorrelationCountResult> results = this.correlationCount.runCheck(timerange);
+        List<EventWithContext> events = eventsFromCorrelationResults(eventFactory, timerange, results);
+        eventConsumer.accept(events);
+        // Update the state for this processor! This state will be used for dependency checks between event processors.
+        this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
+    }
+
+    ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) {
+        CorrelationCountCheckResult correlationCountCheckResult;
 
         if (results.isEmpty()) {
             correlationCountCheckResult = new CorrelationCountCheckResult("", new ArrayList<>());
@@ -115,17 +122,15 @@ public class CorrelationCountProcessor implements EventProcessor {
         event.setTimerangeStart(timerange.getFrom());
         event.setTimerangeEnd(timerange.getTo());
 
+        ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
         if (correlationCountCheckResult.getMessageSummaries() != null && !correlationCountCheckResult.getMessageSummaries().isEmpty()) {
             MessageSummary msgSummary = correlationCountCheckResult.getMessageSummaries().get(0);
 
-            ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
             // TODO: Choose a better message for the context
             EventWithContext eventWithContext = EventWithContext.create(event, msgSummary.getRawMessage());
             listEvents.add(eventWithContext);
-            eventConsumer.accept(listEvents.build());
         }
-        // Update the state for this processor! This state will be used for dependency checks between event processors.
-        this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
+        return listEvents.build();
     }
 
     private String getResultDescription(long countMainStream, long countAdditionalStream) {
