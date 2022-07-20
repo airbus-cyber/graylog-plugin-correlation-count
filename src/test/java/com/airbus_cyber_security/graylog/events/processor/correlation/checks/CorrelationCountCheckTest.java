@@ -58,7 +58,7 @@ public class CorrelationCountCheckTest {
                 .messagesOrder("AFTER")
                 .searchWithinMs(10 * 60 * 1000)
                 .executeEveryMs(0)
-                .groupingFields(new HashSet<>())
+                .groupingFields(new ArrayList<>())
                 .comment("test comment")
                 .searchQuery("*")
                 .build();

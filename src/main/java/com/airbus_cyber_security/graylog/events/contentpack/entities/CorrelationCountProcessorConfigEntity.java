@@ -28,8 +28,8 @@ import org.graylog.events.processor.EventProcessorConfig;
 import org.graylog2.contentpacks.model.entities.EntityDescriptor;
 import org.graylog2.contentpacks.model.entities.references.ValueReference;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @AutoValue
 @JsonTypeName(CorrelationCountProcessorConfigEntity.TYPE_NAME)
@@ -79,7 +79,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     public abstract long executeEveryMs();
 
     @JsonProperty(FIELD_GROUPING_FIELDS)
-    public abstract Set<String> groupingFields();
+    public abstract List<String> groupingFields();
 
     @JsonProperty(FIELD_COMMENT)
     public abstract ValueReference comment();
@@ -129,7 +129,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         public abstract Builder executeEveryMs(long executeEveryMs);
 
         @JsonProperty(FIELD_GROUPING_FIELDS)
-        public abstract Builder groupingFields(Set<String> groupingFields);
+        public abstract Builder groupingFields(List<String> groupingFields);
 
         @JsonProperty(FIELD_COMMENT)
         public abstract Builder comment(ValueReference comment);

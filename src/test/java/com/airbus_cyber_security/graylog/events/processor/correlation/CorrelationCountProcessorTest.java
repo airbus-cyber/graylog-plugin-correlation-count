@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -96,7 +97,7 @@ public class CorrelationCountProcessorTest {
                 .messagesOrder("any order")
                 .searchWithinMs(2 * 60 * 1000)
                 .executeEveryMs(2 * 60 * 1000)
-                .groupingFields(new HashSet<>())
+                .groupingFields(new ArrayList<>())
                 .comment("test comment")
                 .searchQuery("*")
                 .build();

@@ -36,8 +36,8 @@ import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.rest.ValidationResult;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @AutoValue
@@ -86,9 +86,8 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     @JsonProperty(FIELD_EXECUTE_EVERY_MS)
     public abstract long executeEveryMs();
 
-    // TODO should be a List<String> instead of Set<String> => would simplify code
     @JsonProperty(FIELD_GROUPING_FIELDS)
-    public abstract Set<String> groupingFields();
+    public abstract List<String> groupingFields();
 
     @JsonProperty(FIELD_COMMENT)
     public abstract String comment();
@@ -161,7 +160,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         public abstract Builder executeEveryMs(long executeEveryMs);
 
         @JsonProperty(FIELD_GROUPING_FIELDS)
-        public abstract Builder groupingFields(Set<String> groupingFields);
+        public abstract Builder groupingFields(List<String> groupingFields);
 
         @JsonProperty(FIELD_COMMENT)
         public abstract Builder comment(String comment);
