@@ -29,7 +29,6 @@ public class CorrelationCountResult {
     private final long firstStreamCount;
     private final long secondStreamCount;
 
-    // TODO should have the timestamp
     public CorrelationCountResult(DateTime timestamp, List<String> groupByFields, long firstStreamCount, long secondStreamCount) {
         this.timestamp = timestamp;
         this.groupByFields = groupByFields;
