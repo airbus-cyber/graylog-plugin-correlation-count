@@ -50,7 +50,6 @@ public class CorrelationCountProcessor implements EventProcessor {
     private final EventDefinition eventDefinition;
     private final EventProcessorDependencyCheck dependencyCheck;
     private final DBEventProcessorStateService stateService;
-    private final CorrelationCount correlationCount;
     private final CorrelationCountProcessorConfig configuration;
     private final CorrelationCountCheck correlationCountCheck;
     private final CorrelationCountSearches correlationCountSearches;
@@ -62,9 +61,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
-        this.correlationCount = new CorrelationCount(searches);
         this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
-        this.correlationCountSearches = new CorrelationCountSearches(configuration, aggregationSearchFactory, eventDefinition);
+        this.correlationCountSearches = new CorrelationCountSearches(configuration, aggregationSearchFactory, eventDefinition, searches);
     }
 
     @Override
@@ -145,8 +143,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         Map<String, String> groupByFields = event.getGroupByFields();
         String searchQuery = this.buildSearchQuery(groupByFields);
-        List<MessageSummary> summariesMainStream = this.correlationCount.searchMessages(searchQuery, this.configuration.stream(), timeRange);
-        List<MessageSummary> summariesAdditionalStream = this.correlationCount.searchMessages(searchQuery, this.configuration.additionalStream(), timeRange);
+        List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), timeRange);
+        List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), timeRange);
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
@@ -193,8 +191,8 @@ public class CorrelationCountProcessor implements EventProcessor {
 
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
-            List<MessageSummary> summariesMainStream = this.correlationCount.searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
-            List<MessageSummary> summariesAdditionalStream = this.correlationCount.searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
+            List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
+            List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 
             if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 continue;

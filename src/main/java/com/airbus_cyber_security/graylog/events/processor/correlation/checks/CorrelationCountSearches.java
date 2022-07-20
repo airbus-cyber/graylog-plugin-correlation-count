@@ -20,25 +20,38 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
 import org.graylog.events.processor.aggregation.*;
+import org.graylog2.indexer.results.ResultMessage;
+import org.graylog2.indexer.results.SearchResult;
+import org.graylog2.indexer.searches.Searches;
+import org.graylog2.indexer.searches.Sorting;
+import org.graylog2.plugin.Message;
+import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class CorrelationCountSearches {
 
+    private static final int SEARCH_LIMIT = 500;
+    private static final String HEADER_STREAM = "streams:";
     private final CorrelationCountProcessorConfig configuration;
     private final AggregationSearch.Factory aggregationSearchFactory;
     private final EventDefinition eventDefinition;
+    // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
+    private final Searches searches;
 
-    public CorrelationCountSearches(CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition) {
+    public CorrelationCountSearches(CorrelationCountProcessorConfig configuration, AggregationSearch.Factory aggregationSearchFactory, EventDefinition eventDefinition, Searches searches) {
         this.configuration = configuration;
         this.aggregationSearchFactory = aggregationSearchFactory;
         this.eventDefinition = eventDefinition;
+        this.searches = searches;
     }
 
     private AggregationResult getTerms(String stream, TimeRange timeRange, long limit) throws EventProcessorException {
@@ -98,5 +111,16 @@ public class CorrelationCountSearches {
         }
 
         return results.getAll();
+    }
+
+    public List<MessageSummary> searchMessages(String searchQuery, String stream, TimeRange range) {
+        String filter = HEADER_STREAM + stream;
+        SearchResult backlogResult = this.searches.search(searchQuery, filter,
+                range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));
+        List<MessageSummary> result = Lists.newArrayList();
+        for (ResultMessage resultMessage: backlogResult.getResults()) {
+            result.add(new MessageSummary(resultMessage.getIndex(), resultMessage.getMessage()));
+        }
+        return result;
     }
 }
