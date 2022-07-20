@@ -96,6 +96,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             event.addSourceStream(this.configuration.stream());
             event.addSourceStream(this.configuration.additionalStream());
 
+            // TODO should rather set the timerange from the timestamp? (in case of catchup window...)
             event.setTimerangeStart(timerange.getFrom());
             event.setTimerangeEnd(timerange.getTo());
             event.setGroupByFields(groupByFields);
@@ -133,13 +134,10 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     @Override
     public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) {
-        // TODO try to imitate code of the AggregationCountProcessor (even, call it if possible)
-        // should not have to redo all the computations performed in createEvent but rather use the information stored on the Event (again the grouping fields and timestamp)
         if (limit <= 0) {
             return;
         }
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
-        LOG.debug("[DEV] sourceMessagesForEvent: groupingFields={}", Arrays.deepToString(this.configuration.groupingFields().toArray())); // TODO remove this log line
         Map<String, String> groupByFields = event.getGroupByFields();
         String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);
         List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, this.configuration.stream(), timeRange);
