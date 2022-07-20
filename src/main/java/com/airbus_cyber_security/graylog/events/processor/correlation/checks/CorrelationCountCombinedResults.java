@@ -18,7 +18,6 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.google.common.collect.ImmutableList;
-import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
 import java.util.Collection;
