@@ -90,14 +90,10 @@ public class CorrelationCountProcessor implements EventProcessor {
     }
 
     ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) {
-        CorrelationCountCheckResult correlationCountCheckResult;
+        ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
 
-        if (results.isEmpty()) {
-            correlationCountCheckResult = new CorrelationCountCheckResult("", new ArrayList<>());
-        } else {
-            List<MessageSummary> summaries = Lists.newArrayList();
-            CorrelationCountResult firstResult = results.get(0);
-            List<String> groupByFields = firstResult.getGroupByFields();
+        for (CorrelationCountResult result: results) {
+            List<String> groupByFields = result.getGroupByFields();
 
             Map<String, Object> fields = new HashMap<>();
             List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
@@ -107,27 +103,18 @@ public class CorrelationCountProcessor implements EventProcessor {
                 fields.put(name, value);
             }
 
-            String resultDescription = getResultDescription(firstResult.getFirstStreamCount(), firstResult.getSecondStreamCount());
-            Message message = new Message(resultDescription, "", firstResult.getTimestamp());
+            String resultDescription = getResultDescription(result.getFirstStreamCount(), result.getSecondStreamCount());
+            Message message = new Message(resultDescription, "", result.getTimestamp());
             message.addFields(fields);
-            summaries.add(new MessageSummary("Unused index", message));
 
-            correlationCountCheckResult = new CorrelationCountCheckResult(resultDescription, summaries);
-        }
+            Event event = eventFactory.createEvent(this.eventDefinition, timerange.getFrom(), resultDescription);
+            event.addSourceStream(this.configuration.stream());
+            event.addSourceStream(this.configuration.additionalStream());
 
-        Event event = eventFactory.createEvent(this.eventDefinition, timerange.getFrom(), correlationCountCheckResult.getResultDescription());
-        event.addSourceStream(this.configuration.stream());
-        event.addSourceStream(this.configuration.additionalStream());
+            event.setTimerangeStart(timerange.getFrom());
+            event.setTimerangeEnd(timerange.getTo());
 
-        event.setTimerangeStart(timerange.getFrom());
-        event.setTimerangeEnd(timerange.getTo());
-
-        ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
-        if (correlationCountCheckResult.getMessageSummaries() != null && !correlationCountCheckResult.getMessageSummaries().isEmpty()) {
-            MessageSummary msgSummary = correlationCountCheckResult.getMessageSummaries().get(0);
-
-            // TODO: Choose a better message for the context
-            EventWithContext eventWithContext = EventWithContext.create(event, msgSummary.getRawMessage());
+            EventWithContext eventWithContext = EventWithContext.create(event, message);
             listEvents.add(eventWithContext);
         }
         return listEvents.build();
