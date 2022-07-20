@@ -46,7 +46,7 @@ public class CorrelationCount {
     private static final String HEADER_STREAM = "streams:";
 
     private final CorrelationCountProcessorConfig configuration;
-    private final Thresholds thresholds;
+    private final CorrelationCountCheck correlationCountCheck;
 
     // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
     private final Searches searches;
@@ -56,7 +56,7 @@ public class CorrelationCount {
         this.correlationCountSearch = new CorrelationCountSearch(configuration, aggregationSearchFactory, eventDefinition);
         this.searches = searches;
         this.configuration = configuration;
-        this.thresholds = new Thresholds(configuration);
+        this.correlationCountCheck = new CorrelationCountCheck(configuration, configuration.messagesOrder());
     }
 
     public List<MessageSummary> search(String searchQuery, String stream, TimeRange range) {
@@ -79,53 +79,6 @@ public class CorrelationCount {
             builder.append(" AND " + name + ": " + value);
         }
         return builder.toString();
-    }
-
-    private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, OrderType messagesOrderType) {
-        List<DateTime> listDate = new ArrayList<>();
-        for (MessageSummary messageSummary : summaries) {
-            listDate.add(messageSummary.getTimestamp());
-        }
-        Collections.sort(listDate);
-        if (messagesOrderType.equals(OrderType.AFTER)) {
-            Collections.reverse(listDate);
-        }
-        return listDate;
-    }
-
-    /*
-     * Check that the Second Stream is before or after the first stream
-     */
-    @VisibleForTesting
-    protected boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream) {
-        int countFirstStream = summariesFirstStream.size();
-        OrderType messagesOrder = OrderType.fromString(this.configuration.messagesOrder());
-        List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
-        List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
-
-        for (DateTime dateFirstStream: listDateFirstStream) {
-            int countSecondStream = 0;
-            for (DateTime dateSecondStream: listDateSecondStream) {
-                if ((messagesOrder.equals(OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
-                        (messagesOrder.equals(OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
-                    countSecondStream++;
-                } else {
-                    break;
-                }
-            }
-            if (this.thresholds.areReached(countFirstStream, countSecondStream)) {
-                return true;
-            }
-            countFirstStream--;
-        }
-        return false;
-    }
-
-    private boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream) {
-        if (OrderType.fromString(this.configuration.messagesOrder()).equals(OrderType.ANY)) {
-            return true;
-        }
-        return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
     }
 
     public Map<String, String> associateGroupByFields(List<String> groupByFields) {
@@ -152,7 +105,7 @@ public class CorrelationCount {
         for (CorrelationCountResult matchedResult: matchedResults) {
             long firstStreamCount = matchedResult.getFirstStreamCount();
             long secondStreamCount = matchedResult.getSecondStreamCount();
-            if (!this.thresholds.areReached(firstStreamCount, secondStreamCount)) {
+            if (!this.correlationCountCheck.thresholdsAreReached(firstStreamCount, secondStreamCount)) {
                 continue;
             }
             Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
@@ -163,7 +116,7 @@ public class CorrelationCount {
             List<MessageSummary> summariesMainStream = search(searchQuery, this.configuration.stream(), searchTimeRange);
             List<MessageSummary> summariesAdditionalStream = search(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 
-            if (!isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
+            if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 continue;
             }
 
