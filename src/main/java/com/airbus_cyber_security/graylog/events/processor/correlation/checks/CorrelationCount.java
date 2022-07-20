@@ -47,6 +47,8 @@ public class CorrelationCount {
 
     private final CorrelationCountProcessorConfig configuration;
     private final Thresholds thresholds;
+
+    // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
     private final Searches searches;
     private final CorrelationCountSearch correlationCountSearch;
 
@@ -69,8 +71,6 @@ public class CorrelationCount {
     }
 
     public String buildSearchQuery(Map<String, String> groupByFields) {
-        List<String> fieldNames = new ArrayList<>(configuration.groupingFields());
-
         StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
         for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
             String name = groupBy.getKey();
@@ -150,7 +150,6 @@ public class CorrelationCount {
         return AbsoluteRange.create(from, to.minusMillis(1));
     }
 
-    // TODO should rather return a list of Events...
     public ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
         Collection<CorrelationCountResult> matchedResults = getMatchedTerms(timeRange, SEARCH_LIMIT);
 

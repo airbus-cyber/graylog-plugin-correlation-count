@@ -20,16 +20,12 @@ package com.airbus_cyber_security.graylog.events.processor.correlation;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Ints;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
 import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
 import org.graylog.events.processor.aggregation.AggregationSearch;
-import org.graylog.events.search.MoreSearch;
-import org.graylog.plugins.views.search.Parameter;
-import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
@@ -40,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class CorrelationCountProcessor implements EventProcessor {
@@ -56,17 +51,15 @@ public class CorrelationCountProcessor implements EventProcessor {
     private final DBEventProcessorStateService stateService;
     private final CorrelationCount correlationCount;
     private final CorrelationCountProcessorConfig configuration;
-    private final MoreSearch moreSearch;
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
-                                     DBEventProcessorStateService stateService, Searches searches, MoreSearch moreSearch, AggregationSearch.Factory aggregationSearchFactory) {
+                                     DBEventProcessorStateService stateService, Searches searches, AggregationSearch.Factory aggregationSearchFactory) {
         this.eventDefinition = eventDefinition;
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
         this.correlationCount = new CorrelationCount(searches, this.configuration, aggregationSearchFactory, eventDefinition);
-        this.moreSearch = moreSearch;
     }
 
     @Override
@@ -139,7 +132,7 @@ public class CorrelationCountProcessor implements EventProcessor {
     }
 
     @Override
-    public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) throws EventProcessorException {
+    public void sourceMessagesForEvent(Event event, Consumer<List<MessageSummary>> messageConsumer, long limit) {
         // TODO try to imitate code of the AggregationCountProcessor (even, call it if possible)
         // should not have to redo all the computations performed in createEvent but rather use the information stored on the Event (again the grouping fields and timestamp)
         if (limit <= 0) {
@@ -147,35 +140,13 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         LOG.debug("[DEV] sourceMessagesForEvent: groupingFields={}", Arrays.deepToString(this.configuration.groupingFields().toArray())); // TODO remove this log line
-        if (this.configuration.groupingFields().isEmpty()) {
-            AtomicLong msgCount = new AtomicLong(0L);
-            MoreSearch.ScrollCallback callback = (messages, continueScrolling) -> {
-                List<MessageSummary> summaries = Lists.newArrayList();
-                for (ResultMessage resultMessage : messages) {
-                    if (msgCount.incrementAndGet() > limit) {
-                        continueScrolling.set(false);
-                        break;
-                    }
-                    Message msg = resultMessage.getMessage();
-                    summaries.add(new MessageSummary(resultMessage.getIndex(), msg));
-                }
-                messageConsumer.accept(summaries);
-            };
-            Set<String> streams = new HashSet<>();
-            streams.add(this.configuration.stream());
-            streams.add(this.configuration.additionalStream());
-            Set<Parameter> parameters = new HashSet<>();
-            this.moreSearch.scrollQuery(this.configuration.searchQuery(), streams, parameters, timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
-
-        } else {
-            Map<String, String> groupByFields = event.getGroupByFields();
-            String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);
-            List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, this.configuration.stream(), timeRange);
-            List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, this.configuration.additionalStream(), timeRange);
-            List<MessageSummary> summaries = Lists.newArrayList();
-            summaries.addAll(summariesMainStream);
-            summaries.addAll(summariesAdditionalStream);
-            messageConsumer.accept(summaries);
-        }
+        Map<String, String> groupByFields = event.getGroupByFields();
+        String searchQuery = this.correlationCount.buildSearchQuery(groupByFields);
+        List<MessageSummary> summariesMainStream = this.correlationCount.search(searchQuery, this.configuration.stream(), timeRange);
+        List<MessageSummary> summariesAdditionalStream = this.correlationCount.search(searchQuery, this.configuration.additionalStream(), timeRange);
+        List<MessageSummary> summaries = Lists.newArrayList();
+        summaries.addAll(summariesMainStream);
+        summaries.addAll(summariesAdditionalStream);
+        messageConsumer.accept(summaries);
     }
 }

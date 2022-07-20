@@ -28,7 +28,6 @@ import org.graylog.events.processor.EventDefinitionDto;
 import org.graylog.events.processor.EventProcessorDependencyCheck;
 import org.graylog.events.processor.EventProcessorPreconditionException;
 import org.graylog.events.processor.aggregation.AggregationSearch;
-import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
@@ -61,8 +60,6 @@ public class CorrelationCountProcessorTest {
     @Mock
     private EventProcessorDependencyCheck eventProcessorDependencyCheck;
     @Mock
-    private MoreSearch moreSearch;
-    @Mock
     private Searches searches;
 
     @Test
@@ -85,7 +82,7 @@ public class CorrelationCountProcessorTest {
         AggregationSearch.Factory aggregationSearchFactory = null; // TODO find a way to have this
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, moreSearch, aggregationSearchFactory);
+                stateService, searches, aggregationSearchFactory);
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {
         }))
                 .hasMessageContaining(eventDefinitionDto.title())
