@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.1...4.1.2)
+### Bug Fixes
+
 ## [4.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.0...4.1.1)
 ### Bug Fixes
 * Log an error instead of raising an exception when there are several results with the same grouping field
