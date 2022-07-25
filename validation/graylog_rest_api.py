@@ -79,7 +79,9 @@ class GraylogRestApi:
             return state['state'] == 'RUNNING'
         return False
 
-    def create_correlation_count(self, period=5):
+    def create_correlation_count(self, threshold, group_by=None, period=5):
+        if group_by is None:
+            group_by = []
         event_definition = {
             'alert': False,
             'config': {
@@ -87,13 +89,13 @@ class GraylogRestApi:
                 'comment': '',
                 'execute_every_ms': period*1000,
                 'search_within_ms': period*1000,
-                'grouping_fields': [],
+                'grouping_fields': group_by,
 
                 'stream': _STREAM_ALL_MESSAGES,
-                'threshold': '0',
+                'threshold': threshold,
                 'threshold_type': 'MORE',
                 'additional_stream': _STREAM_ALL_MESSAGES,
-                'additional_threshold': '0',
+                'additional_threshold': threshold,
                 'additional_threshold_type': 'MORE',
 
                 'search_query': '*',
