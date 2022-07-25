@@ -33,7 +33,6 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
