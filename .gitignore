@@ -16,6 +16,7 @@ node/
 
 # IDE
 /.idea
+/validation/.idea
 
 # Location for built plugin
 runtime/graylog/plugin/
