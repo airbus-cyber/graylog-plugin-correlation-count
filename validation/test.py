@@ -83,7 +83,7 @@ class Test(TestCase):
 
             self._assert_got_new_event_within(60)
 
-    def test_send_message_should_not_fail_on_correlation_rule_with_group_by_when_value_has_a_parenthesis__issue27(self):
+    def test_send_message_should_not_fail_on_correlation_rule_with_group_by_when_value_has_a_double_quote__issue27(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
         with self._graylog.create_gelf_input() as inputs:
             self._graylog.start_logs_capture()
