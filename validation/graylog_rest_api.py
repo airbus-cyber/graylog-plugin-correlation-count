@@ -79,7 +79,7 @@ class GraylogRestApi:
             return state['state'] == 'RUNNING'
         return False
 
-    def create_correlation_count(self, threshold, group_by=None, period=5):
+    def create_correlation_count(self, threshold, group_by=None, period=5, messages_order='ANY'):
         if group_by is None:
             group_by = []
         event_definition = {
@@ -99,7 +99,7 @@ class GraylogRestApi:
                 'additional_threshold_type': 'MORE',
 
                 'search_query': '*',
-                'messages_order': 'ANY'
+                'messages_order': messages_order
             },
             'description': '',
             'field_spec': {},
