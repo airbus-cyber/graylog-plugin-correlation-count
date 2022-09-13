@@ -112,17 +112,19 @@ public class CorrelationCountSearches {
         return results.getAll();
     }
 
-    public String buildSearchQuery(String searchQuery, Map<String, String> groupByFields) {
+    private String buildSearchQuery(String searchQuery, Map<String, String> groupByFields) {
+        // TODO: should searchQuery be sanitized?
         StringBuilder builder = new StringBuilder(searchQuery);
         for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
             String name = groupBy.getKey();
             String value = MoreSearch.luceneEscape(groupBy.getValue());
-            builder.append(" AND " + name + ": \"" + value + "\"");
+            builder.append(" AND ").append(name).append(": \"").append(value).append("\"");
         }
         return builder.toString();
     }
 
-    public List<MessageSummary> searchMessages(String searchQuery, String stream, TimeRange range) {
+    public List<MessageSummary> searchMessages(String additionalQuery, Map<String, String> groupByFields, String stream, TimeRange range) {
+        String searchQuery = this.buildSearchQuery(additionalQuery, groupByFields);
         String filter = HEADER_STREAM + stream;
         SearchResult backlogResult = this.searches.search(searchQuery, filter,
                 range, SEARCH_LIMIT, 0, new Sorting(Message.FIELD_TIMESTAMP, Sorting.Direction.DESC));

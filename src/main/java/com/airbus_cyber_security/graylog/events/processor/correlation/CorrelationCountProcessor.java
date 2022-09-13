@@ -140,9 +140,9 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         Map<String, String> groupByFields = event.getGroupByFields();
-        String searchQuery = this.correlationCountSearches.buildSearchQuery(this.configuration.searchQuery(), groupByFields);
-        List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), timeRange);
-        List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), timeRange);
+        String searchQuery = this.configuration.searchQuery();
+        List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.stream(), timeRange);
+        List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.additionalStream(), timeRange);
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
@@ -173,9 +173,9 @@ public class CorrelationCountProcessor implements EventProcessor {
             Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
-            String searchQuery = this.correlationCountSearches.buildSearchQuery(this.configuration.searchQuery(), groupByFields);
-            List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
-            List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
+            String searchQuery = this.configuration.searchQuery();
+            List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.stream(), searchTimeRange);
+            List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.additionalStream(), searchTimeRange);
 
             if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 continue;
