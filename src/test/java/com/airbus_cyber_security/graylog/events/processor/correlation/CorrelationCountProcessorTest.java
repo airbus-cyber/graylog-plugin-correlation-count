@@ -17,6 +17,7 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountSearches;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.ThresholdType;
 import com.google.common.collect.ImmutableList;
 import org.graylog.events.event.EventFactory;
@@ -33,6 +34,7 @@ import org.joda.time.DateTimeZone;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -57,9 +59,9 @@ public class CorrelationCountProcessorTest {
 
     @Test
     public void testEvents() {
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
-        final AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
-        final EventDefinitionDto eventDefinitionDto = EventDefinitionDto.builder()
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        AbsoluteRange timeRange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
+        EventDefinitionDto eventDefinitionDto = EventDefinitionDto.builder()
                 .id("dto-id")
                 .title("Test Correlation")
                 .description("A test correlation event processors")
@@ -69,13 +71,13 @@ public class CorrelationCountProcessorTest {
                 .notificationSettings(EventNotificationSettings.withGracePeriod(60000))
                 .priority(1)
                 .build();
-        final CorrelationCountProcessorParameters parameters = CorrelationCountProcessorParameters.builder()
+        CorrelationCountProcessorParameters parameters = CorrelationCountProcessorParameters.builder()
                 .timerange(timeRange)
                 .build();
-        AggregationSearch.Factory aggregationSearchFactory = null; // TODO find a way to have this
+        CorrelationCountSearches correlationCountSearches = Mockito.mock(CorrelationCountSearches.class);
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, searches, aggregationSearchFactory);
+                stateService, correlationCountSearches);
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {
         }))
                 .hasMessageContaining(eventDefinitionDto.title())
