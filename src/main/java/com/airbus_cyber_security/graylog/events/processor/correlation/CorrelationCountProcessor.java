@@ -57,13 +57,13 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
-                                     DBEventProcessorStateService stateService, Searches searches, AggregationSearch.Factory aggregationSearchFactory) {
+                                     DBEventProcessorStateService stateService, CorrelationCountSearches correlationCountSearches) {
         this.eventDefinition = eventDefinition;
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
         this.correlationCountCheck = new CorrelationCountCheck(this.configuration, this.configuration.messagesOrder());
-        this.correlationCountSearches = new CorrelationCountSearches(aggregationSearchFactory, searches);
+        this.correlationCountSearches = correlationCountSearches;
     }
 
     @Override

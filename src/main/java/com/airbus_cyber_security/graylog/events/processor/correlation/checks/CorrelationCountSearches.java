@@ -33,6 +33,7 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class CorrelationCountSearches {
     // TODO should probably use MoreSearch rather than Searches (see code of AggregationEventProcessor)
     private final Searches searches;
 
+    @Inject
     public CorrelationCountSearches(AggregationSearch.Factory aggregationSearchFactory, Searches searches) {
         this.aggregationSearchFactory = aggregationSearchFactory;
         this.searches = searches;
