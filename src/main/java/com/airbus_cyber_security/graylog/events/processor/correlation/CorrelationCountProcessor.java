@@ -166,9 +166,9 @@ public class CorrelationCountProcessor implements EventProcessor {
         StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
         for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
             String name = groupBy.getKey();
+            // TODO Maybe, if necessary could use: org.graylog.events.search.MoreSearch.LuceneEscape to further escape the special characters in the value
             String value = groupBy.getValue();
-            // TODO should escape the value here. Method org.graylog.events.search.MoreSearch.LuceneEscape probably works
-            builder.append(" AND " + name + ": " + value);
+            builder.append(" AND " + name + ": \"" + value + "\"");
         }
         return builder.toString();
     }
@@ -184,10 +184,9 @@ public class CorrelationCountProcessor implements EventProcessor {
                 continue;
             }
             Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
-            String searchQuery = buildSearchQuery(groupByFields);
-
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
+            String searchQuery = buildSearchQuery(groupByFields);
             List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
             List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 

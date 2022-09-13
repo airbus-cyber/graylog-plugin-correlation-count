@@ -67,3 +67,19 @@ class Test(TestCase):
 
             time.sleep(20)
             self.assertEqual(0, self._graylog.get_events_count())
+
+    def test_send_message_should_trigger_correlation_rule_with_group_by_when_value_has_a_space__issue27(self):
+        self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
+        with self._graylog.create_gelf_input() as inputs:
+            inputs.send({'_x': 'hello world'})
+            inputs.send({'_x': 'hello world'})
+            # TODO sleep for 1 to be sure that the timestamp of the second message is strictly before the timestamp of the third message
+            #      the precision is only of a millisecond and there is otherwise a risk that it does not trig
+            time.sleep(1)
+            inputs.send({'_x': 'hello world'})
+            inputs.send({'_x': 'hello world'})
+            time.sleep(_PERIOD)
+            inputs.send({'short_message': 'pop'})
+
+            self._assert_got_new_event_within(60)
+            print(self._graylog.extract_logs())
