@@ -25,7 +25,6 @@ import org.graylog.events.event.Event;
 import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
-import org.graylog.events.search.MoreSearch;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
@@ -141,7 +140,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         Map<String, String> groupByFields = event.getGroupByFields();
-        String searchQuery = this.buildSearchQuery(groupByFields);
+        String searchQuery = this.correlationCountSearches.buildSearchQuery(this.configuration.searchQuery(), groupByFields);
         List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), timeRange);
         List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), timeRange);
         List<MessageSummary> summaries = Lists.newArrayList();
@@ -161,16 +160,6 @@ public class CorrelationCountProcessor implements EventProcessor {
         return fields;
     }
 
-    private String buildSearchQuery(Map<String, String> groupByFields) {
-        StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
-        for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
-            String name = groupBy.getKey();
-            String value = MoreSearch.luceneEscape(groupBy.getValue());
-            builder.append(" AND " + name + ": \"" + value + "\"");
-        }
-        return builder.toString();
-    }
-
     private ImmutableList<CorrelationCountResult> runCheck(TimeRange timeRange) throws EventProcessorException {
         Collection<CorrelationCountResult> matchedResults = this.correlationCountSearches.count(timeRange, this.configuration, this.eventDefinition);
 
@@ -184,7 +173,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             Map<String, String> groupByFields = associateGroupByFields(matchedResult.getGroupByFields());
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
-            String searchQuery = buildSearchQuery(groupByFields);
+            String searchQuery = this.correlationCountSearches.buildSearchQuery(this.configuration.searchQuery(), groupByFields);
             List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.stream(), searchTimeRange);
             List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, this.configuration.additionalStream(), searchTimeRange);
 

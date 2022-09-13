@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
 import org.graylog.events.processor.aggregation.*;
+import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.searches.Searches;
@@ -36,6 +37,7 @@ import org.joda.time.DateTime;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class CorrelationCountSearches {
 
@@ -108,6 +110,16 @@ public class CorrelationCountSearches {
         }
 
         return results.getAll();
+    }
+
+    public String buildSearchQuery(String searchQuery, Map<String, String> groupByFields) {
+        StringBuilder builder = new StringBuilder(searchQuery);
+        for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
+            String name = groupBy.getKey();
+            String value = MoreSearch.luceneEscape(groupBy.getValue());
+            builder.append(" AND " + name + ": \"" + value + "\"");
+        }
+        return builder.toString();
     }
 
     public List<MessageSummary> searchMessages(String searchQuery, String stream, TimeRange range) {
