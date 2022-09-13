@@ -43,7 +43,7 @@ public class CorrelationCountCheck {
 
     private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, OrderType messagesOrderType) {
         List<DateTime> listDate = new ArrayList<>();
-        for (MessageSummary messageSummary : summaries) {
+        for (MessageSummary messageSummary: summaries) {
             listDate.add(messageSummary.getTimestamp());
         }
         Collections.sort(listDate);
