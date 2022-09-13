@@ -50,8 +50,8 @@ class Test(TestCase):
     def test_send_message_should_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
         with self._graylog.create_gelf_input() as inputs:
-            inputs.send({'x': 1})
-            inputs.send({'x': 1})
+            inputs.send({'_x': 1})
+            inputs.send({'_x': 1})
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
@@ -60,8 +60,8 @@ class Test(TestCase):
     def test_send_message_with_different_values_for_group_by_field_should_not_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
         with self._graylog.create_gelf_input() as inputs:
-            inputs.send({'x': 1})
-            inputs.send({'x': 2})
+            inputs.send({'_x': 1})
+            inputs.send({'_x': 2})
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
