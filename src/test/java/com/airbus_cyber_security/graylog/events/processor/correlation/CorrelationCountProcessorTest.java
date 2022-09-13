@@ -26,36 +26,17 @@ import org.graylog.events.processor.DBEventProcessorStateService;
 import org.graylog.events.processor.EventDefinitionDto;
 import org.graylog.events.processor.EventProcessorDependencyCheck;
 import org.graylog.events.processor.EventProcessorPreconditionException;
-import org.graylog.events.processor.aggregation.AggregationSearch;
-import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 public class CorrelationCountProcessorTest {
-
-    @Rule
-    public final MockitoRule mockitoRule = MockitoJUnit.rule();
-
-    @Mock
-    private EventFactory eventFactory;
-    @Mock
-    private DBEventProcessorStateService stateService;
-    @Mock
-    private EventProcessorDependencyCheck eventProcessorDependencyCheck;
-    @Mock
-    private Searches searches;
 
     @Test
     public void testEvents() {
@@ -75,6 +56,9 @@ public class CorrelationCountProcessorTest {
                 .timerange(timeRange)
                 .build();
         CorrelationCountSearches correlationCountSearches = Mockito.mock(CorrelationCountSearches.class);
+        EventProcessorDependencyCheck eventProcessorDependencyCheck = Mockito.mock(EventProcessorDependencyCheck.class);
+        DBEventProcessorStateService stateService = Mockito.mock(DBEventProcessorStateService.class);
+        EventFactory eventFactory = Mockito.mock(EventFactory.class);
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
                 stateService, correlationCountSearches);
