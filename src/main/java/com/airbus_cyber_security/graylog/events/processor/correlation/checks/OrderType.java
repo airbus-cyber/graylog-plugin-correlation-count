@@ -34,7 +34,7 @@ public enum OrderType {
     }
 
     public static OrderType fromString(String text) {
-        for (OrderType orderType : OrderType.values()) {
+        for (OrderType orderType: OrderType.values()) {
             if (orderType.description.equals(text)) {
                 return orderType;
             }
