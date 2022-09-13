@@ -57,7 +57,7 @@ public class CorrelationCountSearches {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
-        for (String groupingField : configuration.groupingFields()) {
+        for (String groupingField: configuration.groupingFields()) {
             idBuilder.append("#").append(groupingField);
         }
         seriesBuilder.add(AggregationSeries.builder().id(idBuilder.toString()).function(AggregationFunction.COUNT).build());
