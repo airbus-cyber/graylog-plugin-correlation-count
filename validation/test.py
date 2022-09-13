@@ -73,8 +73,8 @@ class Test(TestCase):
         with self._graylog.create_gelf_input() as inputs:
             inputs.send({'_x': 'hello world'})
             inputs.send({'_x': 'hello world'})
-            # TODO sleep for 1 to be sure that the timestamp of the second message is strictly before the timestamp of the third message
-            #      the precision is only of a millisecond and there is otherwise a risk that it does not trig
+            # need to sleep for 1 to be sure that the timestamp of the second message is strictly before the timestamp of the third message
+            # the precision is only of a millisecond and there is otherwise a risk that the event does not trigger
             time.sleep(1)
             inputs.send({'_x': 'hello world'})
             inputs.send({'_x': 'hello world'})
@@ -82,4 +82,3 @@ class Test(TestCase):
             inputs.send({'short_message': 'pop'})
 
             self._assert_got_new_event_within(60)
-            print(self._graylog.extract_logs())
