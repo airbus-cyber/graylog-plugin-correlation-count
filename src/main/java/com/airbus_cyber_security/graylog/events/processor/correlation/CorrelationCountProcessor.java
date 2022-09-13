@@ -26,6 +26,7 @@ import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
 import org.graylog.events.processor.aggregation.AggregationSearch;
+import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
@@ -166,8 +167,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         StringBuilder builder = new StringBuilder(this.configuration.searchQuery());
         for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
             String name = groupBy.getKey();
-            // TODO Maybe, if necessary could use: org.graylog.events.search.MoreSearch.LuceneEscape to further escape the special characters in the value
-            String value = groupBy.getValue();
+            String value = MoreSearch.luceneEscape(groupBy.getValue());
             builder.append(" AND " + name + ": \"" + value + "\"");
         }
         return builder.toString();

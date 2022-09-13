@@ -82,3 +82,16 @@ class Test(TestCase):
             inputs.send({'short_message': 'pop'})
 
             self._assert_got_new_event_within(60)
+
+    def test_send_message_should_not_fail_on_correlation_rule_with_group_by_when_value_has_a_parenthesis__issue27(self):
+        self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
+        with self._graylog.create_gelf_input() as inputs:
+            self._graylog.start_logs_capture()
+            inputs.send({'_x': 'hello"world'})
+            inputs.send({'_x': 'hello"world'})
+            time.sleep(_PERIOD)
+            inputs.send({'short_message': 'pop'})
+
+            time.sleep(2*_PERIOD)
+            logs = self._graylog.extract_logs()
+            self.assertNotIn('ERROR', logs)
