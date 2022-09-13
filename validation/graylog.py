@@ -31,6 +31,9 @@ class Graylog:
     def stop(self):
         self._server.stop()
 
+    def start_logs_capture(self):
+        self._server.start_logs_capture()
+
     def extract_logs(self):
         return self._server.extract_logs()
 
