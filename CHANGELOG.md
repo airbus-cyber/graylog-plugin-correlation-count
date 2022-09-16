@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [4.1.3](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.2...4.1.3)
 ### Bug Fixes
+* A grouping field with a special character such as space was not working. The values of grouping fields are now escaped in search queries ([issue 27](https://github.com/airbus-cyber/graylog-plugin-correlation-count/issues/27))
 
 ## [4.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.1...4.1.2)
 ### Bug Fixes
