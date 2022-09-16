@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.3](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.2...4.1.3)
+### Bug Fixes
+
 ## [4.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/4.1.1...4.1.2)
 ### Bug Fixes
 * Correct handling of catchup windows. There is no more exception on several results with the same grouping field value
@@ -40,7 +43,6 @@ All notable changes to this project will be documented in this file.
 ## [2.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/2.0.0...2.1.0)
 ### Features
 * Disabled isolated Plugin (shares a class loader with other plugins that have isolated=false)
-
 
 ## [2.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/1.2.0...2.0.0)
 ### Features
