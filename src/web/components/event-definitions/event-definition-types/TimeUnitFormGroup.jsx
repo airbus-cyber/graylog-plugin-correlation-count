@@ -21,7 +21,7 @@ import lodash from 'lodash';
 import moment from 'moment';
 import { TimeUnitInput } from 'components/common';
 import { extractDurationAndUnit } from 'components/common/TimeUnitInput';
-import { FormGroup, HelpBlock } from 'components/graylog';
+import { FormGroup, HelpBlock } from 'components/bootstrap';
 import { TIME_UNITS } from 'components/event-definitions/event-definition-types/FilterForm';
 
 class TimeUnitFormGroup extends React.Component {
