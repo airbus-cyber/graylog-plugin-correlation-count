@@ -183,25 +183,25 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
             validationResult.addError(FIELD_EXECUTE_EVERY_MS,
                     "Filter & Aggregation execute_every_ms must be greater than 0.");
         }
-        if(stream() == null || stream().isEmpty()) {
+        if (stream() == null || stream().isEmpty()) {
             validationResult.addError(FIELD_STREAM, "Stream is mandatory");
         }
-        if(additionalStream() == null || additionalStream().isEmpty()) {
+        if (additionalStream() == null || additionalStream().isEmpty()) {
             validationResult.addError(FIELD_ADDITIONAL_STREAM, "Additional stream is mandatory");
         }
-        if(additionalThresholdType() == null || additionalThresholdType().isEmpty()) {
+        if (additionalThresholdType() == null || additionalThresholdType().isEmpty()) {
             validationResult.addError(FIELD_ADDITIONAL_THRESHOLD_TYPE, "Additional threshold type is mandatory");
         }
         if (additionalThreshold() < 0) {
             validationResult.addError(FIELD_ADDITIONAL_THRESHOLD, "Additional threshold must be greater than 0.");
         }
-        if(thresholdType() == null || thresholdType().isEmpty()) {
+        if (thresholdType() == null || thresholdType().isEmpty()) {
             validationResult.addError(FIELD_THRESHOLD_TYPE, "Threshold type is mandatory");
         }
-        if(threshold() < 0) {
+        if (threshold() < 0) {
             validationResult.addError(FIELD_THRESHOLD, "Threshold must be greater than 0.");
         }
-        if(messagesOrder() == null || messagesOrder().isEmpty()) {
+        if (messagesOrder() == null || messagesOrder().isEmpty()) {
             validationResult.addError(FIELD_MESSAGES_ORDER, "Messages order is mandatory");
         }
         return validationResult;
