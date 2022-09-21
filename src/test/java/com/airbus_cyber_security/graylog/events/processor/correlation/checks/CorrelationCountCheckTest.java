@@ -63,7 +63,7 @@ public class CorrelationCountCheckTest {
                 .searchQuery("*")
                 .build();
 
-        CorrelationCountCheck subject = new CorrelationCountCheck(configuration, "AFTER");
+        CorrelationCountCheck subject = new CorrelationCountCheck(configuration);
         assertTrue(subject.isRuleTriggered(summariesStream2, summariesStream1));
     }
 }

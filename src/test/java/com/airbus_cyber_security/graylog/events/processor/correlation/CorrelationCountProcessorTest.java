@@ -18,6 +18,7 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountSearches;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.ThresholdType;
 import com.google.common.collect.ImmutableList;
 import org.graylog.events.event.EventFactory;
@@ -80,7 +81,7 @@ public class CorrelationCountProcessorTest {
                 .additionalThreshold(threshold)
                 .thresholdType(ThresholdType.MORE.getDescription())
                 .threshold(threshold)
-                .messagesOrder("any order")
+                .messagesOrder(OrderType.ANY.getDescription())
                 .searchWithinMs(2 * 60 * 1000)
                 .executeEveryMs(2 * 60 * 1000)
                 .groupingFields(new ArrayList<>())

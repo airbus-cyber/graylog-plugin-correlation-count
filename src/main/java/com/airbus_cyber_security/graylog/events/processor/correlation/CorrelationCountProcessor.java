@@ -59,7 +59,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
-        this.correlationCountCheck = new CorrelationCountCheck(this.configuration, this.configuration.messagesOrder());
+        this.correlationCountCheck = new CorrelationCountCheck(this.configuration);
         this.correlationCountSearches = correlationCountSearches;
     }
 

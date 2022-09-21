@@ -29,25 +29,25 @@ public class CorrelationCountCheck {
 
     private final Threshold mainStreamThreshold;
     private final Threshold additionalStreamThreshold;
-    private final String messagesOrder;
+    private final OrderType messagesOrder;
 
-    public CorrelationCountCheck(CorrelationCountProcessorConfig configuration, String messagesOrder) {
+    public CorrelationCountCheck(CorrelationCountProcessorConfig configuration) {
         this.mainStreamThreshold = new Threshold(configuration.thresholdType(), configuration.threshold());
         this.additionalStreamThreshold = new Threshold(configuration.additionalThresholdType(), configuration.additionalThreshold());
-        this.messagesOrder = messagesOrder;
+        this.messagesOrder = OrderType.fromString(configuration.messagesOrder());
     }
 
     public boolean thresholdsAreReached(long mainCount, long additionalCount) {
         return this.mainStreamThreshold.isReached(mainCount) && this.additionalStreamThreshold.isReached(additionalCount);
     }
 
-    private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries, OrderType messagesOrderType) {
+    private List<DateTime> getListOrderTimestamp(List<MessageSummary> summaries) {
         List<DateTime> listDate = new ArrayList<>();
         for (MessageSummary messageSummary: summaries) {
             listDate.add(messageSummary.getTimestamp());
         }
         Collections.sort(listDate);
-        if (messagesOrderType.equals(OrderType.AFTER)) {
+        if (this.messagesOrder.equals(OrderType.AFTER)) {
             Collections.reverse(listDate);
         }
         return listDate;
@@ -58,15 +58,14 @@ public class CorrelationCountCheck {
      */
     private boolean checkOrderSecondStream(List<MessageSummary> summariesFirstStream, List<MessageSummary> summariesSecondStream) {
         int countFirstStream = summariesFirstStream.size();
-        OrderType messagesOrder = OrderType.fromString(this.messagesOrder);
-        List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream, messagesOrder);
-        List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream, messagesOrder);
+        List<DateTime> listDateFirstStream = getListOrderTimestamp(summariesFirstStream);
+        List<DateTime> listDateSecondStream = getListOrderTimestamp(summariesSecondStream);
 
         for (DateTime dateFirstStream: listDateFirstStream) {
             int countSecondStream = 0;
             for (DateTime dateSecondStream: listDateSecondStream) {
-                if ((messagesOrder.equals(OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
-                        (messagesOrder.equals(OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
+                if ((this.messagesOrder.equals(OrderType.BEFORE) && dateSecondStream.isBefore(dateFirstStream)) ||
+                        (this.messagesOrder.equals(OrderType.AFTER) && dateSecondStream.isAfter(dateFirstStream))) {
                     countSecondStream++;
                 } else {
                     break;
@@ -81,7 +80,7 @@ public class CorrelationCountCheck {
     }
 
     public boolean isRuleTriggered(List<MessageSummary> summariesMainStream, List<MessageSummary> summariesAdditionalStream) {
-        if (OrderType.fromString(this.messagesOrder).equals(OrderType.ANY)) {
+        if (this.messagesOrder.equals(OrderType.ANY)) {
             return true;
         }
         return checkOrderSecondStream(summariesMainStream, summariesAdditionalStream);
