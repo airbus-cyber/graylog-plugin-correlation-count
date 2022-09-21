@@ -21,8 +21,8 @@ import lodash from 'lodash';
 import FormsUtils from 'util/FormsUtils';
 import { naturalSortIgnoreCase } from 'util/SortUtils';
 
-import { Select, MultiSelect, ControlLabel, FormGroup, HelpBlock } from 'components/common';
-import { Input } from 'components/bootstrap';
+import { Select, MultiSelect } from 'components/common';
+import { ControlLabel, FormGroup, HelpBlock, Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
 import { defaultCompare } from 'views/logic/DefaultCompare';
