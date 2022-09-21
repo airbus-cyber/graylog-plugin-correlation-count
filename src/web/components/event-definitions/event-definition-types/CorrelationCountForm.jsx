@@ -22,6 +22,7 @@ import FormsUtils from 'util/FormsUtils';
 import { naturalSortIgnoreCase } from 'util/SortUtils';
 
 import { Select, MultiSelect } from 'components/common';
+// TODO write a unit test which protects against having ControlLable, FormGroup and HelpBlock imported from components/common
 import { ControlLabel, FormGroup, HelpBlock, Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
