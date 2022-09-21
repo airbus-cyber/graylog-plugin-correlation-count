@@ -29,7 +29,7 @@ const DEFAULT_CONFIGURATION = {
     additional_threshold: '0',
     search_within_ms: 60*1000,
     execute_every_ms: 60*1000,
-    messages_order: 'any order',
+    messages_order: 'ANY',
     grouping_fields: [],
     comment: '',
     search_query: '*',
