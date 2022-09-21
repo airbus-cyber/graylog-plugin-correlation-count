@@ -18,6 +18,7 @@
 package com.airbus_cyber_security.graylog.events.contentpack.entities;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -149,7 +150,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
                 .additionalThreshold(additionalThreshold())
                 .thresholdType(thresholdType().asString(parameters))
                 .threshold(threshold())
-                .messagesOrder(messagesOrder().asString(parameters))
+                .messagesOrder(OrderType.fromString(messagesOrder().asString(parameters)))
                 .searchWithinMs(searchWithinMs())
                 .executeEveryMs(executeEveryMs())
                 .groupingFields(groupingFields())

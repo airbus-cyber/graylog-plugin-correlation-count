@@ -81,7 +81,7 @@ public class CorrelationCountProcessorTest {
                 .additionalThreshold(threshold)
                 .thresholdType(ThresholdType.MORE.getDescription())
                 .threshold(threshold)
-                .messagesOrder(OrderType.ANY.getDescription())
+                .messagesOrder(OrderType.ANY)
                 .searchWithinMs(2 * 60 * 1000)
                 .executeEveryMs(2 * 60 * 1000)
                 .groupingFields(new ArrayList<>())

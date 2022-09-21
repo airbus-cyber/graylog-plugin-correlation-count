@@ -34,7 +34,7 @@ public class CorrelationCountCheck {
     public CorrelationCountCheck(CorrelationCountProcessorConfig configuration) {
         this.mainStreamThreshold = new Threshold(configuration.thresholdType(), configuration.threshold());
         this.additionalStreamThreshold = new Threshold(configuration.additionalThresholdType(), configuration.additionalThreshold());
-        this.messagesOrder = OrderType.fromString(configuration.messagesOrder());
+        this.messagesOrder = configuration.messagesOrder();
     }
 
     public boolean thresholdsAreReached(long mainCount, long additionalCount) {

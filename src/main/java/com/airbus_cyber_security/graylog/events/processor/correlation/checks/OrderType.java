@@ -17,10 +17,18 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum OrderType {
 
+    // TODO try to avoid repeating string "ANY". Would it work with enums without values? Otherwise use some constants.
+    @JsonProperty("ANY")
     ANY("ANY"),
+    
+    @JsonProperty("BEFORE")
     BEFORE("BEFORE"),
+    
+    @JsonProperty("AFTER")
     AFTER("AFTER");
 
     private final String description;

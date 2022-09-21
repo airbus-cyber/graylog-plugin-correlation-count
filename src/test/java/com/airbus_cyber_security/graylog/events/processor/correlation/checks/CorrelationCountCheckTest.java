@@ -18,6 +18,7 @@
 package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.joda.time.DateTime;
@@ -55,7 +56,7 @@ public class CorrelationCountCheckTest {
                 .additionalThreshold(1)
                 .thresholdType("MORE")
                 .threshold(4)
-                .messagesOrder("AFTER")
+                .messagesOrder(OrderType.AFTER)
                 .searchWithinMs(10 * 60 * 1000)
                 .executeEveryMs(0)
                 .groupingFields(new ArrayList<>())

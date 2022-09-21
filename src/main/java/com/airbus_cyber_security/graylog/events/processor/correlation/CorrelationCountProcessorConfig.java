@@ -17,7 +17,10 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
+// sources of inspiration: org.graylog.events.processor.aggregation.AggregationEventProcessorConfig
+
 import com.airbus_cyber_security.graylog.events.contentpack.entities.CorrelationCountProcessorConfigEntity;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -65,12 +68,14 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     @JsonProperty(FIELD_ADDITIONAL_STREAM)
     public abstract String additionalStream();
 
+    // TODO should directly be an enum
     @JsonProperty(FIELD_ADDITIONAL_THRESHOLD_TYPE)
     public abstract String additionalThresholdType();
 
     @JsonProperty(FIELD_ADDITIONAL_THRESHOLD)
     public abstract int additionalThreshold();
 
+    // TODO should directly be an enum
     @JsonProperty(FIELD_THRESHOLD_TYPE)
     public abstract String thresholdType();
 
@@ -78,7 +83,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     public abstract int threshold();
 
     @JsonProperty(FIELD_MESSAGES_ORDER)
-    public abstract String messagesOrder();
+    public abstract OrderType messagesOrder();
 
     @JsonProperty(FIELD_SEARCH_WITHIN_MS)
     public abstract long searchWithinMs();
@@ -151,7 +156,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         public abstract Builder threshold(int threshold);
 
         @JsonProperty(FIELD_MESSAGES_ORDER)
-        public abstract Builder messagesOrder(String messagesOrder);
+        public abstract Builder messagesOrder(OrderType messagesOrder);
 
         @JsonProperty(FIELD_SEARCH_WITHIN_MS)
         public abstract Builder searchWithinMs(long searchWithinMs);
@@ -200,9 +205,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         }
         if (threshold() < 0) {
             validationResult.addError(FIELD_THRESHOLD, "Threshold must be greater than 0.");
-        }
-        if (messagesOrder() == null || messagesOrder().isEmpty()) {
-            validationResult.addError(FIELD_MESSAGES_ORDER, "Messages order is mandatory");
         }
         return validationResult;
     }

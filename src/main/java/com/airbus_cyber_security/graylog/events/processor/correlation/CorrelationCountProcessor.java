@@ -110,10 +110,10 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     private String getResultDescription(long countMainStream, long countAdditionalStream) {
         String msgCondition;
-        if (OrderType.fromString(this.configuration.messagesOrder()).equals(OrderType.ANY)) {
+        if (this.configuration.messagesOrder().equals(OrderType.ANY)) {
             msgCondition = "and";
         } else {
-            msgCondition = this.configuration.messagesOrder();
+            msgCondition = this.configuration.messagesOrder().getDescription();
         }
 
         String resultDescription = "The additional stream had " + countAdditionalStream + " messages with trigger condition "
