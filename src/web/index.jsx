@@ -20,6 +20,21 @@ import { PluginManifest, PluginStore } from 'graylog-web-plugin/plugin';
 import CorrelationCountFormContainer from "./components/event-definitions/event-definition-types/CorrelationCountFormContainer";
 import CorrelationCountSummary from "./components/event-definitions/event-definition-types/CorrelationCountSummary";
 
+const DEFAULT_CONFIGURATION = {
+    stream: '',
+    threshold_type: 'MORE',
+    threshold: '0',
+    additional_stream: '',
+    additional_threshold_type: 'MORE',
+    additional_threshold: '0',
+    search_within_ms: 60*1000,
+    execute_every_ms: 60*1000,
+    messages_order: 'any order',
+    grouping_fields: [],
+    comment: '',
+    search_query: '*',
+};
+
 PluginStore.register(new PluginManifest({}, {
     eventDefinitionTypes: [
         {
@@ -31,20 +46,7 @@ PluginStore.register(new PluginManifest({}, {
                 'threshold in a given time range.',
             formComponent: CorrelationCountFormContainer,
             summaryComponent: CorrelationCountSummary,
-            defaultConfig: {
-              stream: '',
-              threshold_type: 'more than',
-              threshold: '0',
-              additional_stream: '',
-              additional_threshold_type: 'more than',
-              additional_threshold: '0',
-              search_within_ms: 60*1000,
-              execute_every_ms: 60*1000,
-              messages_order: 'any order',
-              grouping_fields: [],
-              comment: '',
-              search_query: '*',
-            },
+            defaultConfig: DEFAULT_CONFIGURATION
         },
     ],
 }));
