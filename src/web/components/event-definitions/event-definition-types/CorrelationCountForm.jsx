@@ -26,7 +26,7 @@ import { Select, MultiSelect } from 'components/common';
 import { ControlLabel, FormGroup, HelpBlock, Input } from 'components/bootstrap';
 import TimeUnitFormGroup from './TimeUnitFormGroup';
 
-import { defaultCompare } from 'views/logic/DefaultCompare';
+import { defaultCompare } from 'logic/DefaultCompare';
 
 
 class CorrelationCountForm extends React.Component {

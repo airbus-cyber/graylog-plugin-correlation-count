@@ -68,7 +68,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         TimeRange timerange = getTimeRangeFromParameters(eventProcessorParameters);
 
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
-        if (!dependencyCheck.hasMessagesIndexedUpTo(timerange.getTo())) {
+        if (!dependencyCheck.hasMessagesIndexedUpTo(timerange)) {
             String msg = String.format(Locale.ROOT, "Couldn't run correlation count <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
                     this.eventDefinition.title(), this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
             throw new EventProcessorPreconditionException(msg, this.eventDefinition);
