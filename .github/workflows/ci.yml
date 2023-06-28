@@ -31,7 +31,7 @@ jobs:
         with:
           path: graylog2-server
           key: ${{ steps.requestPom.outputs.graylogVersion }}
-      - name: Check out Graylog
+      - name: Check out Graylog ${{ steps.requestPom.outputs.graylogVersion }}
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
         with:
