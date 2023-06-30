@@ -37,6 +37,8 @@ import javax.inject.Inject;
 import java.util.*;
 import java.util.function.Consumer;
 
+// sources of inspiration:
+// * org.graylog.events.processor.aggregation.AggregationEventProcessor
 public class CorrelationCountProcessor implements EventProcessor {
     public interface Factory extends EventProcessor.Factory<CorrelationCountProcessor> {
         @Override
