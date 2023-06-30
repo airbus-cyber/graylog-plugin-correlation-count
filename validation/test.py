@@ -45,6 +45,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
+            # Seems like this test sometimes fails during CI, should the timeout be increased? Or is there a random bug?
             self._assert_got_new_event_within(60)
 
     def test_send_message_should_trigger_correlation_rule_with_group_by(self):
