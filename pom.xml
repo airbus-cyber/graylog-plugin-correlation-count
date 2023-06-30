@@ -73,7 +73,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <graylog.version>${project.parent.version}</graylog.version>
         <graylog2.plugin-dir>/usr/share/graylog-server/plugin</graylog2.plugin-dir>
-        <auto-value.version>1.5.1</auto-value.version>
 
         <!-- Test dependencies -->
         <apacheds-server.version>2.0.0-M24</apacheds-server.version>
