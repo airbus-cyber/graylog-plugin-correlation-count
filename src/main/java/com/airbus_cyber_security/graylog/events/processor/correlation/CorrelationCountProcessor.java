@@ -95,7 +95,8 @@ public class CorrelationCountProcessor implements EventProcessor {
                 message.addField(groupBy.getKey(), groupBy.getValue());
             }
 
-            Event event = eventFactory.createEvent(this.eventDefinition, timerange.getFrom(), resultDescription);
+            // see https://github.com/Graylog2/graylog2-server/blob/5.0.0/graylog2-server/src/main/java/org/graylog/events/processor/aggregation/AggregationEventProcessor.java#L281
+            Event event = eventFactory.createEvent(this.eventDefinition, result.getTimestamp(), resultDescription);
             event.addSourceStream(this.configuration.stream());
             event.addSourceStream(this.configuration.additionalStream());
 
@@ -188,6 +189,7 @@ public class CorrelationCountProcessor implements EventProcessor {
     }
 
     private DateTime calculateTimerangeStartFromTimestamp(DateTime to) {
+        // see https://github.com/Graylog2/graylog2-server/blob/5.0.0/graylog2-server/src/main/java/org/graylog/events/processor/aggregation/AggregationEventProcessor.java#L284
         return to.minus(this.configuration.searchWithinMs());
     }
 
