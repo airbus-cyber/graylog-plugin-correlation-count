@@ -75,17 +75,6 @@
         <graylog2.plugin-dir>/usr/share/graylog-server/plugin</graylog2.plugin-dir>
 
         <!-- Test dependencies -->
-        <apacheds-server.version>2.0.0-M24</apacheds-server.version>
-        <assertj-core.version>3.20.2</assertj-core.version>
-        <assertj-joda-time.version>2.2.0</assertj-joda-time.version>
-        <awaitility.version>1.7.0</awaitility.version>
-        <equalsverifier.version>2.3.3</equalsverifier.version>
-        <fongo.version>2.1.0</fongo.version>
-        <jukito.version>1.5</jukito.version>
-        <junit.version>4.13.2</junit.version>
-        <nosqlunit.version>1.0.0-rc.5</nosqlunit.version>
-        <restassured.version>2.9.0</restassured.version>
-        <system-rules.version>1.16.1</system-rules.version>
         <powermock.version>1.7.0</powermock.version>
     </properties>
     
