@@ -322,7 +322,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
