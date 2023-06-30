@@ -188,6 +188,8 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
+                <version>3.6.0</version>
                 <configuration>
                     <skipAssembly>true</skipAssembly>
                 </configuration>
