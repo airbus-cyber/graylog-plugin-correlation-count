@@ -197,6 +197,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
