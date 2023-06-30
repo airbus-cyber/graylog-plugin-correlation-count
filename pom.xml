@@ -193,7 +193,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -206,7 +205,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.1</version>
                 <configuration>
                     <minimizeJar>false</minimizeJar>
                     <artifactSet>
