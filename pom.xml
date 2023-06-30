@@ -156,18 +156,29 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M3</version>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-enforcer-plugin -->
+                <version>3.0.0</version>
                 <executions>
                     <execution>
-                        <id>enforce-maven</id>
+                        <id>enforce-versions</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
                         <configuration>
+                            <fail>true</fail>
+                            <failFast>false</failFast>
                             <rules>
+                                <banDuplicatePomDependencyVersions/>
                                 <requireMavenVersion>
-                                    <version>3.0.0</version>
+                                    <version>[3.6.0,)</version>
                                 </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>[17.0,17.99]</version>
+                                </requireJavaVersion>
+                                <requireOS>
+                                    <family>unix</family>
+                                </requireOS>
                             </rules>
                         </configuration>
                     </execution>
