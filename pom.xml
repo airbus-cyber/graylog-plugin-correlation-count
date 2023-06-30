@@ -261,6 +261,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>rpm-maven-plugin</artifactId>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.codehaus.mojo/rpm-maven-plugin -->
                 <version>2.2.0</version>
                 <configuration>
                     <group>Application/Internet</group>
@@ -293,6 +294,7 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin -->
                 <version>1.6.13</version>
                 <extensions>true</extensions>
                 <configuration>
