@@ -99,9 +99,8 @@ public class CorrelationCountProcessor implements EventProcessor {
             event.addSourceStream(this.configuration.stream());
             event.addSourceStream(this.configuration.additionalStream());
 
-            // TODO should rather set the timerange from the timestamp? (in case of catchup window...)
-            event.setTimerangeStart(timerange.getFrom());
-            event.setTimerangeEnd(timerange.getTo());
+            event.setTimerangeStart(this.calculateTimerangeStartFromTimestamp(result.getTimestamp()));
+            event.setTimerangeEnd(result.getTimestamp());
             event.setGroupByFields(groupByFields);
 
             EventWithContext eventWithContext = EventWithContext.create(event, message);
@@ -188,8 +187,12 @@ public class CorrelationCountProcessor implements EventProcessor {
         return results.build();
     }
 
+    private DateTime calculateTimerangeStartFromTimestamp(DateTime to) {
+        return to.minus(this.configuration.searchWithinMs());
+    }
+
     private TimeRange buildSearchTimeRange(DateTime to) {
-        DateTime from = to.minusSeconds((int) (this.configuration.searchWithinMs() / 1000));
+        DateTime from = this.calculateTimerangeStartFromTimestamp(to);
         return AbsoluteRange.create(from, to);
     }
 }
