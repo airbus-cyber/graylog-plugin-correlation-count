@@ -83,7 +83,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
     }
 
-    ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) {
+    private ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) {
         ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
 
         for (CorrelationCountResult result: results) {
