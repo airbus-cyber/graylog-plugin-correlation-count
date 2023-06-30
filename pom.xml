@@ -140,8 +140,7 @@
                                 <include>src/web/**/*.css</include>
                             </includes>
                             <excludes>
-                                <exclude>build.config.js</exclude>
-                                <exclude>webpack.config.js</exclude>
+                                <exclude>*.config.js</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>
