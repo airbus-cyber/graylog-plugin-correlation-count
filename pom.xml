@@ -115,11 +115,17 @@
             </resource>
         </resources>
         <plugins>
+            <!--
+            Note: most plugins versions are not explicited, because they are defined in the parent graylog pom
+            So they are updated, when the graylog version is updated
+
+            A command to find the available goals provided by a plugin:
+            mvn help:describe -Dplugin=org.apache.maven.plugins:maven-jar-plugin
+            mvn org.apache.maven.plugins:maven-jar-plugin:help
+            -->
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/com.mycila/license-maven-plugin -->
-                <version>4.0</version>
                 <configuration>
                     <licenseSets>
                         <licenseSet>
@@ -158,8 +164,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-enforcer-plugin -->
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>
@@ -188,8 +192,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
-                <version>3.6.0</version>
                 <configuration>
                     <skipAssembly>true</skipAssembly>
                 </configuration>
@@ -197,8 +199,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
-                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -211,8 +211,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
-                <version>3.5.0</version>
                 <configuration>
                     <minimizeJar>false</minimizeJar>
                     <transformers>
@@ -236,8 +234,6 @@
             <plugin>
                 <groupId>org.vafer</groupId>
                 <artifactId>jdeb</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.vafer/jdeb -->
-                <version>1.10</version>
                 <configuration>
                     <deb>${project.build.directory}/${project.artifactId}-${project.version}.deb</deb>
                     <dataSet>
@@ -261,8 +257,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>rpm-maven-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.codehaus.mojo/rpm-maven-plugin -->
-                <version>2.2.0</version>
                 <configuration>
                     <group>Application/Internet</group>
                     <prefixes>
@@ -292,23 +286,8 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin -->
-                <version>1.6.13</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-gpg-plugin -->
-                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -322,8 +301,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
-                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -336,8 +313,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <!-- check newest version here: https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
-                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -346,6 +321,19 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <!-- check newest version here: https://central.sonatype.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin -->
+                <version>1.6.13</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
