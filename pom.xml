@@ -118,6 +118,8 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+                <!-- check newest version here: https://central.sonatype.com/artifact/com.mycila/license-maven-plugin -->
+                <version>4.0</version>
                 <configuration>
                     <licenseSets>
                         <licenseSet>
