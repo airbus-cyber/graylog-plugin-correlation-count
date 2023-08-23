@@ -1,6 +1,7 @@
 import requests
 from urllib import parse
 from requests.exceptions import ConnectionError
+from gelf_input import GelfInput
 
 _AUTH = ('admin', 'admin')
 _HEADERS = {"X-Requested-By": "test-program"}
@@ -68,7 +69,8 @@ class GraylogRestApi:
             'type': 'org.graylog2.inputs.gelf.tcp.GELFTCPInput'
         }
         response = self._post('system/inputs', payload)
-        return response.json()['id']
+        identifier = response.json()['id']
+        return GelfInput(self, identifier)
 
     def gelf_input_is_running(self, identifier):
         response = self._get('system/inputstates/')

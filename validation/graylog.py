@@ -2,6 +2,7 @@ import time
 from graylog_server import GraylogServer
 from graylog_rest_api import GraylogRestApi
 from graylog_inputs import GraylogInputs
+from server_timeout_error import ServerTimeoutError
 
 
 class Graylog:
@@ -10,6 +11,15 @@ class Graylog:
         self._server = GraylogServer('../runtime')
         self._api = GraylogRestApi()
 
+    def _wait(self, condition, attempts, sleep_duration=1):
+        count = 0
+        while not condition():
+            time.sleep(sleep_duration)
+            count += 1
+            if count > attempts:
+                print(self._server.extract_all_logs())
+                raise ServerTimeoutError()
+
     def _wait_until_graylog_has_started(self):
         """
         We wait until the default deflector is up, as it seems to be the last operation done on startup
@@ -17,12 +27,8 @@ class Graylog:
         :return:
         """
         print('Waiting for graylog to start...')
-
-        while not self._api.default_deflector_is_up():
-            time.sleep(1)
-
-        while not self._api.events_search_is_available():
-            time.sleep(1)
+        self._wait(self._api.default_deflector_is_up, 180)
+        self._wait(self._api.events_search_is_available, 180)
 
     def start(self):
         self._server.start()
@@ -38,9 +44,8 @@ class Graylog:
         return self._server.extract_logs()
 
     def create_gelf_input(self):
-        identifier = self._api.create_gelf_input()
-        while not self._api.gelf_input_is_running(identifier):
-            time.sleep(.1)
+        gelf_input = self._api.create_gelf_input()
+        self._wait(gelf_input.is_running, 10, sleep_duration=.1)
         return GraylogInputs()
 
     def create_correlation_count(self, *args, **kwargs):
