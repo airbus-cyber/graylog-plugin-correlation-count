@@ -59,5 +59,5 @@ class Graylog:
         return events_count == 1
 
     def wait_until_event(self):
-       self._wait(self.has_event, 60)
+       self._wait(self._has_event, 60)
 
