@@ -26,14 +26,6 @@ class Test(TestCase):
     def tearDown(self) -> None:
         self._graylog.stop()
 
-    def _assert_got_new_event_within(self, timeout):
-        for i in range(timeout):
-            events_count = self._graylog.get_events_count()
-            if events_count == 1:
-                return
-            time.sleep(1)
-        self.fail('Event not generated within ' + str(timeout) + ' seconds')
-
     def test_start_should_load_plugin(self):
         logs = self._graylog.extract_logs()
         self.assertIn('INFO : org.graylog2.bootstrap.CmdLineTool - Loaded plugin: Correlation Count Alert Condition', logs)
@@ -46,7 +38,7 @@ class Test(TestCase):
             inputs.send({'short_message': 'pop'})
 
             # Seems like this test sometimes fails during CI, should the timeout be increased? Or is there a random bug?
-            self._assert_got_new_event_within(60)
+            self._graylog.wait_until_event()
 
     def test_send_message_should_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
@@ -56,7 +48,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
-            self._assert_got_new_event_within(60)
+            self._graylog.wait_until_event()
 
     def test_send_message_with_different_values_for_group_by_field_should_not_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
@@ -82,7 +74,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
-            self._assert_got_new_event_within(60)
+            self._graylog.wait_until_event()
 
     def test_send_message_should_not_fail_on_correlation_rule_with_group_by_when_value_has_a_double_quote__issue27(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')

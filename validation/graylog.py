@@ -53,3 +53,11 @@ class Graylog:
 
     def get_events_count(self):
         return self._api.get_events_count()
+
+    def _has_event(self):
+        events_count = self.get_events_count()
+        return events_count == 1
+
+    def wait_until_event(self):
+       self._wait(self.has_event, 60)
+
