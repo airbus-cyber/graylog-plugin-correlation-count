@@ -13,6 +13,7 @@
 from unittest import TestCase
 import time
 from graylog import Graylog
+from server_timeout_error import ServerTimeoutError
 
 _PERIOD = 5
 
@@ -38,7 +39,13 @@ class Test(TestCase):
             inputs.send({'short_message': 'pop'})
 
             # Seems like this test sometimes fails during CI, should the timeout be increased? Or is there a random bug?
-            self._graylog.wait_until_event()
+            try:
+                self._graylog.wait_until_event()
+            except ServerTimeoutError:
+                print(self._graylog.extract_logs())
+                events_count = self._graylog.get_events_count()
+                print(f'Events count: {events_count}')
+                self.assertFalse()
 
     def test_send_message_should_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
