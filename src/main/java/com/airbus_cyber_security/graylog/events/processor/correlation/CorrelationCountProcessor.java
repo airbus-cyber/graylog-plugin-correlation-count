@@ -30,6 +30,8 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -42,6 +44,8 @@ public class CorrelationCountProcessor implements EventProcessor {
         @Override
         CorrelationCountProcessor create(EventDefinition eventDefinition);
     }
+
+    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCountProcessor.class);
 
     private final EventDefinition eventDefinition;
     private final EventProcessorDependencyCheck dependencyCheck;
@@ -79,7 +83,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
     }
 
-    private ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) {
+    private ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) throws EventProcessorException {
         ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
 
         for (CorrelationCountResult result: results) {
@@ -147,13 +151,18 @@ public class CorrelationCountProcessor implements EventProcessor {
         messageConsumer.accept(summaries);
     }
 
-    private Map<String, String> associateGroupByFields(List<String> groupByFields) {
+    private Map<String, String> associateGroupByFields(List<String> groupByFields) throws EventProcessorException {
         Map<String, String> fields = new HashMap<>();
         List<String> fieldNames = this.configuration.groupingFields();
         for (int i = 0; i < fieldNames.size(); i++) {
             String name = fieldNames.get(i);
-            String value = groupByFields.get(i);
-            fields.put(name, value);
+            try {
+                String value = groupByFields.get(i);
+                fields.put(name, value);
+            } catch (IndexOutOfBoundsException e) {
+                LOG.error("Expected {} groupBy fields in search result, but got {}", configuration.groupingFields().size(), groupByFields);
+                throw new EventProcessorException("Couldn't create events for: " + eventDefinition.title(), true, eventDefinition.id(), eventDefinition, e);
+            }
         }
         return fields;
     }

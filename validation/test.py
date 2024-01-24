@@ -88,3 +88,15 @@ class Test(TestCase):
             time.sleep(2*_PERIOD)
             logs = self._graylog.extract_logs()
             self.assertNotIn('ERROR', logs)
+
+    def test_send_message_should_not_fail_with_out_of_bounds_when_group_by_fields_are_missing__issue34(self):
+        self._graylog.create_correlation_count(0, group_by=['field1', 'field2'], period=_PERIOD)
+        with self._graylog.create_gelf_input() as inputs:
+            self._graylog.start_logs_capture()
+            inputs.send({})
+            inputs.send({})
+
+            time.sleep(2*_PERIOD)
+            logs = self._graylog.extract_logs()
+            self.assertNotIn('Caught an unhandled exception while executing event processor', logs)
+            self.assertNotIn('| java.lang.IndexOutOfBoundsException:', logs)
