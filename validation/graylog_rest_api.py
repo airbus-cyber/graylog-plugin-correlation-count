@@ -38,13 +38,6 @@ class GraylogRestApi:
         except ConnectionError:
             return False
 
-    def _search_events(self):
-        return self._post('events/search', {})
-
-    def events_search_is_available(self):
-        response = self._search_events()
-        return response.status_code == 200
-
     def create_gelf_input(self):
         payload = {
             'configuration': {
@@ -116,7 +109,19 @@ class GraylogRestApi:
         }
         self._post('events/definitions', event_definition)
 
-    def get_events_count(self):
+    # TODO simplify this: have only get_events at this level
+    def _search_events(self):
+        return self._post('events/search', {})
+
+    def events_search_is_available(self):
+        response = self._search_events()
+        return response.status_code == 200
+
+    def get_events(self):
         response = self._search_events()
         body = response.json()
+        return return body
+
+    def get_events_count(self):
+        body = self.get_events()
         return body['total_events']

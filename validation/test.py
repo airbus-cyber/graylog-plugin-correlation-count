@@ -40,11 +40,13 @@ class Test(TestCase):
 
             # Seems like this test sometimes fails during CI, should the timeout be increased? Or is there a random bug?
             try:
+                print(f'Events count: {self._graylog.get_events_count()}')
                 self._graylog.wait_until_event()
             except ServerTimeoutError:
                 print(self._graylog.extract_logs())
+                print(self._graylog.get_events())
                 events_count = self._graylog.get_events_count()
-                self.assertFalse(f'Events count: {events_count} (expected 1)')
+                self.fail(f'Events count: {events_count} (expected 1)')
 
     def test_send_message_should_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
