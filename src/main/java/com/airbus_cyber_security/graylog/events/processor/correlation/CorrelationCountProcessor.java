@@ -154,7 +154,7 @@ public class CorrelationCountProcessor implements EventProcessor {
     private Map<String, String> associateGroupByFields(List<String> groupByFields) {
         Map<String, String> fields = new HashMap<>();
         List<String> fieldNames = configuration.groupingFields();
-        for (int i = 0; i < this.configuration.groupingFields().size(); i++) {
+        for (int i = 0; i < fieldNames.size(); i++) {
             String name = fieldNames.get(i);
             String value = groupByFields.get(i);
             fields.put(name, value);
