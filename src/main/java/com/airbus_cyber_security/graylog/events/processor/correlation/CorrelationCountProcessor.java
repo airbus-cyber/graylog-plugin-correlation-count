@@ -87,7 +87,7 @@ public class CorrelationCountProcessor implements EventProcessor {
         ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
 
         for (CorrelationCountResult result: results) {
-            Map<String, String> groupByFields = this.associateGroupByFields(result.getGroupByFields());
+            Map<String, String> groupByFields = associateGroupByFields(result.getGroupByFields());
 
             String resultDescription = getResultDescription(result.getFirstStreamCount(), result.getSecondStreamCount());
             Message message = new Message(resultDescription, "", result.getTimestamp());
@@ -153,7 +153,7 @@ public class CorrelationCountProcessor implements EventProcessor {
 
     private Map<String, String> associateGroupByFields(List<String> groupByFields) {
         Map<String, String> fields = new HashMap<>();
-        List<String> fieldNames = configuration.groupingFields();
+        List<String> fieldNames = this.configuration.groupingFields();
         for (int i = 0; i < fieldNames.size(); i++) {
             String name = fieldNames.get(i);
             String value = groupByFields.get(i);
