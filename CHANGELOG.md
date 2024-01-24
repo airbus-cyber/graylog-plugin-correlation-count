@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [5.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.0...5.1.1)
 ### Bug Fixes
+* throw a permanent EventProcessorException when the value of some group fields is missing to stop the job, instead of raising an IndexOutOfBoundsException ([issue #34](https://github.com/airbus-cyber/graylog-plugin-correlation-count/issues/34))
 
 ## [5.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.0.0...5.1.0)
 ### Features
