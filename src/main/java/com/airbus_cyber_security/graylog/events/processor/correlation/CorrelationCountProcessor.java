@@ -77,13 +77,13 @@ public class CorrelationCountProcessor implements EventProcessor {
         }
 
         List<CorrelationCountResult> results = runCheck(timerange);
-        List<EventWithContext> events = eventsFromCorrelationResults(eventFactory, timerange, results);
+        List<EventWithContext> events = eventsFromCorrelationResults(eventFactory, results);
         eventConsumer.accept(events);
         // Update the state for this processor! This state will be used for dependency checks between event processors.
         this.stateService.setState(this.eventDefinition.id(), timerange.getFrom(), timerange.getTo());
     }
 
-    private ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, TimeRange timerange, List<CorrelationCountResult> results) throws EventProcessorException {
+    private ImmutableList<EventWithContext> eventsFromCorrelationResults(EventFactory eventFactory, List<CorrelationCountResult> results) throws EventProcessorException {
         ImmutableList.Builder<EventWithContext> listEvents = ImmutableList.builder();
 
         for (CorrelationCountResult result: results) {
@@ -161,7 +161,7 @@ public class CorrelationCountProcessor implements EventProcessor {
                 fields.put(name, value);
             } catch (IndexOutOfBoundsException e) {
                 LOG.error("Expected {} groupBy fields in search result, but got {}", configuration.groupingFields().size(), groupByFields);
-                throw new EventProcessorException("Couldn't create events for: " + eventDefinition.title(), true, eventDefinition.id(), eventDefinition, e);
+                throw new EventProcessorException("Couldn't create events for: " + this.eventDefinition.title(), true, this.eventDefinition.id(), this.eventDefinition, e);
             }
         }
         return fields;
