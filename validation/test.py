@@ -44,8 +44,7 @@ class Test(TestCase):
             except ServerTimeoutError:
                 print(self._graylog.extract_logs())
                 events_count = self._graylog.get_events_count()
-                print(f'Events count: {events_count}')
-                self.assertFalse()
+                self.assertFalse(f'Events count: {events_count} (expected 1)')
 
     def test_send_message_should_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
