@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.0...5.1.1)
+### Bug Fixes
+
 ## [5.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.0.0...5.1.0)
 ### Features
 * Add compatibility with [Graylog 5.1](https://www.graylog.org/post/announcing-graylog-v5-1-3/)
