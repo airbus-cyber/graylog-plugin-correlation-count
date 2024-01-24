@@ -30,8 +30,6 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -44,8 +42,6 @@ public class CorrelationCountProcessor implements EventProcessor {
         @Override
         CorrelationCountProcessor create(EventDefinition eventDefinition);
     }
-
-    private static final Logger LOG = LoggerFactory.getLogger(CorrelationCountProcessor.class);
 
     private final EventDefinition eventDefinition;
     private final EventProcessorDependencyCheck dependencyCheck;
