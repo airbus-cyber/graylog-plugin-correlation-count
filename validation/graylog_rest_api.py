@@ -119,9 +119,4 @@ class GraylogRestApi:
 
     def get_events(self):
         response = self._search_events()
-        body = response.json()
-        return body
-
-    def get_events_count(self):
-        body = self.get_events()
-        return body['total_events']
+        return response.json()

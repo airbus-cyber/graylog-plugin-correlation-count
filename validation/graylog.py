@@ -51,11 +51,12 @@ class Graylog:
     def create_correlation_count(self, *args, **kwargs):
         self._api.create_correlation_count(*args, **kwargs)
 
-    def get_events_count(self):
-        return self._api.get_events_count()
-
     def get_events(self):
         return self._api.get_events()
+
+    def get_events_count(self):
+        events = self.get_events()
+        return events['total_events']
 
     def _has_event(self):
         events_count = self.get_events_count()
