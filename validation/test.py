@@ -36,14 +36,10 @@ class Test(TestCase):
         with self._graylog.create_gelf_input() as inputs:
             inputs.send({})
             time.sleep(_PERIOD)
-            inputs.send({'short_message': 'pop'})
 
-            # Seems like this test sometimes fails during CI, should the timeout be increased? Or is there a random bug?
             try:
-                print(f'Events count: {self._graylog.get_events_count()}')
                 self._graylog.wait_until_event()
             except ServerTimeoutError:
-                print(self._graylog.extract_logs())
                 print(self._graylog.get_events())
                 events_count = self._graylog.get_events_count()
                 self.fail(f'Events count: {events_count} (expected 1)')
