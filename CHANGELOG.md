@@ -2,12 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [5.1.3](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.2...5.1.3)
-### Bug Fixes
-* FIX Plugin compatibility with Graylog 5.1.9
-
 ## [5.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.1...5.1.2)
-### Deprecated Version
+### Bug Fixes
+* additional_search_query is missing in event description ([issue #124](https://github.com/airbus-cyber/graylog-plugin-correlation-count/issues/34))
+
+Note : This fix involves an internal updating of the API. The rules must be exported then imported with the new version of the plugin.
 
 ## [5.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.0...5.1.1)
 ### Bug Fixes

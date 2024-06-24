@@ -45,6 +45,10 @@ class CorrelationCountSummary extends React.Component {
                     <td>{config.threshold}</td>
                 </tr>
                 <tr>
+                    <td>Search Query:</td>
+                    <td>{config.search_query}</td>
+                </tr>
+                <tr>
                     <td>Additional Stream:</td>
                     <td>{config.additional_stream || 'No additional stream for this condition.'}</td>
                 </tr>
@@ -55,6 +59,10 @@ class CorrelationCountSummary extends React.Component {
                 <tr>
                     <td>Additional Threshold:</td>
                     <td>{config.additional_threshold}</td>
+                </tr>
+                <tr>
+                    <td>Additional Search Query:</td>
+                    <td>{config.additional_search_query}</td>
                 </tr>
                 <tr>
                     <td>Messages Order:</td>
@@ -75,10 +83,6 @@ class CorrelationCountSummary extends React.Component {
                 <tr>
                     <td>Comment:</td>
                     <td>{config.comment}</td>
-                </tr>
-                <tr>
-                    <td>Search Query:</td>
-                    <td>{config.search_query}</td>
                 </tr>
             </React.Fragment>
         );

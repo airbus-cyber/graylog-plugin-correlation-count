@@ -19,9 +19,7 @@ package com.airbus_cyber_security.graylog.events.contentpack.entities;
 
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import org.graylog.events.contentpack.entities.EventProcessorConfigEntity;
@@ -51,6 +49,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
     private static final String FIELD_GROUPING_FIELDS = "grouping_fields";
     private static final String FIELD_COMMENT = "comment";
     private static final String FIELD_SEARCH_QUERY = "search_query";
+    private static final String FIELD_ADDITIONAL_SEARCH_QUERY = "additional_search_query";
 
     @JsonProperty(FIELD_STREAM)
     public abstract ValueReference stream();
@@ -87,6 +86,9 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
 
     @JsonProperty(FIELD_SEARCH_QUERY)
     public abstract ValueReference searchQuery();
+
+    @JsonProperty(value = FIELD_ADDITIONAL_SEARCH_QUERY)
+    public abstract ValueReference additionalSearchQuery();
 
     public static Builder builder() {
         return Builder.create();
@@ -138,6 +140,9 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
         @JsonProperty(FIELD_SEARCH_QUERY)
         public abstract Builder searchQuery(ValueReference searchQuery);
 
+        @JsonProperty(value = FIELD_ADDITIONAL_SEARCH_QUERY)
+        public abstract Builder additionalSearchQuery(ValueReference additionalSearchQuery);
+
         public abstract CorrelationCountProcessorConfigEntity build();
     }
 
@@ -156,6 +161,7 @@ public abstract class CorrelationCountProcessorConfigEntity implements EventProc
                 .groupingFields(groupingFields())
                 .comment(comment().asString(parameters))
                 .searchQuery(searchQuery().asString(parameters))
+                .additionalSearchQuery(additionalSearchQuery().asString(parameters))
                 .build();
     }
 }

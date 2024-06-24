@@ -53,7 +53,7 @@ public class CorrelationCountSearches {
         this.searches = searches;
     }
 
-    private AggregationResult getTerms(String stream, TimeRange timeRange, CorrelationCountProcessorConfig configuration, EventDefinition eventDefinition) throws EventProcessorException {
+    private AggregationResult getTerms(String stream, TimeRange timeRange, CorrelationCountProcessorConfig configuration, EventDefinition eventDefinition, String searchQuery) throws EventProcessorException {
         // Build series from configuration
         ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
@@ -64,7 +64,7 @@ public class CorrelationCountSearches {
         // Create the graylog "legal" aggregation configuration
         AggregationEventProcessorConfig config = AggregationEventProcessorConfig.builder()
                 .groupBy(configuration.groupingFields())
-                .query(configuration.searchQuery())
+                .query(searchQuery)
                 .streams(ImmutableSet.of(stream))
                 .executeEveryMs(configuration.executeEveryMs())
                 .searchWithinMs(configuration.searchWithinMs())
@@ -88,8 +88,8 @@ public class CorrelationCountSearches {
 
     public Collection<CorrelationCountResult> count(TimeRange timeRange, CorrelationCountProcessorConfig configuration, EventDefinition eventDefinition) throws EventProcessorException {
 
-        AggregationResult termResult = getTerms(configuration.stream(), timeRange, configuration, eventDefinition);
-        AggregationResult termResultAdditionalStream = getTerms(configuration.additionalStream(), timeRange, configuration, eventDefinition);
+        AggregationResult termResult = getTerms(configuration.stream(), timeRange, configuration, eventDefinition, configuration.searchQuery());
+        AggregationResult termResultAdditionalStream = getTerms(configuration.additionalStream(), timeRange, configuration, eventDefinition, configuration.additionalSearchQuery());
 
         CorrelationCountCombinedResults results = new CorrelationCountCombinedResults();
 
