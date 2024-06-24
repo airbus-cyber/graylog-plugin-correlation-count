@@ -174,6 +174,15 @@ class CorrelationCountForm extends React.Component {
                     value={lodash.defaultTo(eventDefinition.threshold, eventDefinition.config.threshold)}
                     onChange={this.handleChange}
                 />
+                <ControlLabel>Search Query <small className="text-muted">(Optional)</small></ControlLabel>
+                <Input
+                    id="search_query"
+                    type="text"
+                    name="search_query"
+                    help="Query string that should be used to filter messages in the main stream"
+                    value={lodash.defaultTo(eventDefinition.search_query, eventDefinition.config.search_query)}
+                    onChange={this.handleChange}
+                />
                 <FormGroup controlId="additional_stream"
                            validationState={validation.errors.additional_stream ? 'error' : null}>
                     <ControlLabel>Additional Stream</ControlLabel>
@@ -210,6 +219,15 @@ class CorrelationCountForm extends React.Component {
                     name="additional_threshold"
                     help="Value which triggers an alert if crossed"
                     value={lodash.defaultTo(eventDefinition.additional_threshold, eventDefinition.config.additional_threshold)}
+                    onChange={this.handleChange}
+                />
+                <ControlLabel>Additional Search Query <small className="text-muted">(Optional)</small></ControlLabel>
+                <Input
+                    id="additional_search_query"
+                    type="text"
+                    name="additional_search_query"
+                    help="Query string that should be used to filter messages in the additional stream"
+                    value={lodash.defaultTo(eventDefinition.additional_search_query, eventDefinition.config.additional_search_query)}
                     onChange={this.handleChange}
                 />
                 <FormGroup controlId="messages_order"
@@ -258,15 +276,6 @@ class CorrelationCountForm extends React.Component {
                     name="comment"
                     help="Comment about the configuration"
                     value={lodash.defaultTo(eventDefinition.comment, eventDefinition.config.comment)}
-                    onChange={this.handleChange}
-                />
-                <ControlLabel>Search Query <small className="text-muted">(Optional)</small></ControlLabel>
-                <Input
-                    id="search_query"
-                    type="text"
-                    name="search_query"
-                    help="Query string that should be used to filter messages in the stream"
-                    value={lodash.defaultTo(eventDefinition.search_query, eventDefinition.config.search_query)}
                     onChange={this.handleChange}
                 />
             </React.Fragment>

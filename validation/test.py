@@ -104,3 +104,42 @@ class Test(TestCase):
             logs = self._graylog.extract_logs()
             self.assertNotIn('Caught an unhandled exception while executing event processor', logs)
             self.assertNotIn('| java.lang.IndexOutOfBoundsException:', logs)
+
+    def test_send_message_should_trigger_correlation_rule_with_search_query(self):
+        self._graylog.create_correlation_count(0, search_query='pop', period=_PERIOD)
+        with self._graylog.create_gelf_input() as inputs:
+            inputs.send({'short_message': 'pop'})
+            time.sleep(_PERIOD)
+
+            try:
+                self._graylog.wait_until_event()
+            except ServerTimeoutError:
+                print(self._graylog.get_events())
+                events_count = self._graylog.get_events_count()
+                self.fail(f'Events count: {events_count} (expected 1)')
+
+    def test_send_message_should_trigger_correlation_rule_with_search_query_and_additional_search_query(self):
+        self._graylog.create_correlation_count(0, search_query='pop', additional_search_query='hello*', period=_PERIOD)
+        with self._graylog.create_gelf_input() as inputs:
+            inputs.send({'short_message': 'pop', '_x': 'hello world'})
+            time.sleep(_PERIOD)
+
+            try:
+                self._graylog.wait_until_event()
+            except ServerTimeoutError:
+                print(self._graylog.get_events())
+                events_count = self._graylog.get_events_count()
+                self.fail(f'Events count: {events_count} (expected 1)')
+
+    def test_send_message_should_not_trigger_correlation_rule_with_search_query(self):
+        self._graylog.create_correlation_count(0, search_query='pop', period=_PERIOD)
+        with self._graylog.create_gelf_input() as inputs:
+            inputs.send({'short_message': 'no_match'})
+            time.sleep(_PERIOD)
+
+            try:
+                self._graylog.wait_until_event()
+                events_count = self._graylog.get_events_count()
+                self.fail(f'Events count: {events_count} (expected 0)')
+            except ServerTimeoutError:
+                print(self._graylog.get_events())

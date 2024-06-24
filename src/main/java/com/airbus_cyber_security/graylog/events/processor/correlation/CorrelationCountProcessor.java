@@ -143,8 +143,9 @@ public class CorrelationCountProcessor implements EventProcessor {
         TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
         Map<String, String> groupByFields = event.getGroupByFields();
         String searchQuery = this.configuration.searchQuery();
+        String additionalSearchQuery = this.configuration.additionalSearchQuery();
         List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.stream(), timeRange);
-        List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.additionalStream(), timeRange);
+        List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(additionalSearchQuery, groupByFields, this.configuration.additionalStream(), timeRange);
         List<MessageSummary> summaries = Lists.newArrayList();
         summaries.addAll(summariesMainStream);
         summaries.addAll(summariesAdditionalStream);
@@ -181,8 +182,9 @@ public class CorrelationCountProcessor implements EventProcessor {
             TimeRange searchTimeRange = buildSearchTimeRange(matchedResult.getTimestamp());
 
             String searchQuery = this.configuration.searchQuery();
+            String additionalSearchQuery = this.configuration.additionalSearchQuery();
             List<MessageSummary> summariesMainStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.stream(), searchTimeRange);
-            List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(searchQuery, groupByFields, this.configuration.additionalStream(), searchTimeRange);
+            List<MessageSummary> summariesAdditionalStream = this.correlationCountSearches.searchMessages(additionalSearchQuery, groupByFields, this.configuration.additionalStream(), searchTimeRange);
 
             if (!this.correlationCountCheck.isRuleTriggered(summariesMainStream, summariesAdditionalStream)) {
                 continue;
