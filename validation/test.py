@@ -38,7 +38,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
 
             try:
-                self._graylog.wait_until_event()
+                self._graylog.wait_until_event('correlation-count')
             except ServerTimeoutError:
                 print(self._graylog.get_events())
                 events_count = self._graylog.get_events_count()
@@ -52,7 +52,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
-            self._graylog.wait_until_event()
+            self._graylog.wait_until_event('correlation-count')
 
     def test_send_message_with_different_values_for_group_by_field_should_not_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
@@ -63,7 +63,7 @@ class Test(TestCase):
             inputs.send({'short_message': 'pop'})
 
             time.sleep(20)
-            self.assertEqual(0, self._graylog.get_events_count())
+            self.assertEqual(0, self._graylog.get_events_count('correlation-count'))
 
     def test_send_message_should_trigger_correlation_rule_with_group_by_when_value_has_a_space__issue27(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
@@ -78,7 +78,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
-            self._graylog.wait_until_event()
+            self._graylog.wait_until_event('correlation-count')
 
     def test_send_message_should_not_fail_on_correlation_rule_with_group_by_when_value_has_a_double_quote__issue27(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
