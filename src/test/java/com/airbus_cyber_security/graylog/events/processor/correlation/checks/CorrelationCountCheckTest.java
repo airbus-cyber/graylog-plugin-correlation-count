@@ -62,7 +62,6 @@ public class CorrelationCountCheckTest {
                 .groupingFields(new ArrayList<>())
                 .comment("test comment")
                 .searchQuery("*")
-                .additionalSearchQuery("*")
                 .build();
 
         CorrelationCountCheck subject = new CorrelationCountCheck(configuration);

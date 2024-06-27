@@ -20,15 +20,6 @@ class Graylog:
                 print(self._server.extract_all_logs())
                 raise ServerTimeoutError()
 
-    def _waitWithParam(self, condition, attempts, contion_args, sleep_duration=1):
-        count = 0
-        while not condition(contion_args):
-            time.sleep(sleep_duration)
-            count += 1
-            if count > attempts:
-                print(self._server.extract_all_logs())
-                raise ServerTimeoutError()
-
     def _wait_until_graylog_has_started(self):
         """
         We wait until the default deflector is up, as it seems to be the last operation done on startup
@@ -63,25 +54,14 @@ class Graylog:
     def get_events(self):
         return self._api.get_events()
 
-    def get_events_count(self, event_definition_type=None):
-        response = self.get_events()
-        total = response['total_events']
-        if event_definition_type is None:
-            return total
-        result = 0
-        for i in range(total):
-            event = response['events'][i]['event']
-            if event['event_definition_type'] == event_definition_type:
-                result += 1
-        return result
+    def get_events_count(self):
+        events = self.get_events()
+        return events['total_events']
 
-    def _has_event(self, event_definition_type=None):
-        events_count = self.get_events_count(event_definition_type)
+    def _has_event(self):
+        events_count = self.get_events_count()
         return events_count == 1
 
-    def wait_until_event(self, event_definition_type=None):
-        if event_definition_type is None:
-            self._wait(self._has_event, 60)
-        else:
-            self._waitWithParam(self._has_event, 60, event_definition_type)
+    def wait_until_event(self):
+       self._wait(self._has_event, 60)
 

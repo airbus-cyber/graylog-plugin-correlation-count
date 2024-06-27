@@ -61,7 +61,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     private static final String FIELD_SEARCH_QUERY = "search_query";
     private static final String FIELD_SEARCH_WITHIN_MS = "search_within_ms";
     private static final String FIELD_EXECUTE_EVERY_MS = "execute_every_ms";
-    private static final String FIELD_ADDITIONAL_SEARCH_QUERY = "additional_search_query";
 
     @JsonProperty(FIELD_STREAM)
     public abstract String stream();
@@ -100,9 +99,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
 
     @JsonProperty(FIELD_SEARCH_QUERY)
     public abstract String searchQuery();
-
-    @JsonProperty(FIELD_ADDITIONAL_SEARCH_QUERY)
-    public abstract String additionalSearchQuery();
 
     public static Builder builder() {
         return Builder.create();
@@ -177,9 +173,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
         @JsonProperty(FIELD_SEARCH_QUERY)
         public abstract Builder searchQuery(String searchQuery);
 
-        @JsonProperty(FIELD_ADDITIONAL_SEARCH_QUERY)
-        public abstract Builder additionalSearchQuery(String additionalSearchQuery);
-
         public abstract CorrelationCountProcessorConfig build();
     }
 
@@ -231,7 +224,6 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
                 .groupingFields(groupingFields())
                 .comment(ValueReference.of(comment()))
                 .searchQuery(ValueReference.of(searchQuery()))
-                .additionalSearchQuery(ValueReference.of(additionalSearchQuery()))
                 .build();
     }
 }

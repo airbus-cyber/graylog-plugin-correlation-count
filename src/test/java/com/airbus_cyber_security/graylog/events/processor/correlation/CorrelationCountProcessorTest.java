@@ -87,7 +87,6 @@ public class CorrelationCountProcessorTest {
                 .groupingFields(new ArrayList<>())
                 .comment("test comment")
                 .searchQuery("*")
-                .additionalSearchQuery("*")
                 .build();
     }
 }

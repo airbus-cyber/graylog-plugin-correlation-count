@@ -38,7 +38,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
 
             try:
-                self._graylog.wait_until_event('correlation-count')
+                self._graylog.wait_until_event()
             except ServerTimeoutError:
                 print(self._graylog.get_events())
                 events_count = self._graylog.get_events_count()
@@ -52,7 +52,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
-            self._graylog.wait_until_event('correlation-count')
+            self._graylog.wait_until_event()
 
     def test_send_message_with_different_values_for_group_by_field_should_not_trigger_correlation_rule_with_group_by(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD)
@@ -63,7 +63,7 @@ class Test(TestCase):
             inputs.send({'short_message': 'pop'})
 
             time.sleep(20)
-            self.assertEqual(0, self._graylog.get_events_count('correlation-count'))
+            self.assertEqual(0, self._graylog.get_events_count())
 
     def test_send_message_should_trigger_correlation_rule_with_group_by_when_value_has_a_space__issue27(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
@@ -78,7 +78,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
             inputs.send({'short_message': 'pop'})
 
-            self._graylog.wait_until_event('correlation-count')
+            self._graylog.wait_until_event()
 
     def test_send_message_should_not_fail_on_correlation_rule_with_group_by_when_value_has_a_double_quote__issue27(self):
         self._graylog.create_correlation_count(1, group_by=['x'], period=_PERIOD, messages_order='BEFORE')
@@ -104,42 +104,3 @@ class Test(TestCase):
             logs = self._graylog.extract_logs()
             self.assertNotIn('Caught an unhandled exception while executing event processor', logs)
             self.assertNotIn('| java.lang.IndexOutOfBoundsException:', logs)
-
-    def test_send_message_should_trigger_correlation_rule_with_search_query(self):
-        self._graylog.create_correlation_count(0, search_query='pop', period=_PERIOD)
-        with self._graylog.create_gelf_input() as inputs:
-            inputs.send({'short_message': 'pop'})
-            time.sleep(_PERIOD)
-
-            try:
-                self._graylog.wait_until_event('correlation-count')
-            except ServerTimeoutError:
-                print(self._graylog.get_events())
-                events_count = self._graylog.get_events_count()
-                self.fail(f'Events count: {events_count} (expected 1)')
-
-    def test_send_message_should_trigger_correlation_rule_with_search_query_and_additional_search_query(self):
-        self._graylog.create_correlation_count(0, search_query='pop', additional_search_query='hello*', period=_PERIOD)
-        with self._graylog.create_gelf_input() as inputs:
-            inputs.send({'short_message': 'pop', '_x': 'hello world'})
-            time.sleep(_PERIOD)
-
-            try:
-                self._graylog.wait_until_event('correlation-count')
-            except ServerTimeoutError:
-                print(self._graylog.get_events())
-                events_count = self._graylog.get_events_count()
-                self.fail(f'Events count: {events_count} (expected 1)')
-
-    def test_send_message_should_not_trigger_correlation_rule_with_search_query(self):
-        self._graylog.create_correlation_count(0, search_query='pop', period=_PERIOD)
-        with self._graylog.create_gelf_input() as inputs:
-            inputs.send({'short_message': 'no_match'})
-            time.sleep(_PERIOD)
-
-            try:
-                self._graylog.wait_until_event('correlation-count')
-                events_count = self._graylog.get_events_count('correlation-count')
-                self.fail(f'Events count: {events_count} (expected 0)')
-            except ServerTimeoutError:
-                print(self._graylog.get_events())

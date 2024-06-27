@@ -74,7 +74,7 @@ class GraylogRestApi:
             return state['state'] == 'RUNNING'
         return False
 
-    def create_correlation_count(self, threshold, search_query='*', additional_search_query='*', group_by=None, period=5, messages_order='ANY'):
+    def create_correlation_count(self, threshold, group_by=None, period=5, messages_order='ANY'):
         if group_by is None:
             group_by = []
         event_definition = {
@@ -89,12 +89,11 @@ class GraylogRestApi:
                 'stream': _STREAM_ALL_MESSAGES,
                 'threshold': threshold,
                 'threshold_type': 'MORE',
-                'search_query': search_query,
                 'additional_stream': _STREAM_ALL_MESSAGES,
                 'additional_threshold': threshold,
                 'additional_threshold_type': 'MORE',
-                'additional_search_query': additional_search_query,
 
+                'search_query': '*',
                 'messages_order': messages_order
             },
             'description': '',

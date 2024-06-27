@@ -24,16 +24,15 @@ const DEFAULT_CONFIGURATION = {
     stream: '',
     threshold_type: 'MORE',
     threshold: '0',
-    search_query: '*',
     additional_stream: '',
     additional_threshold_type: 'MORE',
     additional_threshold: '0',
-    additional_search_query: '*',
     search_within_ms: 60*1000,
     execute_every_ms: 60*1000,
     messages_order: 'ANY',
     grouping_fields: [],
     comment: '',
+    search_query: '*',
 };
 
 PluginStore.register(new PluginManifest({}, {
