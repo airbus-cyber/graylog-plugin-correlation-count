@@ -26,6 +26,7 @@ jobs:
           echo "GRAYLOG_VERSION=$(mvn help:evaluate -Dexpression=project.parent.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
           NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
           echo "JAR_PATH=target/$NAME-$VERSION.jar" >> $GITHUB_OUTPUT
           echo "RPM_PATH=target/rpm/$NAME/RPMS/noarch/$NAME-$VERSION-1.noarch.rpm" >> $GITHUB_OUTPUT
