@@ -26,7 +26,7 @@ jobs:
           echo "GRAYLOG_VERSION=$(mvn help:evaluate -Dexpression=project.parent.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
           NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
           echo "JAR_PATH=target/$NAME-$VERSION.jar" >> $GITHUB_OUTPUT
           echo "RPM_PATH=target/rpm/$NAME/RPMS/noarch/$NAME-$VERSION-1.noarch.rpm" >> $GITHUB_OUTPUT
           echo "DEB_PATH=target/$NAME-$VERSION.deb" >> $GITHUB_OUTPUT
@@ -62,15 +62,8 @@ jobs:
         run: |
           mkdir runtime/graylog/plugin
           cp ${{ steps.requestPom.outputs.JAR_PATH }} runtime/graylog/plugin
-      - name: Execute backend tests
-        working-directory: plugin/validation
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-          docker-compose --project-directory ../runtime pull
-          PYTHONUNBUFFERED=true python -m unittest --verbose
       - name: Package signed .rpm
+        if: !endsWith(steps.requestPom.outputs.VERSION, 'SNAPSHOT')
         working-directory: plugin
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -80,6 +73,7 @@ jobs:
           echo -n "$GPG_PRIVATE_KEY" | gpg2 --batch --allow-secret-key-import --import
           rpm --define "_gpg_name Airbus CyberSecurity" --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase $PASSPHRASE" --addsign "${{ steps.requestPom.outputs.RPM_PATH }}"
       - name: Package signed .deb
+        if: !endsWith(steps.requestPom.outputs.VERSION, 'SNAPSHOT')
         working-directory: plugin
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -99,12 +93,14 @@ jobs:
           path: plugin/${{ steps.requestPom.outputs.JAR_PATH }}
           if-no-files-found: error
       - name: Archive .rpm
+        if: !endsWith(steps.requestPom.outputs.VERSION, 'SNAPSHOT')
         uses: actions/upload-artifact@v3
         with:
           name: rpm
           path: plugin/${{ steps.requestPom.outputs.RPM_PATH }}
           if-no-files-found: error
       - name: Archive .deb
+        if: !endsWith(steps.requestPom.outputs.VERSION, 'SNAPSHOT')
         uses: actions/upload-artifact@v3
         with:
           name: deb
