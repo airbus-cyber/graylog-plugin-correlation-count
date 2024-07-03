@@ -125,7 +125,7 @@ jobs:
             plugin/${{ steps.requestPom.outputs.DEB_PATH }}
           fail_on_unmatched_files: true
       - name: Deploy to Maven Central
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || endsWith(steps.requestPom.outputs.VERSION,'SNAPSHOT')
         working-directory: plugin
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
