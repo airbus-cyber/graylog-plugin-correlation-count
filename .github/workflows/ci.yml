@@ -23,11 +23,11 @@ jobs:
         id: requestPom
         working-directory: plugin
         run: |
-          echo "GRAYLOG_VERSION=$(mvnw help:evaluate -Dexpression=project.parent.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+          echo "GRAYLOG_VERSION=$(mvn help:evaluate -Dexpression=project.parent.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
-          NAME=$(mvnw help:evaluate -Dexpression=project.name -q -DforceStdout)
-          VERSION=$(mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "VERSION=$(mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+          NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
           echo "JAR_PATH=target/$NAME-$VERSION.jar" >> $GITHUB_OUTPUT
           echo "RPM_PATH=target/rpm/$NAME/RPMS/noarch/$NAME-$VERSION-1.noarch.rpm" >> $GITHUB_OUTPUT
           echo "DEB_PATH=target/$NAME-$VERSION.deb" >> $GITHUB_OUTPUT
@@ -48,7 +48,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: graylog2-server
         run: |
-          mvnw compile -DskipTests=true --batch-mode
+          ./mvnw compile -DskipTests=true --batch-mode
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -57,7 +57,7 @@ jobs:
       - name: Build plugin
         working-directory: plugin
         run: |
-          mvnw package --batch-mode
+          ./mvnw package --batch-mode
       - name: Copy jar to backend tests runtime
         working-directory: plugin
         run: |
@@ -78,7 +78,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          mvnw rpm:rpm
+          ./mvnw rpm:rpm
           echo -n "$GPG_PRIVATE_KEY" | gpg2 --batch --allow-secret-key-import --import
           rpm --define "_gpg_name Airbus CyberSecurity" --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase $PASSPHRASE" --addsign "${{ steps.requestPom.outputs.RPM_PATH }}"
       - name: Package signed .deb
@@ -90,11 +90,11 @@ jobs:
         run: |
           echo -n "$GPG_PRIVATE_KEY" | gpg2 --batch --allow-secret-key-import --import
           gpg2 --export-secret-keys --batch --pinentry-mode loopback --passphrase "$PASSPHRASE" > $HOME/.gnupg/secring.gpg
-          mvnw jdeb:jdeb --settings deployment/settings.xml
+          ./mvnw jdeb:jdeb --settings deployment/settings.xml
       - name: Check license headers
         working-directory: plugin
         run: |
-          mvnw license:check
+          ./mvnw license:check
       - name: Archive .jar
         uses: actions/upload-artifact@v3
         with:
@@ -134,4 +134,4 @@ jobs:
           PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo -n "$GPG_PRIVATE_KEY" | gpg2 --batch --allow-secret-key-import --import
-          mvnw clean deploy -DskipTests=true --settings deployment/settings.xml
+          ./mvnw clean deploy -DskipTests=true --settings deployment/settings.xml
