@@ -25,6 +25,8 @@ import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
 import org.graylog.events.processor.aggregation.*;
 import org.graylog.events.search.MoreSearch;
+import org.graylog.plugins.views.search.searchtypes.pivot.SeriesSpec;
+import org.graylog.plugins.views.search.searchtypes.pivot.series.Count;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.searches.Searches;
@@ -34,10 +36,13 @@ import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
+import org.joda.time.DateTimeZone;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CorrelationCountSearches {
 
@@ -55,12 +60,13 @@ public class CorrelationCountSearches {
 
     private AggregationResult getTerms(String stream, TimeRange timeRange, CorrelationCountProcessorConfig configuration, EventDefinition eventDefinition, String searchQuery) throws EventProcessorException {
         // Build series from configuration
-        ImmutableList.Builder<AggregationSeries> seriesBuilder = ImmutableList.builder();
+        ImmutableList.Builder<SeriesSpec> seriesBuilder = ImmutableList.builder();
         StringBuilder idBuilder = new StringBuilder("correlation_id");
         for (String groupingField: configuration.groupingFields()) {
             idBuilder.append("#").append(groupingField);
         }
-        seriesBuilder.add(AggregationSeries.builder().id(idBuilder.toString()).function(AggregationFunction.COUNT).build());
+        Count countSeries = Count.builder().id(idBuilder.toString()).build();
+        seriesBuilder.add(countSeries);
         // Create the graylog "legal" aggregation configuration
         AggregationEventProcessorConfig config = AggregationEventProcessorConfig.builder()
                 .groupBy(configuration.groupingFields())
@@ -75,7 +81,7 @@ public class CorrelationCountSearches {
                 .timerange(timeRange)
                 .build();
         String owner = "event-processor-" + AggregationEventProcessorConfig.TYPE_NAME + "-" + eventDefinition.id();
-        AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, owner, eventDefinition);
+        AggregationSearch search = this.aggregationSearchFactory.create(config, parameters, new AggregationSearch.User(owner, DateTimeZone.UTC), eventDefinition, List.of());
         return search.doSearch();
     }
 

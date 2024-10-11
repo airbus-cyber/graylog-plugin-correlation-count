@@ -27,6 +27,7 @@ import org.graylog.events.processor.DBEventProcessorStateService;
 import org.graylog.events.processor.EventDefinitionDto;
 import org.graylog.events.processor.EventProcessorDependencyCheck;
 import org.graylog.events.processor.EventProcessorPreconditionException;
+import org.graylog2.plugin.TestMessageFactory;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -62,7 +63,7 @@ public class CorrelationCountProcessorTest {
         EventFactory eventFactory = Mockito.mock(EventFactory.class);
 
         CorrelationCountProcessor eventProcessor = new CorrelationCountProcessor(eventDefinitionDto, eventProcessorDependencyCheck,
-                stateService, correlationCountSearches);
+                stateService, correlationCountSearches, new TestMessageFactory());
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {
         }))
                 .hasMessageContaining(eventDefinitionDto.title())

@@ -20,8 +20,11 @@ package com.airbus_cyber_security.graylog.events.processor.correlation.checks;
 import com.airbus_cyber_security.graylog.events.processor.correlation.CorrelationCountProcessorConfig;
 import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
 import org.graylog2.plugin.Message;
+import org.graylog2.plugin.MessageFactory;
 import org.graylog2.plugin.MessageSummary;
+import org.graylog2.plugin.TestMessageFactory;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,20 +37,22 @@ public class CorrelationCountCheckTest {
 
     @Test
     public void testCheckOrderStreamThreshold2After() {
+        MessageFactory testMessageFactory = new TestMessageFactory();
+
         List<MessageSummary> summariesStream1 = new ArrayList<MessageSummary>();
-        summariesStream1.add(new MessageSummary("0", new Message("message", "source", new DateTime(600))));
-        summariesStream1.add(new MessageSummary("1", new Message("message", "source", new DateTime(1100))));
+        summariesStream1.add(new MessageSummary("0", testMessageFactory.createMessage("message", "source", new DateTime(600, DateTimeZone.UTC))));
+        summariesStream1.add(new MessageSummary("1", testMessageFactory.createMessage("message", "source", new DateTime(1100, DateTimeZone.UTC))));
 
         List<MessageSummary> summariesStream2 = new ArrayList<MessageSummary>();
-        summariesStream2.add(new MessageSummary("0", new Message("message", "source", new DateTime(100))));
-        summariesStream2.add(new MessageSummary("1", new Message("message", "source", new DateTime(200))));
-        summariesStream2.add(new MessageSummary("2", new Message("message", "source", new DateTime(300))));
-        summariesStream2.add(new MessageSummary("3", new Message("message", "source", new DateTime(400))));
-        summariesStream2.add(new MessageSummary("4", new Message("message", "source", new DateTime(500))));
-        summariesStream2.add(new MessageSummary("5", new Message("message", "source", new DateTime(700))));
-        summariesStream2.add(new MessageSummary("6", new Message("message", "source", new DateTime(800))));
-        summariesStream2.add(new MessageSummary("7", new Message("message", "source", new DateTime(900))));
-        summariesStream2.add(new MessageSummary("8", new Message("message", "source", new DateTime(1000))));
+        summariesStream2.add(new MessageSummary("0", testMessageFactory.createMessage("message", "source", new DateTime(100, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("1", testMessageFactory.createMessage("message", "source", new DateTime(200, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("2", testMessageFactory.createMessage("message", "source", new DateTime(300, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("3", testMessageFactory.createMessage("message", "source", new DateTime(400, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("4", testMessageFactory.createMessage("message", "source", new DateTime(500, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("5", testMessageFactory.createMessage("message", "source", new DateTime(700, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("6", testMessageFactory.createMessage("message", "source", new DateTime(800, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("7", testMessageFactory.createMessage("message", "source", new DateTime(900, DateTimeZone.UTC))));
+        summariesStream2.add(new MessageSummary("8", testMessageFactory.createMessage("message", "source", new DateTime(1000, DateTimeZone.UTC))));
 
         CorrelationCountProcessorConfig configuration = CorrelationCountProcessorConfig.builder()
                 .stream("main stream")

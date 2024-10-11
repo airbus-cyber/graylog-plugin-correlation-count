@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.2...6.0.0)
+### Features
+* Add compatibility with [Graylog 6.0](https://www.graylog.org/post/announcing-graylog-v6-0/)
+
 ## [5.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/5.1.1...5.1.2)
 ### Bug Fixes
 * additional_search_query is missing in event description ([issue #124](https://github.com/airbus-cyber/graylog-plugin-correlation-count/issues/34))

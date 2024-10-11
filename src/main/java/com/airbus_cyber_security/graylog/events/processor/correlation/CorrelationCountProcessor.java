@@ -26,6 +26,7 @@ import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventWithContext;
 import org.graylog.events.processor.*;
 import org.graylog2.plugin.Message;
+import org.graylog2.plugin.MessageFactory;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
@@ -33,7 +34,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -53,16 +54,18 @@ public class CorrelationCountProcessor implements EventProcessor {
     private final CorrelationCountProcessorConfig configuration;
     private final CorrelationCountCheck correlationCountCheck;
     private final CorrelationCountSearches correlationCountSearches;
+    private final MessageFactory messageFactory;
 
     @Inject
     public CorrelationCountProcessor(@Assisted EventDefinition eventDefinition, EventProcessorDependencyCheck dependencyCheck,
-                                     DBEventProcessorStateService stateService, CorrelationCountSearches correlationCountSearches) {
+                                     DBEventProcessorStateService stateService, CorrelationCountSearches correlationCountSearches, MessageFactory messageFactory) {
         this.eventDefinition = eventDefinition;
         this.dependencyCheck = dependencyCheck;
         this.stateService = stateService;
         this.configuration = (CorrelationCountProcessorConfig) eventDefinition.config();
         this.correlationCountCheck = new CorrelationCountCheck(this.configuration);
         this.correlationCountSearches = correlationCountSearches;
+        this.messageFactory = messageFactory;
     }
 
     @Override
@@ -90,7 +93,7 @@ public class CorrelationCountProcessor implements EventProcessor {
             Map<String, String> groupByFields = associateGroupByFields(result.getGroupByFields());
 
             String resultDescription = getResultDescription(result.getFirstStreamCount(), result.getSecondStreamCount());
-            Message message = new Message(resultDescription, "", result.getTimestamp());
+            Message message = messageFactory.createMessage(resultDescription, "", result.getTimestamp());
             for (Map.Entry<String, String> groupBy: groupByFields.entrySet()) {
                 message.addField(groupBy.getKey(), groupBy.getValue());
             }

@@ -1,6 +1,6 @@
 {
   "name": "CorrelationCount",
-  "version": "5.2.0-SNAPSHOT",
+  "version": "6.0.0-SNAPSHOT",
   "description": "Graylog plugin CorrelationCount Web Interface",
   "repository": {
     "type": "git",
