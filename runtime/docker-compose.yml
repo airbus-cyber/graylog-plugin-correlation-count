@@ -2,7 +2,6 @@
 # * https://go2docs.graylog.org/5-1/downloading_and_installing_graylog/docker_installation.htm
 # * https://github.com/Graylog2/docker-compose
 
-version: '3'
 services:
 
   # MongoDB: https://hub.docker.com/_/mongo/
