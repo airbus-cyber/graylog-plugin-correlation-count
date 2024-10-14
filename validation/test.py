@@ -112,7 +112,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
 
             try:
-                self._graylog.wait_until_event()
+                self._graylog.wait_until_event('correlation-count')
             except ServerTimeoutError:
                 print(self._graylog.get_events())
                 events_count = self._graylog.get_events_count()
@@ -125,7 +125,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
 
             try:
-                self._graylog.wait_until_event()
+                self._graylog.wait_until_event('correlation-count')
             except ServerTimeoutError:
                 print(self._graylog.get_events())
                 events_count = self._graylog.get_events_count()
@@ -138,7 +138,7 @@ class Test(TestCase):
             time.sleep(_PERIOD)
 
             try:
-                self._graylog.wait_until_event()
+                self._graylog.wait_until_event('correlation-count')
                 events_count = self._graylog.get_events_count()
                 self.fail(f'Events count: {events_count} (expected 0)')
             except ServerTimeoutError:

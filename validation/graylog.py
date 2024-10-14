@@ -11,7 +11,7 @@ class Graylog:
         self._server = GraylogServer('../runtime')
         self._api = GraylogRestApi()
 
-    def _wait(self, condition, attempts, sleep_duration=1):
+    def _wait(self, condition, attempts, sleep_duration=1.0):
         count = 0
         while not condition():
             time.sleep(sleep_duration)
@@ -20,9 +20,9 @@ class Graylog:
                 print(self._server.extract_all_logs())
                 raise ServerTimeoutError()
 
-    def _waitWithParam(self, condition, attempts, contion_args, sleep_duration=1):
+    def _wait_with_param(self, condition, attempts, condition_args, sleep_duration=1.0):
         count = 0
-        while not condition(contion_args):
+        while not condition(condition_args):
             time.sleep(sleep_duration)
             count += 1
             if count > attempts:
@@ -65,6 +65,10 @@ class Graylog:
 
     def get_events_count(self, event_definition_type=None):
         response = self.get_events()
+
+        # TODO : Remove after debug CI
+        print(response)
+
         total = response['total_events']
         if event_definition_type is None:
             return total
@@ -83,5 +87,5 @@ class Graylog:
         if event_definition_type is None:
             self._wait(self._has_event, 60)
         else:
-            self._waitWithParam(self._has_event, 60, event_definition_type)
+            self._wait_with_param(self._has_event, 60, event_definition_type)
 
