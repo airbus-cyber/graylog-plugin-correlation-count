@@ -57,7 +57,7 @@ class CorrelationCountForm extends React.Component {
     formatStreamIds = () => {
         const { streams } = this.props;
 
-        return streams.map(s => s.id)
+        return streams.filter(s => s.is_editable).map(s => s.id)
             .map(streamId => streams.find(s => s.id === streamId) || streamId)
             .map((streamOrId) => {
                 const stream = (typeof streamOrId === 'object' ? streamOrId : { title: streamOrId, id: streamOrId });

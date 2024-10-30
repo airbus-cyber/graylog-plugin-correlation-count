@@ -23,7 +23,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.graylog.events.processor.EventDefinition;
 import org.graylog.events.processor.EventProcessorException;
-import org.graylog.events.processor.aggregation.*;
+import org.graylog.events.processor.aggregation.AggregationEventProcessorConfig;
+import org.graylog.events.processor.aggregation.AggregationEventProcessorParameters;
+import org.graylog.events.processor.aggregation.AggregationKeyResult;
+import org.graylog.events.processor.aggregation.AggregationResult;
+import org.graylog.events.processor.aggregation.AggregationSearch;
+import org.graylog.events.processor.aggregation.AggregationSeriesValue;
 import org.graylog.events.search.MoreSearch;
 import org.graylog.plugins.views.search.searchtypes.pivot.SeriesSpec;
 import org.graylog.plugins.views.search.searchtypes.pivot.series.Count;
@@ -42,7 +47,6 @@ import org.joda.time.DateTimeZone;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CorrelationCountSearches {
 

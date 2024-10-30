@@ -16,36 +16,31 @@
  */
 
 import React from 'react';
+import { useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import { Spinner } from 'components/common';
-import withStreams from 'components/event-definitions/event-definition-types/withStreams';
 import useFieldTypes from 'views/logic/fieldtypes/useFieldTypes';
 import { ALL_MESSAGES_TIMERANGE } from 'views/Constants';
+import StreamsContext from 'contexts/StreamsContext';
 import CorrelationCountForm from './CorrelationCountForm';
 
-// We currently don't support creating Events from these Streams, since they also contain Events
-// and it's not possible to access custom Fields defined in them.
-const HIDDEN_STREAMS = [
-    '000000000000000000000002',
-    '000000000000000000000003',
-];
 
 type Props = {
     eventDefinition: {},
     validation: {},
-    onChange: () => void,
-    streams: []
+    onChange: () => void
 }
 
 const CorrelationCountFormContainer = (props: Props) => {
     const { data: fieldTypes } = useFieldTypes([], ALL_MESSAGES_TIMERANGE);
     const isLoading = !fieldTypes;
+    const streams = useContext(StreamsContext);
 
     if (isLoading) {
         return <Spinner text="Loading Filter & Correlation Count Information..." />;
     }
-    return <CorrelationCountForm allFieldTypes={fieldTypes} {...props} />;
+    return <CorrelationCountForm allFieldTypes={fieldTypes} streams={streams} {...props} />;
 }
 
 CorrelationCountFormContainer.propTypes = {
@@ -56,4 +51,4 @@ CorrelationCountFormContainer.propTypes = {
     fieldTypes: PropTypes.object.isRequired,
 };
 
-export default withStreams(CorrelationCountFormContainer, HIDDEN_STREAMS);
+export default CorrelationCountFormContainer;

@@ -17,14 +17,24 @@
 
 package com.airbus_cyber_security.graylog.events.processor.correlation;
 
-import com.airbus_cyber_security.graylog.events.processor.correlation.checks.*;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountCheck;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountResult;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.CorrelationCountSearches;
+import com.airbus_cyber_security.graylog.events.processor.correlation.checks.OrderType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.assistedinject.Assisted;
 import org.graylog.events.event.Event;
 import org.graylog.events.event.EventFactory;
 import org.graylog.events.event.EventWithContext;
-import org.graylog.events.processor.*;
+import org.graylog.events.processor.DBEventProcessorStateService;
+import org.graylog.events.processor.EventConsumer;
+import org.graylog.events.processor.EventDefinition;
+import org.graylog.events.processor.EventProcessor;
+import org.graylog.events.processor.EventProcessorDependencyCheck;
+import org.graylog.events.processor.EventProcessorException;
+import org.graylog.events.processor.EventProcessorParameters;
+import org.graylog.events.processor.EventProcessorPreconditionException;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageFactory;
 import org.graylog2.plugin.MessageSummary;
@@ -35,7 +45,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
-import java.util.*;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Consumer;
 
 // sources of inspiration:
