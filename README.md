@@ -66,13 +66,17 @@ You can also set all the common parameters : **Search within the last**, **Execu
 
 ## Build
 
-This project is using Maven 3 and requires Java 8 or higher.
+This project requires Java 17 JDK.
 
 * Clone this repository.
-* Run `mvn package` to build a JAR file.
-* Optional: Run `mvn jdeb:jdeb` and `mvn rpm:rpm` to create a DEB and RPM package respectively.
+* Clone [graylog2-server](https://github.com/Graylog2/graylog2-server) repository next to this repository.
+* Build Graylog2-server with `./mvnw compile -DskipTests=true` (in graylog2-server folder)
+* Run `./mvnw package` to build a JAR file (in this project folder).
+* Optional: Run `./mvnw org.vafer:jdeb:jdeb` and `./mvnw rpm:rpm` to create a DEB and RPM package respectively.
 * Copy generated JAR file in target directory to your Graylog plugin directory.
 * Restart the Graylog.
+
+A docker to build can be generated from [Dockerfile](https://github.com/airbus-cyber/graylog-plugin-logging-alert/blob/master/build_docker/Dockerfile).
 
 ## License
 
