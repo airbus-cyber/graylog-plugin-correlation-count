@@ -96,21 +96,21 @@ jobs:
         run: |
           ./mvnw license:check
       - name: Archive .jar
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jar
           path: plugin/${{ steps.requestPom.outputs.JAR_PATH }}
           if-no-files-found: error
       - name: Archive .rpm
         if: endsWith(steps.requestPom.outputs.VERSION,'SNAPSHOT') == false
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rpm
           path: plugin/${{ steps.requestPom.outputs.RPM_PATH }}
           if-no-files-found: error
       - name: Archive .deb
         if: endsWith(steps.requestPom.outputs.VERSION,'SNAPSHOT') == false
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deb
           path: plugin/${{ steps.requestPom.outputs.DEB_PATH }}
