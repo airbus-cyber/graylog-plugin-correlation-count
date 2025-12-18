@@ -1,13 +1,14 @@
 {
   "name": "CorrelationCount",
-  "version": "6.1.0",
+  "version": "6.3.0",
   "description": "Graylog plugin CorrelationCount Web Interface",
   "repository": {
     "type": "git",
     "url": "https://github.com/airbus-cyber/graylog-plugin-correlation-count"
   },
   "scripts": {
-    "build": "webpack --bail"
+    "build": "webpack --bail",
+    "generate:apidefs": "echo skipGenerateApiDefs"
   },
   "keywords": [
     "graylog"

@@ -33,6 +33,7 @@ import org.graylog.events.processor.EventProcessorExecutionJob;
 import org.graylog.events.processor.EventProcessorSchedulerConfig;
 import org.graylog.scheduler.clock.JobSchedulerClock;
 import org.graylog.scheduler.schedule.IntervalJobSchedule;
+import org.graylog.security.UserContext;
 import org.graylog2.contentpacks.EntityDescriptorIds;
 import org.graylog2.contentpacks.model.entities.references.ValueReference;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
@@ -184,7 +185,7 @@ public abstract class CorrelationCountProcessorConfig implements EventProcessorC
     }
 
     @Override
-    public ValidationResult validate() {
+    public ValidationResult validate(UserContext userContext) {
         ValidationResult validationResult = new ValidationResult();
 
         if (searchWithinMs() <= 0) {
