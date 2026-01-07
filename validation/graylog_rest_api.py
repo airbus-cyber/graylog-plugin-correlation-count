@@ -78,35 +78,38 @@ class GraylogRestApi:
         if group_by is None:
             group_by = []
         event_definition = {
-            'alert': False,
-            'config': {
-                'type': 'correlation-count',
-                'comment': '',
-                'execute_every_ms': period*1000,
-                'search_within_ms': period*1000,
-                'grouping_fields': group_by,
+            'entity': {
+                'alert': False,
+                'config': {
+                    'type': 'correlation-count',
+                    'comment': '',
+                    'execute_every_ms': period*1000,
+                    'search_within_ms': period*1000,
+                    'grouping_fields': group_by,
 
-                'stream': _STREAM_ALL_MESSAGES,
-                'threshold': threshold,
-                'threshold_type': 'MORE',
-                'search_query': search_query,
-                'additional_stream': _STREAM_ALL_MESSAGES,
-                'additional_threshold': threshold,
-                'additional_threshold_type': 'MORE',
-                'additional_search_query': additional_search_query,
+                    'stream': _STREAM_ALL_MESSAGES,
+                    'threshold': threshold,
+                    'threshold_type': 'MORE',
+                    'search_query': search_query,
+                    'additional_stream': _STREAM_ALL_MESSAGES,
+                    'additional_threshold': threshold,
+                    'additional_threshold_type': 'MORE',
+                    'additional_search_query': additional_search_query,
 
-                'messages_order': messages_order
+                    'messages_order': messages_order
+                },
+                'description': '',
+                'field_spec': {},
+                'key_spec': [],
+                'notification_settings': {
+                    'backlog_size': None,
+                    'grace_period_ms': 0
+                },
+                'notifications': [],
+                'priority': 2,
+                'title': 'AAA'
             },
-            'description': '',
-            'field_spec': {},
-            'key_spec': [],
-            'notification_settings': {
-                'backlog_size': None,
-                'grace_period_ms': 0
-            },
-            'notifications': [],
-            'priority': 2,
-            'title': 'AAA'
+            'share_request': {}
         }
         self._post('events/definitions', event_definition)
 

@@ -23,12 +23,12 @@
     <parent>
         <groupId>org.graylog.plugins</groupId>
         <artifactId>graylog-plugin-web-parent</artifactId>
-        <version>6.3.7</version>
+        <version>7.0.1</version>
     </parent>
 
     <groupId>com.airbus-cyber-security.graylog</groupId>
     <artifactId>graylog-plugin-correlation-count</artifactId>
-    <version>6.3.0</version>
+    <version>7.0.0</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>Graylog ${project.artifactId} plugin.</description>
@@ -134,7 +134,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -260,10 +259,10 @@
                             <rules>
                                 <banDuplicatePomDependencyVersions/>
                                 <requireMavenVersion>
-                                    <version>[3.9.0,)</version>
+                                    <version>[3.9.6,3.99.99]</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <version>[17.0,17.99]</version>
+                                    <version>[21.0,21.99]</version>
                                 </requireJavaVersion>
                                 <requireOS>
                                     <family>unix</family>

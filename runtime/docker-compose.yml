@@ -6,7 +6,7 @@ services:
 
   # MongoDB: https://hub.docker.com/_/mongo/
   mongo:
-    image: "mongo:6.0"
+    image: "mongo:7.0"
     container_name: mongo
 
   # OpenSearch:
@@ -14,8 +14,8 @@ services:
   # * https://opensearch.org/docs/2.15/install-and-configure/install-opensearch/docker/#sample-docker-composeyml
   # * Bump 2.15.0 : https://graylog.org/post/announcing-graylog-v6-1/
   opensearch:
-    image: "opensearchproject/opensearch:2.15.0"
-    container_name: opensearch2.15
+    image: "opensearchproject/opensearch:2.19.3"
+    container_name: opensearch
     environment:
       - plugins.security.disabled=true
       - discovery.type=single-node
@@ -29,7 +29,7 @@ services:
 
   # Graylog: https://hub.docker.com/r/graylog/graylog/
   graylog:
-    image: "graylog/graylog:6.3.7"
+    image: "graylog/graylog:${GRAYLOG_VERSION?Missing GRAYLOG_VERSION. Create a .env from pom: echo GRAYLOG_VERSION=$(cd ..&&mvn help:evaluate -Dexpression=project.parent.version -q -DforceStdout) > .env}"
     container_name: graylog
     links:
       - mongo:mongo
