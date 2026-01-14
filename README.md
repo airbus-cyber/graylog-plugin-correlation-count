@@ -22,7 +22,7 @@ Example of raised alert:
 
 | Plugin Version | Graylog Version |
 |----------------|-----------------|
-| 7.0.0          | 7.0.1           |
+| 7.0.0          | 7.0.1+          |
 | 6.3.x          | 6.3.7           |
 | 6.1.x          | 6.1.x           |
 | 6.0.x          | 6.0.x           |
