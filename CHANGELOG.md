@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/7.0.0...7.1.0)
+### Features
+* Add compatibility with [Graylog 7.1.0](https://graylog.org/post/announcing-graylog-7-1-0/)
+
 ## [7.0.0](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/6.3.0...7.0.0)
 ### Features
 * Add compatibility with [Graylog 7.0.1](https://graylog.org/post/announcing-graylog-7-0-1/) ([issue #38](https://github.com/airbus-cyber/graylog-plugin-correlation-count/issues/38))
