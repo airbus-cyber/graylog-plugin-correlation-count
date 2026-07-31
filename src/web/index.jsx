@@ -47,6 +47,7 @@ PluginStore.register(new PluginManifest({}, {
                 'threshold in a given time range.',
             formComponent: CorrelationCountFormContainer,
             summaryComponent: CorrelationCountSummary,
+            useCondition: () => true,
             defaultConfig: DEFAULT_CONFIGURATION
         },
     ],

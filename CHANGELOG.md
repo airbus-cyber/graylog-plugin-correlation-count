@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.2](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/7.1.1...7.1.2)
+### Features
+* Fix useCondition error in alert rule
+
 ## [7.1.1](https://github.com/airbus-cyber/graylog-plugin-correlation-count/compare/7.1.0...7.1.1)
 ### Features
 * Fix publish goal in maven build
